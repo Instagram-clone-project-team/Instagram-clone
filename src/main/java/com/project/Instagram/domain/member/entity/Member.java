@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.member.entity;
 
 import com.project.Instagram.global.entity.BaseTimeEntity;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import lombok.Builder;
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "members")
 public class Member extends BaseTimeEntity {
 
