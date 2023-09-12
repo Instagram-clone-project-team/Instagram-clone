@@ -18,7 +18,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final UserDetailService userDetailService;
 
     @Bean

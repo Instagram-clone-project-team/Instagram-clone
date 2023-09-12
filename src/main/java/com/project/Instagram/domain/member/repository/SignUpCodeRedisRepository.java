@@ -6,5 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Optional;
 
 public interface SignUpCodeRedisRepository extends CrudRepository<SignUpCode, String> {
-    Optional<SignUpCode> findByUsername(String username);
+    Optional<SignUpCode> findByEmail(String email);
 }

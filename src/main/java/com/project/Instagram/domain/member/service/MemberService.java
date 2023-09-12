@@ -24,9 +24,7 @@ public class MemberService {
             throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
         }
 
-        final String username = signUpRequest.getUsername();
-
-        if (!emailAuthService.checkSignUpCode(username, signUpRequest.getEmail(), signUpRequest.getCode())) {
+        if (!emailAuthService.checkSignUpCode(signUpRequest.getEmail(), signUpRequest.getCode())) {
             return false;
         }
 
@@ -38,11 +36,11 @@ public class MemberService {
         return true;
     }
 
-    public void sendAuthEmail(String username, String email) {
-        if (memberRepository.existsByUsername(username)) {
-            throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
+    public void sendAuthEmail(String email) {
+        if (memberRepository.existsByEmail(email)) {
+            throw new EntityExistsException("해당 이메일이 이미 존재합니다.");
         }
-        emailAuthService.sendSignUpCode(username, email);
+        emailAuthService.sendSignUpCode(email);
     }
 
     private Member convertRegisterRequestToMember(SignUpRequest signUpRequest) {

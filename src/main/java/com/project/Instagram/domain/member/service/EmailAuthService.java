@@ -10,7 +10,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.mail.AuthenticationFailedException;
+import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -24,22 +24,19 @@ public class EmailAuthService {
 
     private String confirEmailUI;
 
-    @SneakyThrows
-    public void sendSignUpCode(String username, String email) {
+    public void sendSignUpCode(String email) {
         final String code = createEmailVerificationCode(SIGNUP_CODE_LENGTH);
-        emailService.sendHtmlTextEmail(username + SIGNUP_EMAIL_SUBJECT_POSTFIX, getSignUpEmailText(email, code), email);
+        emailService.sendHtmlTextEmail(SIGNUP_EMAIL_SUBJECT_POSTFIX, getSignUpEmailText(email, code), email);
 
         final SignUpCode signUpCode = SignUpCode.builder()
-                .username(username)
                 .email(email)
                 .code(code)
                 .build();
         signUpCodeRedisRepository.save(signUpCode);
     }
 
-    @SneakyThrows
-    public boolean checkSignUpCode(String username, String email, String code) {
-        final SignUpCode signUpCode = signUpCodeRedisRepository.findByUsername(username).orElseThrow(AuthenticationFailedException::new);
+    public boolean checkSignUpCode(String email, String code) {
+        final SignUpCode signUpCode = signUpCodeRedisRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
 
         if (!signUpCode.getCode().equals(code) || !signUpCode.getEmail().equals(email)) return false;
 

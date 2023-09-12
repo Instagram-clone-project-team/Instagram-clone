@@ -16,15 +16,13 @@ import java.util.concurrent.TimeUnit;
 public class SignUpCode implements Serializable {
     @Id
     @Indexed
-    private String username;
     private String email;
     private String code;
     @TimeToLive(unit = TimeUnit.SECONDS)
     private Long timeout = 300L;
 
     @Builder
-    public SignUpCode(String username, String email, String code) {
-        this.username = username;
+    public SignUpCode(String email, String code) {
         this.email = email;
         this.code = code;
     }

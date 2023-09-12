@@ -18,7 +18,6 @@ public class BaseTimeEntity {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime modifiedDate;
-
     private LocalDateTime deletedAt;
 
     @PreRemove

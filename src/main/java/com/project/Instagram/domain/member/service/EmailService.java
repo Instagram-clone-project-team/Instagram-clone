@@ -13,9 +13,7 @@ import javax.mail.internet.MimeMessage;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-
     private static final String ENCODING_UTF8 = "UTF-8";
-
     private final JavaMailSender javaMailSender;
 
     @SneakyThrows

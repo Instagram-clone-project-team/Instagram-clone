@@ -34,7 +34,7 @@ public class MemberController {
 
     @PostMapping("accounts/email")
     public ResponseEntity<Object> sendAuthCodeByEmail(@Valid @RequestBody SendAuthEmailRequest sendAuthEmailRequest) {
-        memberService.sendAuthEmail(sendAuthEmailRequest.getUsername(), sendAuthEmailRequest.getEmail());
+        memberService.sendAuthEmail(sendAuthEmailRequest.getEmail());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }

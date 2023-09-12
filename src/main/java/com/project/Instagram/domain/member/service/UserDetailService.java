@@ -17,7 +17,6 @@ import java.util.Collections;
 @Service
 @RequiredArgsConstructor
 public class UserDetailService implements UserDetailsService {
-
     private static final String errorMessage = "일치하는 계정이 없습니다.";
     private final MemberRepository memberRepository;
 
