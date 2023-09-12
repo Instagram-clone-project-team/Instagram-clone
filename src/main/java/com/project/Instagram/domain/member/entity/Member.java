@@ -62,4 +62,11 @@ public class Member extends BaseTimeEntity {
         this.role = MemberRole.ROLE_USER;
         this.gender = Gender.PRIVATE;
     }
+
+    public void setRestoreMembership(String username, String encryptedPassword, String name) {
+        this.username = username;
+        this.password = encryptedPassword;
+        this.name = name;
+    }
+
 }

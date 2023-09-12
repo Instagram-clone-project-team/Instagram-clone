@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.member.dto;
 
+import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,4 +17,5 @@ public class SendAuthEmailRequest {
     @NotBlank(message = "이메일을 입력해주세요.")
     @Email(message = "이메일의 형식이 올바르지 않습니다.")
     private String email;
+
 }
