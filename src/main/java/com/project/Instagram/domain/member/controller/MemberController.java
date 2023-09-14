@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -35,6 +32,12 @@ public class MemberController {
     @PostMapping("accounts/email")
     public ResponseEntity<Object> sendAuthCodeByEmail(@Valid @RequestBody SendAuthEmailRequest sendAuthEmailRequest) {
         memberService.sendAuthEmail(sendAuthEmailRequest.getUsername(), sendAuthEmailRequest.getEmail());
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/logout")
+    public ResponseEntity<Object> logout(@RequestParam String refreshToken) {
+        memberService.logout(refreshToken);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }

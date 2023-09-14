@@ -3,6 +3,7 @@ package com.project.Instagram.domain.member.service;
 import com.project.Instagram.domain.member.dto.SignUpRequest;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,11 @@ import javax.persistence.EntityExistsException;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
+    private final SecurityUtil securityUtil;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
@@ -52,5 +54,10 @@ public class MemberService {
                 .password(signUpRequest.getPassword())
                 .email(signUpRequest.getEmail())
                 .build();
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+        refreshTokenService.deleteRefreshTokenByValue(securityUtil.getLoginMemberId(), refreshToken);
     }
 }
