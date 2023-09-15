@@ -1,8 +1,6 @@
 package com.project.Instagram.domain.member.controller;
 
-import com.project.Instagram.domain.member.dto.SendAuthEmailRequest;
-import com.project.Instagram.domain.member.dto.SignUpRequest;
-import com.project.Instagram.domain.member.dto.UpdatePasswordRequest;
+import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.service.MemberService;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
@@ -11,14 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.project.Instagram.global.response.ResultCode.UPDATE_PASSWORD_SUCCESS;
+import static com.project.Instagram.global.response.ResultCode.*;
 
 @Validated
 @RestController
@@ -44,7 +39,13 @@ public class MemberController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PostMapping("/password/patch")
+    @PatchMapping("/account/update")
+    public ResponseEntity<ResultResponse> updateAccount(@Valid @RequestBody UpdateAccountRequest updateAccountRequest){
+        memberService.updateAccount(updateAccountRequest);
+        return ResponseEntity.ok(ResultResponse.of(UPDATE_ACCOUNT_SUCCESS));
+    }
+
+    @PatchMapping("/password/patch")
     public ResponseEntity<ResultResponse> updatePassword(
             @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest){
         memberService.updatePassword(updatePasswordRequest);
@@ -52,11 +53,18 @@ public class MemberController {
         return ResponseEntity.ok(ResultResponse.of(UPDATE_PASSWORD_SUCCESS));
     }
 
-    //테스트용
-    @PostMapping("/test")
-    public ResponseEntity<ResultResponse> testPassword(
-            @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest){
 
-        throw new BusinessException(ErrorCode.PASSWORD_SAME);
+    @PostMapping("/password/reset/email")
+    public ResponseEntity<Object> sendPasswordCodeByEmail(SendPasswordEmailRequest sendPasswordEmailRequest){
+        memberService.sendPasswordCodeEmail(sendPasswordEmailRequest);
+
+        return ResponseEntity.ok(HttpStatus.OK);
     }
+
+    @PatchMapping("/password/reset")
+    public ResponseEntity<ResultResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest){
+        memberService.resetPassword(resetPasswordRequest);
+        return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
+    }
+
 }
