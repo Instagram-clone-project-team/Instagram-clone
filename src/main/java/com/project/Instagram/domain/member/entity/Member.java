@@ -41,7 +41,7 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_introduce")
     private String introduce;
 
-    @Column(name = "member_email")
+    @Column(name = "member_email", unique = true)
     private String email;
 
     @Column(name = "member_phone")
@@ -70,5 +70,4 @@ public class Member extends BaseTimeEntity {
         this.password = encryptedPassword;
         this.name = name;
     }
-
 }

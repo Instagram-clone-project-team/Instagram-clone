@@ -11,8 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityExistsException;
-
 import java.util.Optional;
 
 import static com.project.Instagram.domain.member.entity.Gender.MALE;
@@ -29,31 +27,20 @@ public class MemberService {
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
         Optional<Member> existingUsername = memberRepository.findByUsername(signUpRequest.getUsername());
-        Optional<Member> existingEmail = memberRepository.findByEmail(signUpRequest.getEmail());
 
         if (!emailAuthService.checkSignUpCode(signUpRequest.getEmail(), signUpRequest.getCode())) {
             return false;
         }
 
+        if (existingUsername.isPresent()) {
+            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+        }
+
         Member existingMember = memberRepository.findByUsernameOrEmail(signUpRequest.getUsername(), signUpRequest.getEmail());
 
-        if (existingMember != null) {
-            if (existingMember.getDeletedAt() != null) {
-                if (!existingMember.getEmail().equals(signUpRequest.getEmail())) {
-                    throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
-                }
-                restoreMembership(existingMember, signUpRequest);
-            } else {
-                throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
-            }
-        } else {
-            if (existingUsername.isPresent()) {
-                throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
-            }
-
-            if (existingEmail.isPresent()) {
-                throw new EntityExistsException("이미 존재하는 이메일 주소입니다.");
-            }
+        if (existingMember != null && existingMember.getDeletedAt() != null) {
+            restoreMembership(existingMember, signUpRequest);
+        } else if (existingMember == null) {
             createNewMember(signUpRequest);
         }
         return true;

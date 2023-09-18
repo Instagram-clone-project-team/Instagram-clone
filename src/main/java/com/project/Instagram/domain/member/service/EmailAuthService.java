@@ -2,15 +2,15 @@ package com.project.Instagram.domain.member.service;
 
 import com.project.Instagram.domain.member.entity.SignUpCode;
 import com.project.Instagram.domain.member.repository.SignUpCodeRedisRepository;
+import com.project.Instagram.global.error.BusinessException;
+import com.project.Instagram.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -36,9 +36,9 @@ public class EmailAuthService {
     }
 
     public boolean checkSignUpCode(String email, String code) {
-        final SignUpCode signUpCode = signUpCodeRedisRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        final SignUpCode signUpCode = signUpCodeRedisRepository.findByEmail(email).orElseThrow(() -> new  BusinessException(ErrorCode.MEMBERSHIP_CODE_NOT_FOUND));
 
-        if (!signUpCode.getCode().equals(code) || !signUpCode.getEmail().equals(email)) return false;
+        if (!signUpCode.getCode().equals(code) || !signUpCode.getEmail().equals(email)) throw new BusinessException(ErrorCode.MEMBERSHIP_CODE_DOES_NOT_MATCH_EMAIL);;
 
         signUpCodeRedisRepository.delete(signUpCode);
         return true;
@@ -47,6 +47,7 @@ public class EmailAuthService {
     private String getSignUpEmailText(String email, String code) {
         return String.format(confirEmailUI, email, code, email);
     }
+
 
     private String createEmailVerificationCode(int length) {
         return RandomStringUtils.random(length, true, true);
@@ -59,7 +60,7 @@ public class EmailAuthService {
             final ClassPathResource confirmEmailUIResource = new ClassPathResource("confirmEmailUI.html");
             confirEmailUI = new String(confirmEmailUIResource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new FileUploadException(e);
+            throw new BusinessException(ErrorCode.FILE_CONVERT_FAIL);
         }
     }
 }
