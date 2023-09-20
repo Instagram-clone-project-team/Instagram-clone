@@ -27,45 +27,26 @@ public class MemberController {
     public ResponseEntity<Object> signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
         final boolean membership = memberService.signUp(signUpRequest);
         if (membership) {
-            return ResponseEntity.ok(HttpStatus.CREATED);
+            return ResponseEntity.ok(ResultResponse.of(SIGNUP_SUCCESS, true));
         } else {
-            return ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.ok(ResultResponse.of(EMAIL_VERIFICATION_FAIL, false));
         }
     }
 
     @PostMapping("accounts/email")
     public ResponseEntity<Object> sendAuthCodeByEmail(@Valid @RequestBody SendAuthEmailRequest sendAuthEmailRequest) {
-        memberService.sendAuthEmail(sendAuthEmailRequest.getUsername(), sendAuthEmailRequest.getEmail());
-        return ResponseEntity.ok(HttpStatus.OK);
+        memberService.sendAuthEmail(sendAuthEmailRequest.getEmail());
+        return ResponseEntity.ok(ResultResponse.of(SEND_EMAIL_SUCCESS));
     }
 
-    //    @PatchMapping("/account/update")
-//    public ResponseEntity<ResultResponse> updateAccount(@Valid @RequestBody UpdateAccountRequest updateAccountRequest){
-//        memberService.updateAccount(updateAccountRequest);
-//        return ResponseEntity.ok(ResultResponse.of(UPDATE_ACCOUNT_SUCCESS));
-//    }
-//
-//    @PatchMapping("/password/patch")
-//    public ResponseEntity<ResultResponse> updatePassword(
-//            @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest){
-//        memberService.updatePassword(updatePasswordRequest);
-//
-//        return ResponseEntity.ok(ResultResponse.of(UPDATE_PASSWORD_SUCCESS));
-//    }
-//
-//
-//    @PostMapping("/password/reset/email")
-//    public ResponseEntity<Object> sendPasswordCodeByEmail(SendPasswordEmailRequest sendPasswordEmailRequest){
-//        memberService.sendPasswordCodeEmail(sendPasswordEmailRequest);
-//
-//        return ResponseEntity.ok(HttpStatus.OK);
-//    }
-//
-//    @PatchMapping("/password/reset")
-//    public ResponseEntity<ResultResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest){
-//        memberService.resetPassword(resetPasswordRequest);
-//        return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
-//    }
+    @PatchMapping("/password/patch")
+    public ResponseEntity<ResultResponse> updatePassword(
+            @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest){
+        memberService.updatePassword(updatePasswordRequest);
+
+        return ResponseEntity.ok(ResultResponse.of(UPDATE_PASSWORD_SUCCESS));
+    }
+
 
     @PostMapping(value = "/logout")
     public ResponseEntity<Object> logout(@RequestParam String refreshToken) {

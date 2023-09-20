@@ -11,8 +11,11 @@ public enum ErrorCode {
     PASSWORD_SAME(400,"기존 비밀번호와 같습니다."),
     MEMBER_NOT_FOUND(400,"존재 하지 않는 유저입니다."),
     PASSWORD_RESET_FAIL(400, "잘못되거나 만료된 코드입니다."),
-    USERNAME_ALREADY_EXIST(400,"해당 유저네임은 이미 존재합니다.");
-
+    USERNAME_ALREADY_EXIST(400,"해당 유저네임은 이미 존재합니다."),
+    MEMBERSHIP_CODE_NOT_FOUND(400, "해당 이메일의 인증 코드를 찾을 수 없습니다."),
+    MEMBERSHIP_CODE_DOES_NOT_MATCH_EMAIL(400, "인증코드 이메일과 회원가입 이메일이 일치하지 않습니다."),
+    EMAIL_SEND_FAIL(500, "이메일 전송 중 오류가 발생했습니다."),
+    FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
 
 
     private final int status;

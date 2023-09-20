@@ -66,11 +66,25 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public void sendAuthEmail(String username, String email) {
-        if (memberRepository.existsByUsername(username)) {
-            throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
-        }
-        emailAuthService.sendSignUpCode(username, email);
+    private void createNewMember(SignUpRequest signUpRequest) {
+        Member newMember = convertRegisterRequestToMember(signUpRequest);
+        String encryptedPassword = bCryptPasswordEncoder.encode(newMember.getPassword());
+        newMember.setEncryptedPassword(encryptedPassword);
+        memberRepository.save(newMember);
+    }
+
+    private void restoreMembership(Member existingMember, SignUpRequest signUpRequest) {
+        existingMember.setDeletedAt(null);
+        existingMember.setRestoreMembership(
+                signUpRequest.getUsername(),
+                bCryptPasswordEncoder.encode(signUpRequest.getPassword()),
+                signUpRequest.getName()
+        );
+        memberRepository.save(existingMember);
+    }
+
+    public void sendAuthEmail (String email){
+        emailAuthService.sendSignUpCode(email);
     }
 
     private Member convertRegisterRequestToMember(SignUpRequest signUpRequest) {
