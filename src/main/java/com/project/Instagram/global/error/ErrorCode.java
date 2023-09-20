@@ -14,6 +14,7 @@ public enum ErrorCode {
     USERNAME_ALREADY_EXIST(400,"해당 유저네임은 이미 존재합니다.");
 
 
+
     private final int status;
     private final String message;
 }

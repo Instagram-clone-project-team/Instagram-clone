@@ -39,6 +39,34 @@ public class MemberController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    //    @PatchMapping("/account/update")
+//    public ResponseEntity<ResultResponse> updateAccount(@Valid @RequestBody UpdateAccountRequest updateAccountRequest){
+//        memberService.updateAccount(updateAccountRequest);
+//        return ResponseEntity.ok(ResultResponse.of(UPDATE_ACCOUNT_SUCCESS));
+//    }
+//
+//    @PatchMapping("/password/patch")
+//    public ResponseEntity<ResultResponse> updatePassword(
+//            @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest){
+//        memberService.updatePassword(updatePasswordRequest);
+//
+//        return ResponseEntity.ok(ResultResponse.of(UPDATE_PASSWORD_SUCCESS));
+//    }
+//
+//
+//    @PostMapping("/password/reset/email")
+//    public ResponseEntity<Object> sendPasswordCodeByEmail(SendPasswordEmailRequest sendPasswordEmailRequest){
+//        memberService.sendPasswordCodeEmail(sendPasswordEmailRequest);
+//
+//        return ResponseEntity.ok(HttpStatus.OK);
+//    }
+//
+//    @PatchMapping("/password/reset")
+//    public ResponseEntity<ResultResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest){
+//        memberService.resetPassword(resetPasswordRequest);
+//        return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
+//    }
+
     @PostMapping(value = "/logout")
     public ResponseEntity<Object> logout(@RequestParam String refreshToken) {
         memberService.logout(refreshToken);

@@ -66,8 +66,6 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-
-
     public void sendAuthEmail(String username, String email) {
         if (memberRepository.existsByUsername(username)) {
             throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
