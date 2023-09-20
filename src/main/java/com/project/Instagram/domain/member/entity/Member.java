@@ -1,15 +1,14 @@
 package com.project.Instagram.domain.member.entity;
 
 import com.project.Instagram.global.entity.BaseTimeEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 
 import javax.persistence.*;
 
-import lombok.Builder;
-
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "members")
 public class Member extends BaseTimeEntity {
