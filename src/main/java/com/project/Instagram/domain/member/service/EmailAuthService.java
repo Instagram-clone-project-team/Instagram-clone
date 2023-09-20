@@ -1,10 +1,7 @@
 package com.project.Instagram.domain.member.service;
 
-import com.project.Instagram.domain.member.dto.SendPasswordEmailRequest;
-import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.ResetPasswordCode;
 import com.project.Instagram.domain.member.entity.SignUpCode;
-import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.domain.member.repository.ResetPasswordCodeRedisRepository;
 import com.project.Instagram.domain.member.repository.SignUpCodeRedisRepository;
 import com.project.Instagram.global.error.BusinessException;
@@ -12,12 +9,10 @@ import com.project.Instagram.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.mail.AuthenticationFailedException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -34,24 +29,22 @@ public class EmailAuthService {
     private final ResetPasswordCodeRedisRepository resetPasswordCodeRedisRepository;
 
     private String confirEmailUI;
-    @SneakyThrows
-    public void sendSignUpCode(String username, String email) {
+
+    public void sendSignUpCode(String email) {
         final String code = createEmailVerificationCode(SIGNUP_CODE_LENGTH);
-        emailService.sendHtmlTextEmail(username + SIGNUP_EMAIL_SUBJECT_POSTFIX, getSignUpEmailText(email, code), email);
+        emailService.sendHtmlTextEmail(SIGNUP_EMAIL_SUBJECT_POSTFIX, getSignUpEmailText(email, code), email);
 
         final SignUpCode signUpCode = SignUpCode.builder()
-                .username(username)
                 .email(email)
                 .code(code)
                 .build();
         signUpCodeRedisRepository.save(signUpCode);
     }
 
-    @SneakyThrows
-    public boolean checkSignUpCode(String username, String email, String code) {
-        final SignUpCode signUpCode = signUpCodeRedisRepository.findByUsername(username).orElseThrow(AuthenticationFailedException::new);
+    public boolean checkSignUpCode(String email, String code) {
+        final SignUpCode signUpCode = signUpCodeRedisRepository.findByEmail(email).orElseThrow(() -> new BusinessException(ErrorCode.MEMBERSHIP_CODE_NOT_FOUND));
 
-        if (!signUpCode.getCode().equals(code) || !signUpCode.getEmail().equals(email)) return false;
+        if (!signUpCode.getCode().equals(code) || !signUpCode.getEmail().equals(email)) throw new BusinessException(ErrorCode.MEMBERSHIP_CODE_DOES_NOT_MATCH_EMAIL);;
 
         signUpCodeRedisRepository.delete(signUpCode);
         return true;
@@ -85,6 +78,7 @@ public class EmailAuthService {
         return String.format(confirEmailUI, email, code, email);
     }
 
+
     private String createEmailVerificationCode(int length) {
         return RandomStringUtils.random(length, true, true);
     }
@@ -98,7 +92,7 @@ public class EmailAuthService {
             confirEmailUI = new String(confirmEmailUIResource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
         } catch (IOException e) {
-            throw new FileUploadException(e);
+            throw new BusinessException(ErrorCode.FILE_CONVERT_FAIL);
         }
     }
 

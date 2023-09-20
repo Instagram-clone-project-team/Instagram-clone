@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "members")
 public class Member extends BaseTimeEntity {
 
@@ -38,7 +39,7 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_introduce")
     private String introduce;
 
-    @Column(name = "member_email")
+    @Column(name = "member_email", unique = true)
     private String email;
 
     @Column(name = "member_phone")
@@ -62,6 +63,12 @@ public class Member extends BaseTimeEntity {
         this.gender = Gender.PRIVATE;
     }
 
+    public void setRestoreMembership(String username, String encryptedPassword, String name) {
+        this.username = username;
+        this.password = encryptedPassword;
+        this.name = name;
+    }
+
     public void updateUsername(String username){this.username = username;}
     public void updateName(String name){this.name = name;}
     public void updateLink(String link){this.link = link;}
@@ -69,6 +76,4 @@ public class Member extends BaseTimeEntity {
     public void updateEmail(String email){this.email = email;}
     public void updatePhone(String phone){this.phone = phone;}
     public void updateGender(Gender gender){this.gender = gender;}
-
-
 }

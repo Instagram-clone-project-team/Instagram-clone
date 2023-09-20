@@ -11,7 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityExistsException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,21 +23,23 @@ public class MemberService {
 
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
-        if (memberRepository.existsByUsername(signUpRequest.getUsername())) {
-            throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
-        }
+        Optional<Member> existingUsername = memberRepository.findByUsername(signUpRequest.getUsername());
 
-        final String username = signUpRequest.getUsername();
-
-        if (!emailAuthService.checkSignUpCode(username, signUpRequest.getEmail(), signUpRequest.getCode())) {
+        if (!emailAuthService.checkSignUpCode(signUpRequest.getEmail(), signUpRequest.getCode())) {
             return false;
         }
 
-        final Member member = convertRegisterRequestToMember(signUpRequest);
-        final String encryptedPassword = bCryptPasswordEncoder.encode(member.getPassword());
-        member.setEncryptedPassword(encryptedPassword);
-        memberRepository.save(member);
+        if (existingUsername.isPresent()) {
+            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+        }
 
+        Member existingMember = memberRepository.findByUsernameOrEmail(signUpRequest.getUsername(), signUpRequest.getEmail());
+
+        if (existingMember != null && existingMember.getDeletedAt() != null) {
+            restoreMembership(existingMember, signUpRequest);
+        } else if (existingMember == null) {
+            createNewMember(signUpRequest);
+        }
         return true;
     }
 
@@ -48,6 +50,7 @@ public class MemberService {
                 .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
 
+        member.setEncryptedPassword(bCryptPasswordEncoder.encode(member.getPassword()));
         if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){//요청 비밀번호 현재 비밀번호 매치 확인
             throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
         }
@@ -59,13 +62,25 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    private void createNewMember(SignUpRequest signUpRequest) {
+        Member newMember = convertRegisterRequestToMember(signUpRequest);
+        String encryptedPassword = bCryptPasswordEncoder.encode(newMember.getPassword());
+        newMember.setEncryptedPassword(encryptedPassword);
+        memberRepository.save(newMember);
+    }
 
+    private void restoreMembership(Member existingMember, SignUpRequest signUpRequest) {
+        existingMember.setDeletedAt(null);
+        existingMember.setRestoreMembership(
+                signUpRequest.getUsername(),
+                bCryptPasswordEncoder.encode(signUpRequest.getPassword()),
+                signUpRequest.getName()
+        );
+        memberRepository.save(existingMember);
+    }
 
-    public void sendAuthEmail(String username, String email) {
-        if (memberRepository.existsByUsername(username)) {
-            throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
-        }
-        emailAuthService.sendSignUpCode(username, email);
+    public void sendAuthEmail (String email){
+        emailAuthService.sendSignUpCode(email);
     }
 
     private Member convertRegisterRequestToMember(SignUpRequest signUpRequest) {
@@ -124,5 +139,4 @@ public class MemberService {
         member.updateEmail(updateAccountRequest.getEmail());
         member.updateGender(Gender.valueOf(updateAccountRequest.getGender()));
     }
-
 }
