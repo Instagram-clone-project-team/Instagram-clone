@@ -46,7 +46,7 @@ public class MemberController {
 
 
     @PostMapping("/password/reset/email")
-    public ResponseEntity<Object> sendPasswordCodeByEmail(SendPasswordEmailRequest sendPasswordEmailRequest){
+    public ResponseEntity<Object> sendPasswordCodeByEmail(@Valid @RequestBody SendPasswordEmailRequest sendPasswordEmailRequest){
         memberService.sendPasswordCodeEmail(sendPasswordEmailRequest);
 
         return ResponseEntity.ok(HttpStatus.OK);
@@ -54,7 +54,7 @@ public class MemberController {
 
     @PatchMapping("/password/reset")
     public ResponseEntity<ResultResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest){
-        memberService.resetPassword(resetPasswordRequest);
+        memberService.resetPasswordByEmailCode(resetPasswordRequest);
         return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
     }
 

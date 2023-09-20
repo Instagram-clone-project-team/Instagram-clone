@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.member.entity;
 
 import com.project.Instagram.global.entity.BaseTimeEntity;
+
 import lombok.*;
 
 import javax.persistence.*;
