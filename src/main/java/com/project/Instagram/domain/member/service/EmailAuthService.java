@@ -1,16 +1,18 @@
 package com.project.Instagram.domain.member.service;
 
+import com.project.Instagram.domain.member.entity.ResetPasswordCode;
 import com.project.Instagram.domain.member.entity.SignUpCode;
+import com.project.Instagram.domain.member.repository.ResetPasswordCodeRedisRepository;
 import com.project.Instagram.domain.member.repository.SignUpCodeRedisRepository;
+import com.project.Instagram.global.error.BusinessException;
+import com.project.Instagram.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.mail.AuthenticationFailedException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -40,7 +42,7 @@ public class EmailAuthService {
     }
 
     public boolean checkSignUpCode(String email, String code) {
-        final SignUpCode signUpCode = signUpCodeRedisRepository.findByEmail(email).orElseThrow(() -> new  BusinessException(ErrorCode.MEMBERSHIP_CODE_NOT_FOUND));
+        final SignUpCode signUpCode = signUpCodeRedisRepository.findByEmail(email).orElseThrow(() -> new BusinessException(ErrorCode.MEMBERSHIP_CODE_NOT_FOUND));
 
         if (!signUpCode.getCode().equals(code) || !signUpCode.getEmail().equals(email)) throw new BusinessException(ErrorCode.MEMBERSHIP_CODE_DOES_NOT_MATCH_EMAIL);;
 

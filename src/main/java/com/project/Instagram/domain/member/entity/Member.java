@@ -68,4 +68,6 @@ public class Member extends BaseTimeEntity {
         this.password = encryptedPassword;
         this.name = name;
     }
+
+
 }

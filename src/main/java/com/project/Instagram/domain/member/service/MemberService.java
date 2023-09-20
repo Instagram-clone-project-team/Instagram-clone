@@ -139,5 +139,4 @@ public class MemberService {
         member.updateEmail(updateAccountRequest.getEmail());
         member.updateGender(Gender.valueOf(updateAccountRequest.getGender()));
     }
-
 }
