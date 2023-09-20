@@ -4,7 +4,6 @@ import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.service.MemberService;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
-import com.project.Instagram.global.response.ResultResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +11,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-
-import static com.project.Instagram.global.response.ResultCode.*;
 
 @Validated
 @RestController
