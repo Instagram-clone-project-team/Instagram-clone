@@ -4,6 +4,7 @@ import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.service.MemberService;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.response.ResultResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
+import static com.project.Instagram.global.response.ResultCode.*;
 
 @Validated
 @RestController
@@ -52,7 +55,7 @@ public class MemberController {
 
 
     @PostMapping("/password/reset/email")
-    public ResponseEntity<Object> sendPasswordCodeByEmail(SendPasswordEmailRequest sendPasswordEmailRequest){
+    public ResponseEntity<Object> sendPasswordCodeByEmail(@Valid @RequestBody SendPasswordEmailRequest sendPasswordEmailRequest){
         memberService.sendPasswordCodeEmail(sendPasswordEmailRequest);
 
         return ResponseEntity.ok(HttpStatus.OK);
@@ -60,7 +63,7 @@ public class MemberController {
 
     @PatchMapping("/password/reset")
     public ResponseEntity<ResultResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest){
-        memberService.resetPassword(resetPasswordRequest);
+        memberService.resetPasswordByEmailCode(resetPasswordRequest);
         return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
     }
 

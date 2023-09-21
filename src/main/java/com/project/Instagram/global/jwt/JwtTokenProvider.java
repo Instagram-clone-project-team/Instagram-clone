@@ -45,19 +45,15 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-expiration-time}")
     private int refreshExpirationTime;
 
-
-    private UserDetailService userDetailService;
-
     public String encodeBase64SecretKey(String secretKey) {
         return Encoders.BASE64.encode(secretKey.getBytes(StandardCharsets.UTF_8));
     }
     public String generateAccessToken(Map<String, Object> claims,
-                                    String subject,
-                                    Date expireDate,
-                                    String base54EncodedSecretKey
+                                    String subject
                                     ){
 
-       Key key = getKeyFromBase64EncodedKey(base54EncodedSecretKey);
+        Key key =getKeyTypekey();
+        Date expireDate = getTokenExpiration(accessExpirationTime);
         String accessToken = Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
@@ -69,22 +65,23 @@ public class JwtTokenProvider {
         return accessToken;
     }
 
-    public String generateRefreshToken(String subject,Date expiration, String base64EncodedSecretKey){
-        Key key = getKeyFromBase64EncodedKey(base64EncodedSecretKey);
+    public String generateRefreshToken(String subject){
+
+        Key key = getKeyTypekey();
+        Date exireDate = getTokenExpiration(refreshExpirationTime);
 
         String refreshToken =Jwts.builder()
                 .setSubject(subject)
                 .setIssuedAt(Calendar.getInstance().getTime())
-                .setExpiration(expiration)
+                .setExpiration(exireDate)
                 .signWith(key)
                 .compact();
 
         return refreshToken;
     }
 
-
-    public Jws<Claims> getClaims(String jws, String base64EncodedSecretKey) {
-        Key key = getKeyFromBase64EncodedKey(base64EncodedSecretKey);
+    public Jws<Claims> getClaims(String jws) {
+        Key key = getKeyTypekey();
 
         Jws<Claims> claims = Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -94,8 +91,8 @@ public class JwtTokenProvider {
         return claims;
     }
 
-    public void verifySignature(String jws, String base64EncodedSecretKey) {
-        Key key = getKeyFromBase64EncodedKey(base64EncodedSecretKey);
+    public void verifySignature(String jws) {
+        Key key = getKeyTypekey();
 
         Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -103,7 +100,7 @@ public class JwtTokenProvider {
                 .parseClaimsJws(jws);
     }
 
-    public Date getTokenExpiration(int expirationMinutes) {
+    private Date getTokenExpiration(int expirationMinutes) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, expirationMinutes);
         Date expiration = calendar.getTime();
@@ -117,6 +114,9 @@ public class JwtTokenProvider {
         return key;
     }
 
-
-
+    private Key getKeyTypekey() {
+        String encodeSecretKey = encodeBase64SecretKey(secretKey);
+        Key key = getKeyFromBase64EncodedKey(encodeSecretKey);
+        return key;
+    }
 }

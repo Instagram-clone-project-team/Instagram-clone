@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 @NoArgsConstructor
 public class RefreshToken implements Serializable {
 
-
     @Id
     @Indexed
     private String id;
