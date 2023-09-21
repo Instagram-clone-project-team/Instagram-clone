@@ -6,9 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface RefreshTokenRedisRepository extends CrudRepository<RefreshToken, String> {
-
     List<RefreshToken> findAllByMemberId(Long memberId);
-
-
-
 }

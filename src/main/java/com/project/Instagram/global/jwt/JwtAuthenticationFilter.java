@@ -72,6 +72,4 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .build();
         refreshTokenRedisRepository.save(reidsRefreshToken);
     }
-
-
 }

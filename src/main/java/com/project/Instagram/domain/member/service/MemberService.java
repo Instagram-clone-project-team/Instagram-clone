@@ -6,6 +6,7 @@ import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberService {
 
+    private final SecurityUtil securityUtil;
+    private final RefreshTokenService refreshTokenService;
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
@@ -98,7 +101,7 @@ public class MemberService {
                 .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         if(memberRepository.existsByUsername(updateAccountRequest.getUsername())
-        && !member.getUsername().equals(updateAccountRequest.getUsername())){
+                && !member.getUsername().equals(updateAccountRequest.getUsername())){
             throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
         }
 
@@ -138,5 +141,10 @@ public class MemberService {
         member.updatePhone(updateAccountRequest.getPhone());
         member.updateEmail(updateAccountRequest.getEmail());
         member.updateGender(Gender.valueOf(updateAccountRequest.getGender()));
+    }
+
+    @Transactional
+    public void logout() {
+        refreshTokenService.deleteRefreshTokenByValue(securityUtil.getLoginMember().getId());
     }
 }
