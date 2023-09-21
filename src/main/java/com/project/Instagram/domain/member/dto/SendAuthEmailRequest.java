@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.member.dto;
 
-import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

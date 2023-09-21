@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,7 +41,9 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private void setAuthenticationToContext(Map<String, Object> claims) {
         String username = (String) claims.get("username");
-        List<GrantedAuthority> authorities = customAuthorityUtils.createAuthorities((List) claims.get("roles"));
+        List<String> list = new ArrayList<>();
+        list.add(claims.get("roles").toString());
+        List<GrantedAuthority> authorities = customAuthorityUtils.createAuthorities(list);
         Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

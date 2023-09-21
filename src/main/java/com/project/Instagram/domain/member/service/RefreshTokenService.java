@@ -1,20 +1,30 @@
 package com.project.Instagram.domain.member.service;
 
-import com.project.Instagram.domain.member.repository.RefreshTokenRedisRepository;
+import com.project.Instagram.domain.member.entity.RefreshToken;
+import com.project.Instagram.global.error.BusinessException;
+import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.jwt.RefreshTokenRedisRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.security.sasl.AuthenticationException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
     private final RefreshTokenRedisRepository refreshTokenRedisRepository;
 
+    @SneakyThrows
     @Transactional
-    public void deleteRefreshTokenByValue(Long memberId, String value) {
-        final RefreshToken refreshToken = refreshTokenRedisRepository.findByMemberIdAndValue(memberId, value).orElseThrow(new AuthenticationException("로그인 유저가 아닙니다."));
-        refreshTokenRedisRepository.delete(refreshToken);
+    public void deleteRefreshTokenByValue(Long memberId) {
+        try {
+            List<RefreshToken> refreshTokens = refreshTokenRedisRepository.findAllByMemberId(memberId);
+            for (RefreshToken refreshToken : refreshTokens)
+                refreshTokenRedisRepository.delete(refreshToken);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST);
+        }
     }
 }

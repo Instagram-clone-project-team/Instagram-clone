@@ -15,7 +15,10 @@ public enum ErrorCode {
     MEMBERSHIP_CODE_NOT_FOUND(400, "해당 이메일의 인증 코드를 찾을 수 없습니다."),
     MEMBERSHIP_CODE_DOES_NOT_MATCH_EMAIL(400, "인증코드 이메일과 회원가입 이메일이 일치하지 않습니다."),
     EMAIL_SEND_FAIL(500, "이메일 전송 중 오류가 발생했습니다."),
-    FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
+    FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다."),
+    MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST(500, "해당 memberId의 refresh token 이 존재하지 않습니다."),
+    LOGIN_INFORMATION_ERROR(500, "현재 사용자의 ID를 가져오는 중 문제가 발생했습니다.");
+
 
 
     private final int status;
