@@ -7,7 +7,6 @@ public class ResultResponse {
 
     private  int status;
     private String message;
-
     private Object data;
 
     public ResultResponse(ResultCode resultCode,Object data) {

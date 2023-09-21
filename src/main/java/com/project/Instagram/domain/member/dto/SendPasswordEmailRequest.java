@@ -20,4 +20,5 @@ public class SendPasswordEmailRequest {
     @Length(min = 4, max = 12, message = "사용자 이름은 4문자 이상 12문자 이하여야 합니다.")
     @Pattern(regexp = "^[0-9a-zA-Z]+$", message = "사용자 이름엔 대소문자, 숫자만 가능합니다.")
     private String username;
+
 }

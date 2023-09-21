@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.member.entity;
 
 import com.project.Instagram.global.entity.BaseTimeEntity;
+
 import lombok.*;
 
 import javax.persistence.*;
@@ -38,7 +39,7 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_introduce")
     private String introduce;
 
-    @Column(name = "member_email")
+    @Column(name = "member_email", unique = true)
     private String email;
 
     @Column(name = "member_phone")
@@ -61,6 +62,13 @@ public class Member extends BaseTimeEntity {
         this.role = MemberRole.ROLE_USER;
         this.gender = Gender.PRIVATE;
     }
+  
+    public void setRestoreMembership(String username, String encryptedPassword, String name) {
+        this.username = username;
+        this.password = encryptedPassword;
+        this.name = name;
+    }
+
     public void updateUsername(String username){this.username = username;}
     public void updateName(String name){this.name = name;}
     public void updateLink(String link){this.link = link;}

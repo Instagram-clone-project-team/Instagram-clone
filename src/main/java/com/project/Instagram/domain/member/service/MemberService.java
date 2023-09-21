@@ -1,48 +1,47 @@
 package com.project.Instagram.domain.member.service;
-
-import com.project.Instagram.domain.member.dto.SignUpRequest;
-import com.project.Instagram.domain.member.dto.UpdateAccountRequest;
-import com.project.Instagram.domain.member.dto.UpdatePasswordRequest;
+import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityExistsException;
-
-import static com.project.Instagram.domain.member.entity.Gender.MALE;
-import static com.project.Instagram.domain.member.entity.MemberRole.ROLE_USER;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
+    private final SecurityUtil securityUtil;
+    private final RefreshTokenService refreshTokenService;
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
 
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
-        if (memberRepository.existsByUsername(signUpRequest.getUsername())) {
-            throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
-        }
+        Optional<Member> existingUsername = memberRepository.findByUsername(signUpRequest.getUsername());
 
-        final String username = signUpRequest.getUsername();
-
-        if (!emailAuthService.checkSignUpCode(username, signUpRequest.getEmail(), signUpRequest.getCode())) {
+        if (!emailAuthService.checkSignUpCode(signUpRequest.getEmail(), signUpRequest.getCode())) {
             return false;
         }
 
-        final Member member = convertRegisterRequestToMember(signUpRequest);
-        final String encryptedPassword = bCryptPasswordEncoder.encode(member.getPassword());
-        member.setEncryptedPassword(encryptedPassword);
-        memberRepository.save(member);
+        if (existingUsername.isPresent()) {
+            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+        }
 
+        Member existingMember = memberRepository.findByUsernameOrEmail(signUpRequest.getUsername(), signUpRequest.getEmail());
+
+        if (existingMember != null && existingMember.getDeletedAt() != null) {
+            restoreMembership(existingMember, signUpRequest);
+        } else if (existingMember == null) {
+            createNewMember(signUpRequest);
+        }
         return true;
     }
 
@@ -64,13 +63,25 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    private void createNewMember(SignUpRequest signUpRequest) {
+        Member newMember = convertRegisterRequestToMember(signUpRequest);
+        String encryptedPassword = bCryptPasswordEncoder.encode(newMember.getPassword());
+        newMember.setEncryptedPassword(encryptedPassword);
+        memberRepository.save(newMember);
+    }
 
+    private void restoreMembership(Member existingMember, SignUpRequest signUpRequest) {
+        existingMember.setDeletedAt(null);
+        existingMember.setRestoreMembership(
+                signUpRequest.getUsername(),
+                bCryptPasswordEncoder.encode(signUpRequest.getPassword()),
+                signUpRequest.getName()
+        );
+        memberRepository.save(existingMember);
+    }
 
-    public void sendAuthEmail(String username, String email) {
-        if (memberRepository.existsByUsername(username)) {
-            throw new EntityExistsException("해당 사용자 이름이 이미 존재합니다.");
-        }
-        emailAuthService.sendSignUpCode(username, email);
+    public void sendAuthEmail (String email){
+        emailAuthService.sendSignUpCode(email);
     }
 
     private Member convertRegisterRequestToMember(SignUpRequest signUpRequest) {
@@ -128,5 +139,10 @@ public class MemberService {
         member.updatePhone(updateAccountRequest.getPhone());
         member.updateEmail(updateAccountRequest.getEmail());
         member.updateGender(Gender.valueOf(updateAccountRequest.getGender()));
+    }
+
+    @Transactional
+    public void logout() {
+        refreshTokenService.deleteRefreshTokenByValue(securityUtil.getLoginMember().getId());
     }
 }
