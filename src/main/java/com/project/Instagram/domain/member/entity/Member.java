@@ -62,7 +62,7 @@ public class Member extends BaseTimeEntity {
         this.role = MemberRole.ROLE_USER;
         this.gender = Gender.PRIVATE;
     }
-
+  
     public void setRestoreMembership(String username, String encryptedPassword, String name) {
         this.username = username;
         this.password = encryptedPassword;
@@ -76,4 +76,5 @@ public class Member extends BaseTimeEntity {
     public void updateEmail(String email){this.email = email;}
     public void updatePhone(String phone){this.phone = phone;}
     public void updateGender(Gender gender){this.gender = gender;}
+
 }

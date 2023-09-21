@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.Instagram.domain.member.dto.LoginRequest;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.RefreshToken;
-import com.project.Instagram.domain.member.service.UserDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,7 +21,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRedisRepository refreshTokenRedisRepository;
-    private final UserDetailService userDetailService;
     @SneakyThrows
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
@@ -50,17 +48,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         claims.put("username", member.getUsername());
         claims.put("roles", member.getRole());
         String subject = member.getUsername();
-        Date expiration = jwtTokenProvider.getTokenExpiration(jwtTokenProvider.getAccessExpirationTime());
-        String base64EncodedSecretKey = jwtTokenProvider.encodeBase64SecretKey(jwtTokenProvider.getSecretKey());
-        return jwtTokenProvider.generateAccessToken(claims, subject, expiration, base64EncodedSecretKey);
+        return jwtTokenProvider.generateAccessToken(claims, subject);
     }
 
     private String delegateRefreshToken(Member member) {
         String subject = member.getUsername();
-        Date expiration = jwtTokenProvider.getTokenExpiration(jwtTokenProvider.getRefreshExpirationTime());
-        String base64EncodedSecretKey = jwtTokenProvider.encodeBase64SecretKey(jwtTokenProvider.getSecretKey());
-        final String refreshToken =  jwtTokenProvider.generateRefreshToken(subject, expiration, base64EncodedSecretKey);
-
+        final String refreshToken =  jwtTokenProvider.generateRefreshToken(subject);
         redisSave(member, refreshToken);
         return refreshToken;
     }

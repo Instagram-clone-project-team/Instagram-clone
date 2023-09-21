@@ -35,4 +35,5 @@ public class UpdateAccountRequest {
     @Pattern(regexp = "^MALE|FEMALE|PRIVATE$", message = "올바르지 않는 성별입니다")
     @NotBlank(message = "성별을 입력해주세요")
     private String gender;
+
 }

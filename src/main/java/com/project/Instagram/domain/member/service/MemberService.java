@@ -1,5 +1,4 @@
 package com.project.Instagram.domain.member.service;
-
 import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
@@ -53,7 +52,6 @@ public class MemberService {
                 .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
 
-        member.setEncryptedPassword(bCryptPasswordEncoder.encode(member.getPassword()));
         if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){//요청 비밀번호 현재 비밀번호 매치 확인
             throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
         }

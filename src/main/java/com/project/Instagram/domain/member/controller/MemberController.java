@@ -2,6 +2,8 @@ package com.project.Instagram.domain.member.controller;
 
 import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.service.MemberService;
+import com.project.Instagram.global.error.BusinessException;
+import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.response.ResultResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +46,18 @@ public class MemberController {
         return ResponseEntity.ok(ResultResponse.of(UPDATE_PASSWORD_SUCCESS));
     }
 
+    @PostMapping("/password/reset/email")
+    public ResponseEntity<Object> sendPasswordCodeByEmail(@Valid @RequestBody SendPasswordEmailRequest sendPasswordEmailRequest){
+        memberService.sendPasswordCodeEmail(sendPasswordEmailRequest);
+
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PatchMapping("/password/reset")
+    public ResponseEntity<ResultResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest){
+        memberService.resetPasswordByEmailCode(resetPasswordRequest);
+        return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
+    }
 
     @PostMapping(value = "/logout")
     public ResponseEntity<ResultResponse> logout() {

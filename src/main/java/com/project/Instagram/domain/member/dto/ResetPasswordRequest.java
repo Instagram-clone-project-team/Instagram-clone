@@ -24,4 +24,5 @@ public class ResetPasswordRequest {
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "비밀번호는 8자 이상, 알파벳,숫자 하나이상 들어가야합니다. ")
     @Length(max = 20, message = "비밀번호는 20문자 이하여야 합니다.")
     private String newPassword;
+
 }
