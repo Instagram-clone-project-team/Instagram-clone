@@ -74,7 +74,7 @@ public class MemberController {
     }
 
     @GetMapping("member")
-    public ResponseEntity<ResultResponse> inquiry(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
+    public ResponseEntity<ResultResponse> lookup(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                           @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
         PageListResponse<Profile> response = memberService.getProfilePageList(page - 1, size);
         return ResponseEntity.ok(ResultResponse.of(LOOK_UP_MEMBER_LIST_SUCCESS, response));
