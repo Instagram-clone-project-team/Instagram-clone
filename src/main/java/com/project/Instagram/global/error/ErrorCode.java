@@ -17,7 +17,8 @@ public enum ErrorCode {
     EMAIL_SEND_FAIL(500, "이메일 전송 중 오류가 발생했습니다."),
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다."),
     MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST(500, "해당 memberId의 refresh token 이 존재하지 않습니다."),
-    LOGIN_INFORMATION_ERROR(500, "현재 사용자의 ID를 가져오는 중 문제가 발생했습니다.");
+    LOGIN_INFORMATION_ERROR(500, "현재 사용자의 ID를 가져오는 중 문제가 발생했습니다."),
+    REFRESH_NOT_ENTERED(400, "리프레시 토큰이 입력되지 않았습니다");
 
 
 

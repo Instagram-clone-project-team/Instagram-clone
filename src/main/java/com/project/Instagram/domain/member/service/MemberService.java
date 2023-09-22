@@ -2,29 +2,39 @@ package com.project.Instagram.domain.member.service;
 import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.member.entity.MemberRole;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.asm.Advice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.*;
 import javax.persistence.EntityNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MemberService {
 
@@ -34,6 +44,7 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
     private final String DELETE_MEMBER_USERNAME="--delete--";
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
@@ -177,4 +188,30 @@ public class MemberService {
         member.setDeletedAt(LocalDateTime.now()); //FIXME 로컬 타임으로 나중에 바꿔야 한다.
     }
 
+    public Map<String, String> reissueAccessToken(String access, String refresh){
+        if(refresh.isEmpty()){
+            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+        }
+        Member member=securityUtil.getLoginMember();
+
+        jwtTokenProvider.verifySignature(refresh);
+        String jws = access.replace("Bearer ", "");
+        Map<String, Object> claims= jwtTokenProvider.getClaims(jws).getBody();
+        log.info("test luee3 {}", claims.get("username"));
+        String newAccessToken=jwtTokenProvider.generateAccessToken(claims, member.getEmail());
+        String newRefreshToken=jwtTokenProvider.generateRefreshToken(member.getEmail());
+
+        refreshTokenService.deleteRefreshTokenByValue(member.getId());
+        refreshTokenService.saveRefreshTokenByValue(member.getId(), newRefreshToken);
+
+        List<GrantedAuthority> authorities=new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(member.getRole().toString()));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getUsername(), null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Map<String, String> response=new HashMap<>();
+        response.put("access", newAccessToken);
+        response.put("refresh", newRefreshToken);
+        return response;
+    }
 }

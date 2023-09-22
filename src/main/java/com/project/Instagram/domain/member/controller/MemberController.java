@@ -11,8 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+
+import java.util.Map;
 
 import static com.project.Instagram.global.response.ResultCode.*;
 
@@ -78,6 +81,16 @@ public class MemberController {
                                                           @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
         PageListResponse<Profile> response = memberService.getProfilePageList(page - 1, size);
         return ResponseEntity.ok(ResultResponse.of(LOOK_UP_MEMBER_LIST_SUCCESS, response));
+    }
+
+    @PostMapping("/token/reissue")
+    public ResponseEntity<ResultResponse> reissueRefreshToken(HttpServletResponse response,
+            @RequestHeader(value="refresh", defaultValue = "") String refresh,
+            @RequestHeader(value="Authorization", defaultValue = "") String access){
+        Map<String, String> result=memberService.reissueAccessToken(access, refresh);
+        response.setHeader("Authorization", "Bearer " +result.get("access"));
+        response.setHeader("Refresh", result.get("refresh"));
+        return ResponseEntity.ok(ResultResponse.of(REISSUE_JWT_SUCCESS));
     }
 
 }
