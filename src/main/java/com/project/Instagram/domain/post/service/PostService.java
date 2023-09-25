@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.post.service;
 
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.post.dto.editPostRequest;
 import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.global.error.BusinessException;
@@ -22,6 +23,15 @@ public class PostService {
     // 조회
 
     // 수정
+    @Transactional
+    public void editPost(editPostRequest editPostRequest, Long postId) {
+        final Member loginMember = securityUtil.getLoginMember();
+        final Post post = getPostWithMember(postId);
+
+        if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
+
+        if(editPostRequest.getContent() != null) post.setContent(editPostRequest.getContent());
+    }
 
     //삭제
     @Transactional

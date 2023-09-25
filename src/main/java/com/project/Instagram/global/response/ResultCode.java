@@ -18,7 +18,8 @@ public enum ResultCode {
     LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다."),
 
     //Post
-    DELETE_POST_SUCCESS(200, "게시물 삭제에 성공하였습니다.");
+    DELETE_POST_SUCCESS(200, "게시물 삭제에 성공하였습니다."),
+    UPDATE_POST_SUCCESS(200, "게시물 수정이 완료되었습니다.");
 
 
 
