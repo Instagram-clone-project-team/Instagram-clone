@@ -19,7 +19,6 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
-@Service
 public class S3Uploader {
 
     private final AmazonS3Client amazonS3Client;
