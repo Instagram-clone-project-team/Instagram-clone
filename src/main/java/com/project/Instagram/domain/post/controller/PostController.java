@@ -1,6 +1,6 @@
 package com.project.Instagram.domain.post.controller;
 
-import com.project.Instagram.domain.post.dto.editPostRequest;
+import com.project.Instagram.domain.post.dto.EditPostRequest;
 import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.response.ResultCode;
 import com.project.Instagram.global.response.ResultResponse;
@@ -23,7 +23,7 @@ public class PostController {
 
     // 수정
     @PatchMapping("/update/content/{post_id}")
-    public ResponseEntity<ResultResponse> editPost(@RequestBody @Valid editPostRequest updatePostRequest, @PathVariable("post_id") Long postId) {
+    public ResponseEntity<ResultResponse> editPost(@RequestBody @Valid EditPostRequest updatePostRequest, @PathVariable("post_id") Long postId) {
         postService.editPost(updatePostRequest, postId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.UPDATE_POST_SUCCESS));
     }
