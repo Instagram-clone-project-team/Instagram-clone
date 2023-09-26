@@ -1,8 +1,8 @@
 package com.project.Instagram.global.jwt;
 
+import com.project.Instagram.domain.member.entity.MemberRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -14,30 +14,21 @@ public class CustomAuthorityUtils {
     @Value("${mail.address.admin}")
     private String adminMailAddress;
 
-    private final List<GrantedAuthority> ADMIN_ROLES = AuthorityUtils.createAuthorityList("ROLE_ADMIN", "ROLE_USER");
-    private final List<GrantedAuthority> USER_ROLES = AuthorityUtils.createAuthorityList("ROLE_USER");
-    private final List<String> ADMIN_ROLES_STRING = List.of("ADMIN", "USER");
-    private final List<String> USER_ROLES_STRING = List.of("USER");
+    private final List<MemberRole> ADMIN_ROLES = List.of(MemberRole.ROLE_ADMIN, MemberRole.ROLE_USER);
+    private final List<MemberRole> USER_ROLES = List.of(MemberRole.ROLE_USER);
 
-    public List<GrantedAuthority> createAuthorities(String email) {
-        if (email.equals(adminMailAddress)) {
-            return ADMIN_ROLES;
-        }
-        return USER_ROLES;
-    }
-
-    public List<GrantedAuthority> createAuthorities(List<String> roles) {
+    public List<GrantedAuthority> createAuthorities(List<MemberRole> roles) {
         List<GrantedAuthority> authorities = roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .map(role -> new SimpleGrantedAuthority(role.toString()))
                 .collect(Collectors.toList());
         return authorities;
     }
 
-    public List<String> createRole(String email) {
+    public List<MemberRole> createRole(String email) {
         if (email.equals(adminMailAddress)) {
-            return ADMIN_ROLES_STRING;
+            return ADMIN_ROLES;
         }
-        return USER_ROLES_STRING;
+        return USER_ROLES;
     }
 
 }

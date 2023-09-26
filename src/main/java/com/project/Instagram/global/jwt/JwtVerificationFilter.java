@@ -1,5 +1,6 @@
 package com.project.Instagram.global.jwt;
 
+import com.project.Instagram.domain.member.entity.MemberRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,8 +41,8 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private void setAuthenticationToContext(Map<String, Object> claims) {
         String username = (String) claims.get("username");
-        List<String> list = new ArrayList<>();
-        list.add(claims.get("roles").toString());
+        List<MemberRole> list = new ArrayList<>();
+        list.add(MemberRole.valueOf(claims.get("roles").toString()));
         List<GrantedAuthority> authorities = customAuthorityUtils.createAuthorities(list);
         Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
