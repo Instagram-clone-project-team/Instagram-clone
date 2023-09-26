@@ -35,15 +35,7 @@ public class PostService {
         return postResponsePage;
     }
 
-    private static PageListResponse<PostResponse> getPostResponseListToPostResponsePage(Page<Post> postPage) {
-        List<Post> posts = postPage.getContent();
-        List<PostResponse> postResponses =  new ArrayList<>();
-        for(Post post : posts){
-            postResponses.add(new PostResponse(post.getMember().getUsername(),post.getContent()));
-        }
-        PageListResponse<PostResponse> postResponsePage = new PageListResponse<>(postResponses, postPage);
-        return postResponsePage;
-    }
+
 
     public PostResponse getPostResponse(Long postId) {
         securityUtil.checkLoginMember();
@@ -69,6 +61,15 @@ public class PostService {
         return response;
     }
 
+    private  PageListResponse<PostResponse> getPostResponseListToPostResponsePage(Page<Post> postPage) {
+        List<Post> posts = postPage.getContent();
+        List<PostResponse> postResponses =  new ArrayList<>();
+        for(Post post : posts){
+            postResponses.add(new PostResponse(post.getMember().getUsername(),post.getContent()));
+        }
+        PageListResponse<PostResponse> postResponsePage = new PageListResponse<>(postResponses, postPage);
+        return postResponsePage;
+    }
 
 
     // 수정

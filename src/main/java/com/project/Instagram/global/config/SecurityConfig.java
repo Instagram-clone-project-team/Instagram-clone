@@ -59,7 +59,7 @@ public class SecurityConfig {
                 .exceptionHandling()
                 .and()
                 .authorizeRequests(authorize -> authorize
-                        .anyRequest().permitAll());
+                        .anyRequest().permitAll());//Role_User 권한 있는거만 해보자
 
         return http.build();
     }
