@@ -6,7 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -14,21 +14,16 @@ public class CustomAuthorityUtils {
     @Value("${mail.address.admin}")
     private String adminMailAddress;
 
-    private final List<MemberRole> ADMIN_ROLES = List.of(MemberRole.ROLE_ADMIN, MemberRole.ROLE_USER);
-    private final List<MemberRole> USER_ROLES = List.of(MemberRole.ROLE_USER);
-
-    public List<GrantedAuthority> createAuthorities(List<MemberRole> roles) {
-        List<GrantedAuthority> authorities = roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.toString()))
+    public List<GrantedAuthority> createAuthorities(Set<MemberRole> roles) {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
                 .collect(Collectors.toList());
-        return authorities;
     }
 
-    public List<MemberRole> createRole(String email) {
+    public Set<MemberRole> createRole(String email) {
         if (email.equals(adminMailAddress)) {
-            return ADMIN_ROLES;
+            return new HashSet<>(Arrays.asList(MemberRole.ADMIN, MemberRole.USER));
         }
-        return USER_ROLES;
+        return Collections.singleton(MemberRole.USER);
     }
-
 }

@@ -1,6 +1,8 @@
 package com.project.Instagram.global.jwt;
 
 import com.project.Instagram.domain.member.entity.MemberRole;
+import com.project.Instagram.global.error.BusinessException;
+import com.project.Instagram.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,21 +14,23 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.springframework.security.core.GrantedAuthority;
 
 @RequiredArgsConstructor
 public class JwtVerificationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomAuthorityUtils customAuthorityUtils;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Map<String, Object> claims = verifyJws(request);
         setAuthenticationToContext(claims);
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String authorization = request.getHeader("Authorization");
@@ -41,10 +45,22 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private void setAuthenticationToContext(Map<String, Object> claims) {
         String username = (String) claims.get("username");
-        List<MemberRole> list = new ArrayList<>();
-        list.add(MemberRole.valueOf(claims.get("roles").toString()));
-        List<GrantedAuthority> authorities = customAuthorityUtils.createAuthorities(list);
+        List<String> roleStrings = (List<String>) claims.get("roles");
+
+        Set<MemberRole> roles = roleStrings.stream()
+                .map(roleString -> {
+                    try {
+                        return MemberRole.valueOf(roleString);
+                    } catch (BusinessException e) {
+                        throw new BusinessException(ErrorCode.INVALID_ROLE);
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        List<GrantedAuthority> authorities = customAuthorityUtils.createAuthorities(roles);
         Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }
+

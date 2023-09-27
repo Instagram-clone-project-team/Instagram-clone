@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -77,7 +78,7 @@ public class MemberService {
     }
 
     private void createNewMember(SignUpRequest signUpRequest) {
-        List<MemberRole> roles = customAuthorityUtils.createRole(signUpRequest.getEmail());
+        Set<MemberRole> roles = customAuthorityUtils.createRole(signUpRequest.getEmail());
         Member newMember = convertRegisterRequestToMember(signUpRequest, roles);
         String encryptedPassword = bCryptPasswordEncoder.encode(newMember.getPassword());
         newMember.setEncryptedPassword(encryptedPassword);
@@ -98,7 +99,7 @@ public class MemberService {
         emailAuthService.sendSignUpCode(email);
     }
 
-    private Member convertRegisterRequestToMember(SignUpRequest signUpRequest, List<MemberRole> roles) {
+    private Member convertRegisterRequestToMember(SignUpRequest signUpRequest, Set<MemberRole> roles) {
         return Member.builder()
                 .username(signUpRequest.getUsername())
                 .name(signUpRequest.getName())
