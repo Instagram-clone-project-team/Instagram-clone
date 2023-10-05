@@ -5,6 +5,7 @@ import com.project.Instagram.global.response.ResultResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,5 +28,11 @@ public class FollowController {
         } else {
             return ResponseEntity.ok(ResultResponse.of(FOLLOW_FAIL, followResponse));
         }
+    }
+
+    @DeleteMapping("/follow/{followMemberUsername}")
+    public ResponseEntity<ResultResponse> unfollow(@PathVariable ("followMemberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String followMemberUsername) {
+        final boolean followResponse = followServcice.unfollow(followMemberUsername);
+        return ResponseEntity.ok(ResultResponse.of(UNFOLLOW_SUCCESS, followResponse));
     }
 }

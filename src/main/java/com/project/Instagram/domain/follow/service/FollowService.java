@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class FollowService {
@@ -29,6 +31,21 @@ public class FollowService {
 
         final Follow follow = new Follow(member, followMember);
         followRepository.save(follow);
+        return true;
+    }
+
+    @Transactional
+    public boolean unfollow(String followMemberUsername) {
+        final Long memberId = securityUtil.getLoginMember().getId();
+        final Member followMember = memberRepository.findByUsername(followMemberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (memberId.equals(followMember.getId())) throw  new BusinessException(ErrorCode.UNFOLLOW_MYSELF_FAIL);
+
+        final Follow follow = followRepository.findByMemberIdAndFollowMemberId(memberId, followMember.getId()).orElseThrow(() -> new BusinessException(ErrorCode.UNFOLLOW_FAIL));
+        if (follow.getDeletedAt() != null) throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
+        follow.setDeletedAt(LocalDateTime.now());
+//        삭제 로직 회의
+//        followRepository.delete(follow);
         return true;
     }
 }
