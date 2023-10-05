@@ -15,12 +15,12 @@ public enum ResultCode {
     UPDATE_ACCOUNT_SUCCESS(200,"계정 정보 변경이 완료되었습니다."),
     SEND_EMAIL_SUCCESS(200,  "인증코드 이메일을 전송하였습니다."),
     EMAIL_VERIFICATION_FAIL(400, "이메일 인증에 실패했습니다."),
-    LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다.");
+    LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다."),
 
 
 
     //Post
-
+    POST_CREATE_SUCCESS(200, "게시글 생성에 성공하였습니다.");
 
 
 
