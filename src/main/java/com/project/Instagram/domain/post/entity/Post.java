@@ -24,4 +24,10 @@ public class Post extends BaseTimeEntity {
     @Lob
     @Column(name = "post_content")
     private String content;
+
+
+    public Post(Member member, String content) {
+        this.member = member;
+        this.content = content;
+    }
 }
