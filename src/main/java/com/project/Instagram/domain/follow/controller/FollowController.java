@@ -1,27 +1,27 @@
 package com.project.Instagram.domain.follow.controller;
 
+import com.project.Instagram.domain.follow.dto.FollowerDto;
 import com.project.Instagram.domain.follow.service.FollowService;
+import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.response.ResultResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 
 import static com.project.Instagram.global.response.ResultCode.*;
 
 @RestController
 @RequiredArgsConstructor
 public class FollowController {
-    private final FollowService followServcice;
+    private final FollowService followService;
 
     @PostMapping("/follow/{followMemberUsername}")
     public ResponseEntity<ResultResponse> follow(@PathVariable("followMemberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String followMemberUsername) {
-        final boolean followResponse = followServcice.follow(followMemberUsername);
+        final boolean followResponse = followService.follow(followMemberUsername);
 
         if (followResponse) {
             return ResponseEntity.ok(ResultResponse.of(FOLLOW_SUCCESS, followResponse));
@@ -32,7 +32,16 @@ public class FollowController {
 
     @DeleteMapping("/follow/{followMemberUsername}")
     public ResponseEntity<ResultResponse> unfollow(@PathVariable ("followMemberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String followMemberUsername) {
-        final boolean followResponse = followServcice.unfollow(followMemberUsername);
+        final boolean followResponse = followService.unfollow(followMemberUsername);
         return ResponseEntity.ok(ResultResponse.of(UNFOLLOW_SUCCESS, followResponse));
+    }
+
+    @GetMapping("/follow/{memberUsername}")
+    public ResponseEntity<ResultResponse> getFollowings(
+            @Positive @RequestParam(value = "page", defaultValue = "1") int page,
+            @Positive @RequestParam(value = "size", defaultValue = "5") int size,
+            @PathVariable("memberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String memberUsername) {
+        final PageListResponse<FollowerDto> followingResponse = followService.getFollowings(memberUsername, page - 1, size);
+        return ResponseEntity.ok(ResultResponse.of(FOLLOWINGS_LIST_SUCCESS, followingResponse));
     }
 }

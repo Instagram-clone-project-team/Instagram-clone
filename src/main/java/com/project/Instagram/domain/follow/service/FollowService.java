@@ -1,13 +1,17 @@
 package com.project.Instagram.domain.follow.service;
 
+import com.project.Instagram.domain.follow.dto.FollowerDto;
 import com.project.Instagram.domain.follow.entity.Follow;
 import com.project.Instagram.domain.follow.repository.FollowRepository;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,10 +46,21 @@ public class FollowService {
         if (memberId.equals(followMember.getId())) throw  new BusinessException(ErrorCode.UNFOLLOW_MYSELF_FAIL);
 
         final Follow follow = followRepository.findByMemberIdAndFollowMemberId(memberId, followMember.getId()).orElseThrow(() -> new BusinessException(ErrorCode.UNFOLLOW_FAIL));
+
         if (follow.getDeletedAt() != null) throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
         follow.setDeletedAt(LocalDateTime.now());
 //        삭제 로직 회의
 //        followRepository.delete(follow);
         return true;
     }
+
+    @Transactional(readOnly = true)
+    public PageListResponse<FollowerDto> getFollowings(String memberUsername, int page, int size) {
+        final Long memberId = securityUtil.getLoginMember().getId();
+        final Member member = memberRepository.findByUsername(memberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Page<FollowerDto> pages = followRepository.findFollowings(memberId, member.getId(), PageRequest.of(page, size));
+        return new PageListResponse<>(pages.getContent(), pages);
+    }
+
 }

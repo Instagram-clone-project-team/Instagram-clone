@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.member.entity;
 
+import com.querydsl.core.annotations.QueryProjection;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,5 +14,11 @@ public class Profile {
 
     public static Profile convertFromMember(Member member){
         return new Profile(member.getUsername(), member.getIntroduce());
+    }
+
+    @QueryProjection
+    public Profile(Member member) {
+        this.username = member.getUsername();
+        this.introduce = member.getIntroduce();
     }
 }

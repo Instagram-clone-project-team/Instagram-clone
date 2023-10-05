@@ -19,7 +19,8 @@ public enum ResultCode {
     LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다."),
     FOLLOW_FAIL(400, "팔로우에 실패했습니다."),
     FOLLOW_SUCCESS(200, "팔로우에 성공했습니다."),
-    UNFOLLOW_SUCCESS(200, "언팔로우에 성공했습니다.");
+    UNFOLLOW_SUCCESS(200, "언팔로우에 성공했습니다."),
+    FOLLOWINGS_LIST_SUCCESS(200, "팔로잉 목록 조회가 성공했습니다.");
 
 
 
