@@ -2,33 +2,34 @@ package com.project.Instagram.domain.post.entity;
 
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.global.entity.BaseTimeEntity;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Entity
+@Table(name = "post_like")
 @NoArgsConstructor
-@Table(name = "posts")
-public class Post extends BaseTimeEntity {
+public class PostLike extends BaseTimeEntity {
+
     @Id
-    @Column(name = "post_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "post_like_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Lob
-    @Column(name = "post_content")
-    private String content;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
 
-    @OneToMany(mappedBy = "post")
-    private List<PostLike> postLikes = new ArrayList<>();
-
-
+    @Builder
+    public PostLike(Member member, Post post) {
+        this.member = member;
+        this.post = post;
+    }
 }
