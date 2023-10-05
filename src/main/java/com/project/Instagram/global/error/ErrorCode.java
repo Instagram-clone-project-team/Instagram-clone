@@ -18,8 +18,9 @@ public enum ErrorCode {
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다."),
     MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST(500, "해당 memberId의 refresh token 이 존재하지 않습니다."),
     LOGIN_INFORMATION_ERROR(500, "현재 사용자의 ID를 가져오는 중 문제가 발생했습니다."),
-    INVALID_ROLE(500,"MemberRole의 role을 가져오는데 실패했습니다.");
-
+    INVALID_ROLE(500,"MemberRole의 role을 가져오는데 실패했습니다."),
+    FOLLOW_MYSELF_FAIL(400, "자기 자신은 팔로우할 수 없습니다."),
+    FOLLOW_ALREADY_EXIST(400,"이미 팔로우 한 유저입니다.");
 
 
 

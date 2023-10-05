@@ -16,12 +16,13 @@ public enum ResultCode {
     SEND_EMAIL_SUCCESS(200,  "인증코드 이메일을 전송하였습니다."),
     EMAIL_VERIFICATION_FAIL(400, "이메일 인증에 실패했습니다."),
     LOOK_UP_MEMBER_LIST_SUCCESS(200, "계정 목록 조회가 완료되었습니다."),
-    LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다.");
+    LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다."),
+    FOLLOW_FAIL(400, "팔로우에 실패했습니다."),
+    FOLLOW_SUCCESS(200, "팔로우에 성공했습니다.");
 
 
 
     //Post
-
 
 
 
