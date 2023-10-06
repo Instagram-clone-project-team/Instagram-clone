@@ -20,6 +20,12 @@ public enum ErrorCode {
     LOGIN_INFORMATION_ERROR(500, "현재 사용자의 ID를 가져오는 중 문제가 발생했습니다."),
     POST_NOT_FOUND(400,"해당 게시물은 존재하지 않습니다."),
     MEMBER_NOT_LOGIN(400,"로그인 상태가 아닙니다.");
+    REFRESH_NOT_ENTERED(400, "리프레시 토큰이 입력되지 않았습니다"),
+    POST_DELETE_FAILED(400, "게시판은 게시자만 삭제할 수 있습니다."),
+    POST_EDIT_FAILED(400, "게시판 수정은 게시자만 삭제할 수 있습니다."),
+    POST_NOT_FOUND(400, "해당 아이디의 게시물이 존재하지 않습니다."),
+    POST_ALREADY_DELETED(400, "이미 삭제된 게시물입니다.");
+    INVALID_ROLE(500,"MemberRole의 role을 가져오는데 실패했습니다.");
 
 
     private final int status;
