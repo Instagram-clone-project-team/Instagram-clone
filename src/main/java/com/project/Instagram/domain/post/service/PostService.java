@@ -17,10 +17,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import java.io.IOException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +33,8 @@ public class PostService {
 
 
     private final S3Uploader s3Uploader;
-    private final PostRepository postRepository;
-    private final SecurityUtil securityUtil;
     private static final String DIR_NAME = "story";
-    
-    // 등록
+
     public void create(PostCreateRequest postCreateRequest) throws IOException {
         Member member = securityUtil.getLoginMember();
         String str = s3Uploader.upload(postCreateRequest.getImage(), DIR_NAME);
@@ -48,7 +45,6 @@ public class PostService {
                 .build();
         postRepository.save(newPost);
     }
-    // 조회
     public PageListResponse<PostResponse> getPostPageList(int page, int size) {
         securityUtil.checkLoginMember();
         final Pageable pageable = PageRequest.of(page,size);
@@ -56,8 +52,6 @@ public class PostService {
         PageListResponse<PostResponse> postResponsePage = getPostResponseListToPostResponsePage(postPage);
         return postResponsePage;
     }
-
-
 
     public PostResponse getPostResponse(Long postId) {
         securityUtil.checkLoginMember();
@@ -67,7 +61,6 @@ public class PostService {
 
         return postResponse;
     }
-
 
     public PageListResponse<PostResponse> getUserPostPage(Long memberId,int page,int size) {
         final Pageable pageable = PageRequest.of(page,size);
@@ -93,8 +86,6 @@ public class PostService {
         return postResponsePage;
     }
 
-
-    // 수정
     @Transactional
     public void editPost(EditPostRequest editPostRequest, Long postId) {
         final Member loginMember = securityUtil.getLoginMember();
@@ -105,17 +96,15 @@ public class PostService {
         if(editPostRequest.getContent() != null) post.setContent(editPostRequest.getContent());
     }
 
-    //삭제
     @Transactional
     public void delete(Long postId) {
         final Member loginMember = securityUtil.getLoginMember();
         final Post post = getPostWithMember(postId);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_DELETE_FAILED);
-        // deleted로 구분할 건지, 아니면 그냥 삭제할건지 토론
-//        if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
-//        post.setDeletedAt(LocalDateTime.now());
-        postRepository.delete(post);
+
+        if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
+        post.setDeletedAt(LocalDateTime.now());
     }
 
     private Post getPostWithMember(Long postId) {

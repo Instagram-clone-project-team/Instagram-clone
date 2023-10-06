@@ -25,51 +25,47 @@ import javax.validation.Valid;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/posts")
+@RequestMapping("/post")
 public class PostController {
 
     private final PostService postService;
 
-    // 등록
-    @PostMapping("/post/create")
+    @PostMapping
     public ResponseEntity<ResultResponse> createPost(@ModelAttribute PostCreateRequest postCreateRequest) throws IOException {
         postService.create(postCreateRequest);
         return ResponseEntity.ok(ResultResponse.of(POST_CREATE_SUCCESS));
     }
 
-    // 조회
-    @GetMapping("/post/allpost")
+    @GetMapping("/allpost")
     public ResponseEntity<ResultResponse> getAllPostPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                  @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
         PageListResponse<PostResponse> response = postService.getPostPageList(page - 1, size);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.GET_POST_PAGE_SUCCESS,response));
     }
-    @GetMapping("/post/{postId}")
+    @GetMapping("/{postId}")
     public ResponseEntity<ResultResponse> getPost(@PathVariable("postId") Long postId){
         final PostResponse postResponse =postService.getPostResponse(postId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.GET_POST_SUCCESS,postResponse));
     }
-    @GetMapping("/post/page/{memberId}")
+    @GetMapping("/page/{memberId}")
     public ResponseEntity<ResultResponse> userGetAllPostPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                           @Positive @RequestParam(value = "size", defaultValue = "5") int size,
                                                           @PathVariable("memberId") Long memberId){
         PageListResponse<PostResponse> response = postService.getUserPostPage(memberId,page-1,size);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.GET_POST_USER_PAGE_SUCCESS,response));
     }
-    @GetMapping("/post/myposts")
+    @GetMapping("/myposts")
     public ResponseEntity<ResultResponse> getMyPostPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                           @Positive @RequestParam(value = "size", defaultValue = "5") int size){
         PageListResponse<PostResponse> response = postService.getMyPostPage(page-1,size);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.GET_POST_USER_PAGE_SUCCESS,response));
     }
-    // 수정
+
     @PatchMapping("/update/content/{post_id}")
     public ResponseEntity<ResultResponse> editPost(@RequestBody @Valid EditPostRequest updatePostRequest, @PathVariable("post_id") Long postId) {
         postService.editPost(updatePostRequest, postId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.UPDATE_POST_SUCCESS));
     }
-
-    // 삭제
     @DeleteMapping("/delete/{post_id}")
     public ResponseEntity<ResultResponse> deletePost(@PathVariable("post_id") Long postId) {
         postService.delete(postId);

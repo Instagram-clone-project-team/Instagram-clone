@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ResultCode {
 
-    //Member
+    //멤버
     UPDATE_PASSWORD_SUCCESS(200,"비밀번호 변경이 완료되었습니다."),
     SIGNUP_SUCCESS(200, "회원가입에 성공하였습니다."),
     DELETE_SUCCESS(200,"회원 탈퇴 완료되었습니다."),
@@ -17,14 +17,13 @@ public enum ResultCode {
     EMAIL_VERIFICATION_FAIL(400, "이메일 인증에 실패했습니다."),
     LOOK_UP_MEMBER_LIST_SUCCESS(200, "계정 목록 조회가 완료되었습니다."),
     LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다."),
+    REISSUE_JWT_SUCCESS(200, "토큰 재발급이 완료되었습니다"),
 
-    //Post
+    //게시글
     GET_POST_PAGE_SUCCESS(200,"게시물 목록 조회가 완료되었습니다."),
     GET_POST_SUCCESS(200,"게시물 상세 조회가 완료되었습니다."),
-    GET_POST_USER_PAGE_SUCCESS(200,"해당 유저 게시물 목록 조회가 완료되었습니다.");
-    REISSUE_JWT_SUCCESS(200, "토큰 재발급이 완료되었습니다");
-    POST_CREATE_SUCCESS(200, "게시글 생성에 성공하였습니다.");
-    LOOK_UP_MEMBER_LIST_SUCCESS(200, "계정 목록 조회가 완료되었습니다."),
+    GET_POST_USER_PAGE_SUCCESS(200,"해당 유저 게시물 목록 조회가 완료되었습니다."),
+    POST_CREATE_SUCCESS(200, "게시글 생성에 성공하였습니다."),
     DELETE_POST_SUCCESS(200, "게시물 삭제에 성공하였습니다."),
     UPDATE_POST_SUCCESS(200, "게시물 수정이 완료되었습니다.");
 

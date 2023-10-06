@@ -1,4 +1,5 @@
 package com.project.Instagram.domain.member.service;
+
 import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
@@ -11,11 +12,7 @@ import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.Advice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,7 +34,6 @@ import java.util.stream.Collectors;
 
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class MemberService {
 
@@ -74,12 +70,9 @@ public class MemberService {
 
     @Transactional
     public void updatePassword(UpdatePasswordRequest updatePasswordRequest){
-//        //로그인 로직(추후 로그인 구현후 쓰임)
-        Member member = memberRepository.findByUsername(updatePasswordRequest.getUsername())
-                .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = securityUtil.getLoginMember();
 
-
-        if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){//요청 비밀번호 현재 비밀번호 매치 확인
+        if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){
             throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
         }
         if(updatePasswordRequest.getNewPassword().equals(updatePasswordRequest.getOldPassword())){
@@ -124,9 +117,7 @@ public class MemberService {
 
     @Transactional
     public void updateAccount(UpdateAccountRequest updateAccountRequest) {
-        //        //로그인 로직(추후 로그인 구현후 쓰임)
-        Member member = memberRepository.findByUsername(updateAccountRequest.getUsername())
-                .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = securityUtil.getLoginMember();
 
         if(memberRepository.existsByUsername(updateAccountRequest.getUsername())
                 && !member.getUsername().equals(updateAccountRequest.getUsername())){
@@ -191,7 +182,7 @@ public class MemberService {
     public void deleteMember(long memberId){
         Member member=securityUtil.getLoginMember();
         member.updateUsername(DELETE_MEMBER_USERNAME);
-        member.setDeletedAt(LocalDateTime.now()); //FIXME 로컬 타임으로 나중에 바꿔야 한다.
+        member.setDeletedAt(LocalDateTime.now());
     }
 
     public Map<String, String> reissueAccessToken(String access, String refresh){
@@ -203,7 +194,6 @@ public class MemberService {
         jwtTokenProvider.verifySignature(refresh);
         String jws = access.replace("Bearer ", "");
         Map<String, Object> claims= jwtTokenProvider.getClaims(jws).getBody();
-        log.info("test luee3 {}", claims.get("username"));
         String newAccessToken=jwtTokenProvider.generateAccessToken(claims, member.getEmail());
         String newRefreshToken=jwtTokenProvider.generateRefreshToken(member.getEmail());
 

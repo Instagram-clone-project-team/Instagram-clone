@@ -22,12 +22,11 @@ import static com.project.Instagram.global.response.ResultCode.*;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
 public class MemberController {
 
     private final MemberService memberService;
 
-    @PostMapping(value = "accounts/sign-up")
+    @PostMapping(value = "/accounts/sign-up")
     public ResponseEntity<Object> signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
         final boolean membership = memberService.signUp(signUpRequest);
         if (membership) {
@@ -37,12 +36,16 @@ public class MemberController {
         }
     }
 
-    @PostMapping("accounts/email")
+    @PostMapping("/accounts/email")
     public ResponseEntity<Object> sendAuthCodeByEmail(@Valid @RequestBody SendAuthEmailRequest sendAuthEmailRequest) {
         memberService.sendAuthEmail(sendAuthEmailRequest.getEmail());
         return ResponseEntity.ok(ResultResponse.of(SEND_EMAIL_SUCCESS));
     }
-
+    @PatchMapping("/account/update")
+    public ResponseEntity<ResultResponse> updateAccount(@Valid @RequestBody UpdateAccountRequest updateAccountRequest){
+        memberService.updateAccount(updateAccountRequest);
+        return ResponseEntity.ok(ResultResponse.of(UPDATE_ACCOUNT_SUCCESS));
+    }
     @PatchMapping("/password/patch")
     public ResponseEntity<ResultResponse> updatePassword(
             @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest){
@@ -70,14 +73,14 @@ public class MemberController {
         return ResponseEntity.ok(ResultResponse.of(LOGOUT_SUCCESS));
     }
 
-    @DeleteMapping("member/{id}")
+    @DeleteMapping("/member/{id}")
     public ResponseEntity<ResultResponse> delete(@PathVariable long id) {
         memberService.deleteMember(id);
         return ResponseEntity.ok(ResultResponse.of(DELETE_SUCCESS));
     }
 
-    @GetMapping("member")
-    public ResponseEntity<ResultResponse> lookup(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
+    @GetMapping("/member")
+    public ResponseEntity<ResultResponse> getProfilesPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                           @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
         PageListResponse<Profile> response = memberService.getProfilePageList(page - 1, size);
         return ResponseEntity.ok(ResultResponse.of(LOOK_UP_MEMBER_LIST_SUCCESS, response));

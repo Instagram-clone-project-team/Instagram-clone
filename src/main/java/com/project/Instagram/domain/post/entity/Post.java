@@ -30,13 +30,13 @@ public class Post extends BaseTimeEntity {
     private String content;
 
     @Builder
-    public Post(Member member, String image, String content){
-        this.member=member;
-        this.image=image;
-        this.content=content;
+    public Post(Member member, String image, String content) {
+        this.member = member;
+        this.image = image;
+        this.content = content;
+    }
 
     public void setContent(String content) {
         this.content = content;
-
     }
 }
