@@ -8,6 +8,7 @@ import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
 import io.jsonwebtoken.Claims;
@@ -26,10 +27,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.*;
-import javax.persistence.EntityNotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -38,6 +41,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MemberService {
 
+    private final CustomAuthorityUtils customAuthorityUtils;
     private final SecurityUtil securityUtil;
     private final RefreshTokenService refreshTokenService;
     private final MemberRepository memberRepository;
@@ -87,7 +91,8 @@ public class MemberService {
     }
 
     private void createNewMember(SignUpRequest signUpRequest) {
-        Member newMember = convertRegisterRequestToMember(signUpRequest);
+        Set<MemberRole> roles = customAuthorityUtils.createRole(signUpRequest.getEmail());
+        Member newMember = convertRegisterRequestToMember(signUpRequest, roles);
         String encryptedPassword = bCryptPasswordEncoder.encode(newMember.getPassword());
         newMember.setEncryptedPassword(encryptedPassword);
         memberRepository.save(newMember);
@@ -107,12 +112,13 @@ public class MemberService {
         emailAuthService.sendSignUpCode(email);
     }
 
-    private Member convertRegisterRequestToMember(SignUpRequest signUpRequest) {
+    private Member convertRegisterRequestToMember(SignUpRequest signUpRequest, Set<MemberRole> roles) {
         return Member.builder()
                 .username(signUpRequest.getUsername())
                 .name(signUpRequest.getName())
                 .password(signUpRequest.getPassword())
                 .email(signUpRequest.getEmail())
+                .roles(roles)
                 .build();
     }
 
@@ -205,7 +211,10 @@ public class MemberService {
         refreshTokenService.saveRefreshTokenByValue(member.getId(), newRefreshToken);
 
         List<GrantedAuthority> authorities=new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(member.getRole().toString()));
+        Set<MemberRole> set=member.getRoles();
+        for(MemberRole role:set){
+            authorities.add(new SimpleGrantedAuthority(role.toString()));
+        }
         Authentication authentication = new UsernamePasswordAuthenticationToken(member.getUsername(), null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 

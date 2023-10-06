@@ -5,6 +5,8 @@ import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.*;
+
 
 @Entity
 @Getter
@@ -23,8 +25,10 @@ public class Member extends BaseTimeEntity {
     private String username;
 
     @Column(name = "member_role")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
     @Enumerated(EnumType.STRING)
-    private MemberRole role;
+    private Set<MemberRole> roles = new HashSet<>();
 
     @Column(name = "member_password", nullable = false)
     private String password;
@@ -54,13 +58,13 @@ public class Member extends BaseTimeEntity {
     }
 
     @Builder
-    public Member(String username, String name, String password, String email) {
+    public Member(String username, String name, String password, String email, Set<MemberRole> roles) {
         this.username = username;
         this.name = name;
         this.password = password;
         this.email = email;
-        this.role = MemberRole.ROLE_USER;
         this.gender = Gender.PRIVATE;
+        this.roles = roles;
     }
 
     public void setRestoreMembership(String username, String encryptedPassword, String name) {
@@ -76,4 +80,5 @@ public class Member extends BaseTimeEntity {
     public void updateEmail(String email){this.email = email;}
     public void updatePhone(String phone){this.phone = phone;}
     public void updateGender(Gender gender){this.gender = gender;}
+
 }
