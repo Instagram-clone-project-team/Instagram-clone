@@ -1,8 +1,8 @@
 package com.project.Instagram.domain.post.repository;
 
 import com.project.Instagram.domain.post.entity.Post;
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
