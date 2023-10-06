@@ -34,5 +34,9 @@ public class Post extends BaseTimeEntity {
         this.member=member;
         this.image=image;
         this.content=content;
+
+    public void setContent(String content) {
+        this.content = content;
+
     }
 }

@@ -17,7 +17,12 @@ public enum ErrorCode {
     EMAIL_SEND_FAIL(500, "이메일 전송 중 오류가 발생했습니다."),
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다."),
     MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST(500, "해당 memberId의 refresh token 이 존재하지 않습니다."),
-    LOGIN_INFORMATION_ERROR(500, "현재 사용자의 ID를 가져오는 중 문제가 발생했습니다.");
+    LOGIN_INFORMATION_ERROR(500, "현재 사용자의 ID를 가져오는 중 문제가 발생했습니다."),
+    POST_DELETE_FAILED(400, "게시판은 게시자만 삭제할 수 있습니다."),
+    POST_EDIT_FAILED(400, "게시판 수정은 게시자만 삭제할 수 있습니다."),
+    POST_NOT_FOUND(400, "해당 아이디의 게시물이 존재하지 않습니다."),
+    POST_ALREADY_DELETED(400, "이미 삭제된 게시물입니다.");
+    INVALID_ROLE(500,"MemberRole의 role을 가져오는데 실패했습니다.");
 
 
 

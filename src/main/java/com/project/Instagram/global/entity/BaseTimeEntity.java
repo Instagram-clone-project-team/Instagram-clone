@@ -21,9 +21,4 @@ public class BaseTimeEntity {
     private LocalDateTime modifiedAt;
     @Setter
     private LocalDateTime deletedAt;
-
-    @PreRemove
-    private void preRemove() {
-        deletedAt = LocalDateTime.now();
-    }
 }

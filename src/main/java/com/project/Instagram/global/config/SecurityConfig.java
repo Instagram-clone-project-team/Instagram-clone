@@ -5,7 +5,6 @@ import com.project.Instagram.global.jwt.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -59,8 +58,12 @@ public class SecurityConfig {
                 .exceptionHandling()
                 .and()
                 .authorizeRequests(authorize -> authorize
-                        .anyRequest().permitAll());
-
+                        .antMatchers("/api/**/sign-up").permitAll()
+                        .antMatchers("/api/**/email").permitAll()
+                        .antMatchers("/api/**/reset").permitAll()
+                        .antMatchers("/api/**/member").permitAll()
+                        .anyRequest().hasAnyRole("USER","ADMIN")
+                );
         return http.build();
     }
     @Bean
