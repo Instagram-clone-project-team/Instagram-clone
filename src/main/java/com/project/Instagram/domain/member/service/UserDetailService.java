@@ -33,12 +33,12 @@ public class UserDetailService implements UserDetailsService {
             setId(member.getId());
             setUsername(member.getUsername());
             setPassword(member.getPassword());
-            setRole(member.getRole());
+            setRoles(member.getRoles());
         }
 
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
-            return customAuthorityUtils.createAuthorities(String.valueOf(this.getRole()));
+            return customAuthorityUtils.createAuthorities(this.getRoles());
         }
 
         @Override

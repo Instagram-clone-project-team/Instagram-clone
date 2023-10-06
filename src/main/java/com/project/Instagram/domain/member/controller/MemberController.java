@@ -1,9 +1,9 @@
 package com.project.Instagram.domain.member.controller;
 
 import com.project.Instagram.domain.member.dto.*;
+import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.service.MemberService;
-import com.project.Instagram.global.error.BusinessException;
-import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.response.ResultResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 
 import static com.project.Instagram.global.response.ResultCode.*;
 
@@ -65,4 +66,18 @@ public class MemberController {
         memberService.logout();
         return ResponseEntity.ok(ResultResponse.of(LOGOUT_SUCCESS));
     }
+
+    @DeleteMapping("member/{id}")
+    public ResponseEntity<ResultResponse> delete(@PathVariable long id) {
+        memberService.deleteMember(id);
+        return ResponseEntity.ok(ResultResponse.of(DELETE_SUCCESS));
+    }
+
+    @GetMapping("member")
+    public ResponseEntity<ResultResponse> lookup(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
+                                                          @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
+        PageListResponse<Profile> response = memberService.getProfilePageList(page - 1, size);
+        return ResponseEntity.ok(ResultResponse.of(LOOK_UP_MEMBER_LIST_SUCCESS, response));
+    }
+
 }

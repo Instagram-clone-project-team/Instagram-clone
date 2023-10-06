@@ -2,26 +2,40 @@ package com.project.Instagram.domain.member.service;
 import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.member.entity.MemberRole;
+import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
+    private final CustomAuthorityUtils customAuthorityUtils;
     private final SecurityUtil securityUtil;
     private final RefreshTokenService refreshTokenService;
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
+    private final String DELETE_MEMBER_USERNAME="--delete--";
 
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
@@ -64,7 +78,8 @@ public class MemberService {
     }
 
     private void createNewMember(SignUpRequest signUpRequest) {
-        Member newMember = convertRegisterRequestToMember(signUpRequest);
+        Set<MemberRole> roles = customAuthorityUtils.createRole(signUpRequest.getEmail());
+        Member newMember = convertRegisterRequestToMember(signUpRequest, roles);
         String encryptedPassword = bCryptPasswordEncoder.encode(newMember.getPassword());
         newMember.setEncryptedPassword(encryptedPassword);
         memberRepository.save(newMember);
@@ -84,14 +99,16 @@ public class MemberService {
         emailAuthService.sendSignUpCode(email);
     }
 
-    private Member convertRegisterRequestToMember(SignUpRequest signUpRequest) {
+    private Member convertRegisterRequestToMember(SignUpRequest signUpRequest, Set<MemberRole> roles) {
         return Member.builder()
                 .username(signUpRequest.getUsername())
                 .name(signUpRequest.getName())
                 .password(signUpRequest.getPassword())
                 .email(signUpRequest.getEmail())
+                .roles(roles)
                 .build();
     }
+
     @Transactional
     public void updateAccount(UpdateAccountRequest updateAccountRequest) {
         //        //로그인 로직(추후 로그인 구현후 쓰임)
@@ -144,5 +161,23 @@ public class MemberService {
     @Transactional
     public void logout() {
         refreshTokenService.deleteRefreshTokenByValue(securityUtil.getLoginMember().getId());
+    }
+
+    public PageListResponse<Profile> getProfilePageList(int page, int size){
+
+        Page<Member> pages = memberRepository.findAllByDeletedAtIsNull(PageRequest.of(page, size));
+        List<Profile> profileList = pages.getContent()
+                .stream()
+                .map(Profile::convertFromMember)
+                .collect(Collectors.toList());
+        return new PageListResponse(profileList, pages);
+
+    }
+
+    @Transactional
+    public void deleteMember(long memberId){
+        Member member=securityUtil.getLoginMember();
+        member.updateUsername(DELETE_MEMBER_USERNAME);
+        member.setDeletedAt(LocalDateTime.now()); //FIXME 로컬 타임으로 나중에 바꿔야 한다.
     }
 }
