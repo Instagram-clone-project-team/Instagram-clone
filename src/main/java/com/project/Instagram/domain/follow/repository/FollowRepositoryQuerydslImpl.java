@@ -22,6 +22,15 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
 
     @Override
     public Page<FollowerDto> findFollowings(Long loginId, Long memberId, Pageable pageable) {
+        return findFollowerDtoList(loginId, findFollowingIdList(memberId), pageable);
+    }
+
+    @Override
+    public Page<FollowerDto> findFollowers(Long loginId, Long memberId, Pageable pageable) {
+        return findFollowerDtoList(loginId, findFollowerIdList(memberId), pageable);
+    }
+
+    private Page<FollowerDto> findFollowerDtoList(Long loginId, JPQLQuery<Long> idListQuery, Pageable pageable) {
         JPQLQuery<FollowerDto> query = jpaQueryFactory
                 .select(new QFollowerDto(
                         member,
@@ -35,13 +44,15 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                                 .exists(),
                         member.id.eq(loginId)))
                 .from(member)
-                .where(member.id.in(findFollowingIdList(memberId)));
+                .where(member.id.in(idListQuery));
 
         query.offset(pageable.getOffset());
         query.limit(pageable.getPageSize());
 
         List<FollowerDto> result = query.fetch();
-        return new PageImpl<>(result, pageable, result.size());
+        long total = query.fetchCount();
+
+        return new PageImpl<>(result, pageable, total);
     }
 
     private JPQLQuery<Long> findFollowingIdList(Long memberId) {
@@ -49,5 +60,12 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                 .select(follow.followMember.id)
                 .from(follow)
                 .where(follow.member.id.eq(memberId));
+    }
+
+    private JPQLQuery<Long> findFollowerIdList(Long memberId) {
+        return JPAExpressions
+                .select(follow.member.id)
+                .from(follow)
+                .where(follow.followMember.id.eq(memberId));
     }
 }

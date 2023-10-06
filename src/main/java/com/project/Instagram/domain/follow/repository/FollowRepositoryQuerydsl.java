@@ -6,4 +6,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface FollowRepositoryQuerydsl {
     Page<FollowerDto> findFollowings(Long loginId, Long memberId, Pageable pageable);
+
+    Page<FollowerDto> findFollowers(Long loginId, Long memberId, Pageable pageable);
 }

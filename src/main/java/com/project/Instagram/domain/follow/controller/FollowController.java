@@ -4,6 +4,7 @@ import com.project.Instagram.domain.follow.dto.FollowerDto;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.response.ResultResponse;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -36,12 +37,21 @@ public class FollowController {
         return ResponseEntity.ok(ResultResponse.of(UNFOLLOW_SUCCESS, followResponse));
     }
 
-    @GetMapping("/follow/{memberUsername}")
-    public ResponseEntity<ResultResponse> getFollowings(
+    @GetMapping("/following/{memberUsername}")
+    public ResponseEntity<ResultResponse> getFollowingsPage(
             @Positive @RequestParam(value = "page", defaultValue = "1") int page,
             @Positive @RequestParam(value = "size", defaultValue = "5") int size,
             @PathVariable("memberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String memberUsername) {
         final PageListResponse<FollowerDto> followingResponse = followService.getFollowings(memberUsername, page - 1, size);
         return ResponseEntity.ok(ResultResponse.of(FOLLOWINGS_LIST_SUCCESS, followingResponse));
+    }
+
+    @GetMapping("/followers/{memberUsername}")
+    public ResponseEntity<ResultResponse> getFollowersPage(
+            @Positive @RequestParam(value = "page", defaultValue = "1") int page,
+            @Positive @RequestParam(value = "size", defaultValue = "5") int size,
+            @PathVariable("memberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String memberUsername) {
+        final PageListResponse<FollowerDto> followerResponse = followService.getFollowers(memberUsername, page - 1, size);
+        return ResponseEntity.ok(ResultResponse.of(FOLLOWERS_LIST_SUCCESS, followerResponse));
     }
 }

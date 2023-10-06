@@ -31,7 +31,8 @@ public class FollowService {
         final Member followMember = memberRepository.findByUsername(followMemberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         if (member.getId().equals(followMember.getId())) throw new BusinessException(ErrorCode.FOLLOW_MYSELF_FAIL);
-        if (followRepository.existsByMemberIdAndFollowMemberId(member.getId(), followMember.getId())) throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
+        if (followRepository.existsByMemberIdAndFollowMemberId(member.getId(), followMember.getId()))
+            throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
 
         final Follow follow = new Follow(member, followMember);
         followRepository.save(follow);
@@ -43,7 +44,7 @@ public class FollowService {
         final Long memberId = securityUtil.getLoginMember().getId();
         final Member followMember = memberRepository.findByUsername(followMemberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
-        if (memberId.equals(followMember.getId())) throw  new BusinessException(ErrorCode.UNFOLLOW_MYSELF_FAIL);
+        if (memberId.equals(followMember.getId())) throw new BusinessException(ErrorCode.UNFOLLOW_MYSELF_FAIL);
 
         final Follow follow = followRepository.findByMemberIdAndFollowMemberId(memberId, followMember.getId()).orElseThrow(() -> new BusinessException(ErrorCode.UNFOLLOW_FAIL));
 
@@ -63,4 +64,12 @@ public class FollowService {
         return new PageListResponse<>(pages.getContent(), pages);
     }
 
+    @Transactional(readOnly = true)
+    public PageListResponse<FollowerDto> getFollowers(String memberUsername, int page, int size) {
+        final Long memberId = securityUtil.getLoginMember().getId();
+        final Member member = memberRepository.findByUsername(memberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Page<FollowerDto> pages = followRepository.findFollowers(memberId, member.getId(), PageRequest.of(page, size));
+        return new PageListResponse<>(pages.getContent(), pages);
+    }
 }
