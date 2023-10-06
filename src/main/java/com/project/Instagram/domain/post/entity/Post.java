@@ -2,6 +2,7 @@ package com.project.Instagram.domain.post.entity;
 
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.global.entity.BaseTimeEntity;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -24,4 +25,8 @@ public class Post extends BaseTimeEntity {
     @Lob
     @Column(name = "post_content")
     private String content;
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 }
