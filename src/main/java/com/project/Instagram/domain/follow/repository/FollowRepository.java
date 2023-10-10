@@ -6,7 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> ,FollowRepositoryQuerydsl {
-    boolean existsByMemberIdAndFollowMemberId(Long memberId, Long followMemberId);
     Optional<Follow> findByMemberIdAndFollowMemberId(Long memberId, Long followMemberId);
-
 }

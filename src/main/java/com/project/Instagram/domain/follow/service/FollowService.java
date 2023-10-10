@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,11 +33,21 @@ public class FollowService {
 
         if (member.getId().equals(followMember.getId())) throw new BusinessException(ErrorCode.FOLLOW_MYSELF_FAIL);
 
-        if (followRepository.existsByMemberIdAndFollowMemberId(member.getId(), followMember.getId()))
-            throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
+        Optional<Follow> existingFollow = followRepository.findByMemberIdAndFollowMemberId(member.getId(), followMember.getId());
 
-        final Follow follow = new Follow(member, followMember);
-        followRepository.save(follow);
+        if (existingFollow.isPresent()) {
+            Follow follow = existingFollow.get();
+            if (follow.getDeletedAt() != null) {
+                follow.setDeletedAt(null);
+                followRepository.save(follow);
+            } else {
+                throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
+            }
+        }else {
+            final Follow follow = new Follow(member, followMember);
+            followRepository.save(follow);
+        }
+
         return true;
     }
 
@@ -48,7 +59,9 @@ public class FollowService {
         if (memberId.equals(followMember.getId())) throw new BusinessException(ErrorCode.UNFOLLOW_MYSELF_FAIL);
 
         final Follow follow = followRepository.findByMemberIdAndFollowMemberId(memberId, followMember.getId()).orElseThrow(() -> new BusinessException(ErrorCode.UNFOLLOW_FAIL));
-        if (follow.getDeletedAt() != null) throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
+
+        if (follow.getDeletedAt() != null) throw new BusinessException(ErrorCode.FOLLOW_ALREADY_DELETED);
+
         follow.setDeletedAt(LocalDateTime.now());
         return true;
     }
