@@ -93,8 +93,7 @@ public class PostService {
         String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
-        if(editPostRequest.getContent() != null) post.setContent(editPostRequest.getContent());
-        if(image != null) post.setImage(image);
+        post.editPost(editPostRequest.getContent(), image);
     }
 
     @Transactional
@@ -103,8 +102,8 @@ public class PostService {
         final Post post = getPostWithMember(postId);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_DELETE_FAILED);
-
         if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
+
         post.setDeletedAt(LocalDateTime.now());
     }
 
