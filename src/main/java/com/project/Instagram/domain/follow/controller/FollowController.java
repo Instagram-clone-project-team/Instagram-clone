@@ -4,7 +4,6 @@ import com.project.Instagram.domain.follow.dto.FollowerDto;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.response.ResultResponse;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

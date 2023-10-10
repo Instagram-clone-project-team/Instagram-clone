@@ -59,13 +59,17 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
         return JPAExpressions
                 .select(follow.followMember.id)
                 .from(follow)
-                .where(follow.member.id.eq(memberId));
+                .where(follow.member.id.eq(memberId)
+                        .and(member.deletedAt.isNull())
+                        .and(follow.deletedAt.isNull()));
     }
 
     private JPQLQuery<Long> findFollowerIdList(Long memberId) {
         return JPAExpressions
                 .select(follow.member.id)
                 .from(follow)
-                .where(follow.followMember.id.eq(memberId));
+                .where(follow.followMember.id.eq(memberId)
+                        .and(member.deletedAt.isNull())
+                        .and(follow.deletedAt.isNull()));
     }
 }
