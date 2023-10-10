@@ -127,7 +127,6 @@ public class MemberService {
                 && !member.getUsername().equals(updateAccountRequest.getUsername())){
             throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
         }
-        //Null인지 확인해서 아니면 update를 한다.
         updateMemberAccount(member,updateAccountRequest);
 
     }
