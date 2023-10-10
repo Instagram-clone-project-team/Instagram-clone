@@ -1,7 +1,5 @@
 package com.project.Instagram.domain.member.dto;
 
-import com.project.Instagram.domain.member.entity.Gender;
-import com.project.Instagram.domain.member.entity.MemberRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
