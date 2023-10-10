@@ -87,13 +87,14 @@ public class PostService {
     }
 
     @Transactional
-    public void editPost(EditPostRequest editPostRequest, Long postId) {
+    public void editPost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
         final Post post = getPostWithMember(postId);
+        String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
-
         if(editPostRequest.getContent() != null) post.setContent(editPostRequest.getContent());
+        if(image != null) post.setImage(image);
     }
 
     @Transactional
