@@ -9,11 +9,11 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Profile {
     private String username;
-    //private String image;
+    private String image;
     private String introduce;
 
     public static Profile convertFromMember(Member member){
-        return new Profile(member.getUsername(), member.getIntroduce());
+        return new Profile(member.getUsername(),member.getImage(), member.getIntroduce());
     }
 
     @QueryProjection

@@ -53,6 +53,9 @@ public class Member extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @Column(name = "member_image", nullable = false)
+    private String image = "https://instagram-clone-luee-bucket.s3.ap-northeast-2.amazonaws.com/_f_RqAT2aaKIX1s9EcyxJZ1wFMJWDNteFyQMNG6v0hEr-_bNQfyPLKcp0R8CykUiRS9Rwb26tpPOwP8nKPjy20ftwJvKpYaLaIyWvEUFWOjlMNaMhnaTHkDu5P1a_L1gd1HtVj5-ijEF_wckIiloTA.webp";
+
     public void setEncryptedPassword(String encryptedPassword) {
         this.password = encryptedPassword;
     }

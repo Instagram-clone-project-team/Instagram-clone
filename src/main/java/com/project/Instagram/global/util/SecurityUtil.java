@@ -22,4 +22,10 @@ public class SecurityUtil {
         findMember.orElseThrow(() -> new BusinessException(ErrorCode.LOGIN_INFORMATION_ERROR));
         return findMember.get();
     }
+    public void checkLoginMember(){
+        boolean checkMember = memberRepository.existsByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        if(!checkMember){
+            throw new BusinessException(ErrorCode.MEMBER_NOT_LOGIN);
+        }
+    }
 }
