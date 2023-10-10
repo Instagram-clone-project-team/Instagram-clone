@@ -11,6 +11,7 @@ import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.jwt.JwtTokenProvider;
+import com.project.Instagram.global.util.S3Uploader;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.*;
 
@@ -44,7 +46,9 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
     private final String DELETE_MEMBER_USERNAME="--delete--";
+    private final String DIR_PROFILE_NAME = "Profile";
     private final JwtTokenProvider jwtTokenProvider;
+    private final S3Uploader s3Uploader;
 
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
@@ -116,14 +120,14 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateAccount(UpdateAccountRequest updateAccountRequest) {
+    public void updateAccount(UpdateAccountRequest updateAccountRequest) throws IOException {
         Member member = securityUtil.getLoginMember();
 
         if(memberRepository.existsByUsername(updateAccountRequest.getUsername())
                 && !member.getUsername().equals(updateAccountRequest.getUsername())){
             throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
         }
-
+        //Null인지 확인해서 아니면 update를 한다.
         updateMemberAccount(member,updateAccountRequest);
 
     }
@@ -152,13 +156,14 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public void updateMemberAccount(Member member, UpdateAccountRequest updateAccountRequest){
+    public void updateMemberAccount(Member member, UpdateAccountRequest updateAccountRequest) throws IOException {
+        String imageFile =  s3Uploader.upload(updateAccountRequest.getImage(),DIR_PROFILE_NAME);
         member.updateUsername(updateAccountRequest.getUsername());
         member.updateName(updateAccountRequest.getName());
         member.updateLink(updateAccountRequest.getLink());
         member.updateIntroduce(updateAccountRequest.getIntroduce());
         member.updatePhone(updateAccountRequest.getPhone());
-        member.updateEmail(updateAccountRequest.getEmail());
+        member.updateImage(imageFile);
         member.updateGender(Gender.valueOf(updateAccountRequest.getGender()));
     }
 

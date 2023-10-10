@@ -38,6 +38,8 @@ public class Member extends BaseTimeEntity {
 
     @Column(name = "member_link")
     private String link;
+    @Column(name = "member_image")
+    private String image;
 
     @Lob
     @Column(name = "member_introduce")
@@ -77,8 +79,8 @@ public class Member extends BaseTimeEntity {
     public void updateName(String name){this.name = name;}
     public void updateLink(String link){this.link = link;}
     public void updateIntroduce(String introduce){this.introduce = introduce;}
-    public void updateEmail(String email){this.email = email;}
     public void updatePhone(String phone){this.phone = phone;}
     public void updateGender(Gender gender){this.gender = gender;}
+    public void updateImage(String image){this.image = image;}
 
 }

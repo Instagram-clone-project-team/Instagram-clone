@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static com.project.Instagram.global.response.ResultCode.*;
@@ -22,6 +23,7 @@ import static com.project.Instagram.global.response.ResultCode.*;
 @Validated
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class MemberController {
 
     private final MemberService memberService;
@@ -42,7 +44,7 @@ public class MemberController {
         return ResponseEntity.ok(ResultResponse.of(SEND_EMAIL_SUCCESS));
     }
     @PatchMapping("/account/update")
-    public ResponseEntity<ResultResponse> updateAccount(@Valid @RequestBody UpdateAccountRequest updateAccountRequest){
+    public ResponseEntity<ResultResponse> updateAccount(@Valid @ModelAttribute UpdateAccountRequest updateAccountRequest) throws IOException {
         memberService.updateAccount(updateAccountRequest);
         return ResponseEntity.ok(ResultResponse.of(UPDATE_ACCOUNT_SUCCESS));
     }
