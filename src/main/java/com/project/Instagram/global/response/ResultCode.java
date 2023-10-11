@@ -17,6 +17,7 @@ public enum ResultCode {
     EMAIL_VERIFICATION_FAIL(400, "이메일 인증에 실패했습니다."),
     LOOK_UP_MEMBER_LIST_SUCCESS(200, "계정 목록 조회가 완료되었습니다."),
     LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다."),
+    REISSUE_JWT_SUCCESS(200, "토큰 재발급이 완료되었습니다"),
   
     //게시글
     GET_POST_PAGE_SUCCESS(200,"게시물 목록 조회가 완료되었습니다."),
@@ -25,6 +26,7 @@ public enum ResultCode {
     POST_CREATE_SUCCESS(200, "게시글 생성에 성공하였습니다."),
     DELETE_POST_SUCCESS(200, "게시물 삭제에 성공하였습니다."),
     UPDATE_POST_SUCCESS(200, "게시물 수정이 완료되었습니다."),
+    GET_FOLLOWED_POSTS_SUCCESS(200, "팔로우한 유저들의 게시물 조회가 완료되었습니다."),
   
     // 팔로우
     FOLLOW_FAIL(400, "팔로우에 실패했습니다."),

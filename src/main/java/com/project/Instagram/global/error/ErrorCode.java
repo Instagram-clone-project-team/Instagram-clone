@@ -33,7 +33,6 @@ public enum ErrorCode {
     POST_ALREADY_DELETED(400, "이미 삭제된 게시물입니다."),
   
     // 팔로우  
-    FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다."),
     FOLLOW_MYSELF_FAIL(400, "자기 자신은 팔로우할 수 없습니다."),
     FOLLOW_ALREADY_EXIST(400,"이미 팔로우 한 유저입니다."),
     UNFOLLOW_MYSELF_FAIL(400, "자기 자신을 언팔로우할 수 없습니다."),
