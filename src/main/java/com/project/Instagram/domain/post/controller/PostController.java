@@ -72,7 +72,7 @@ public class PostController {
         return ResponseEntity.ok(ResultResponse.of(ResultCode.DELETE_POST_SUCCESS));
     }
 
-    @GetMapping("/follwed-posts")
+    @GetMapping("/followed-posts")
     public ResponseEntity<ResultResponse> getFollowedPostsPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                                @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
         PageListResponse<PostResponse> response = postService.getPostsByFollowedMembersPage(page - 1, size);
