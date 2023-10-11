@@ -117,7 +117,7 @@ public class PostService {
     public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {
         final Long loginMemberId = securityUtil.getLoginMember().getId();
         List<Long> followedMemberIds = followService.getFollowedMemberIds(loginMemberId);
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Post> posts = postRepository.findByMemberIds(followedMemberIds, pageable);
 
         return getPostResponseListToPostResponsePage(posts);
