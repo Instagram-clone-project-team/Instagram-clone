@@ -57,7 +57,7 @@ public class PostService {
         securityUtil.checkLoginMember();
         final Post post = postRepository.findById(postId)
                 .orElseThrow(() ->new BusinessException(ErrorCode.POST_NOT_FOUND));
-        PostResponse postResponse = new PostResponse(post.getMember().getUsername(),post.getContent());
+        PostResponse postResponse = new PostResponse(post.getMember().getUsername(),post.getContent(),post.getImage());
 
         return postResponse;
     }
@@ -80,7 +80,7 @@ public class PostService {
         List<Post> posts = postPage.getContent();
         List<PostResponse> postResponses =  new ArrayList<>();
         for(Post post : posts){
-            postResponses.add(new PostResponse(post.getMember().getUsername(),post.getContent()));
+            postResponses.add(new PostResponse(post.getMember().getUsername(),post.getContent(),post.getImage()));
         }
         PageListResponse<PostResponse> postResponsePage = new PageListResponse<>(postResponses, postPage);
         return postResponsePage;
