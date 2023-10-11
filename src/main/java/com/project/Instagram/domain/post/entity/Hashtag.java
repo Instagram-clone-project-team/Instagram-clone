@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.post.entity;
 
+import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Hashtag {
+public class Hashtag extends BaseTimeEntity {
 
     @Id
     @Column(name = "hashtag_id")

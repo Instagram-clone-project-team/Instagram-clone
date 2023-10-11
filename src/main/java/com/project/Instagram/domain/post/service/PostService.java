@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
     private final SecurityUtil securityUtil;
     private final PostRepository postRepository;
-
+    private final HashtagService hashtagService;
 
     private final S3Uploader s3Uploader;
     private static final String DIR_NAME = "story";
@@ -44,6 +44,7 @@ public class PostService {
                 .content(postCreateRequest.getContent())
                 .build();
         postRepository.save(newPost);
+        hashtagService.registerHashtags(newPost);
     }
     public PageListResponse<PostResponse> getPostPageList(int page, int size) {
         securityUtil.checkLoginMember();
@@ -93,7 +94,11 @@ public class PostService {
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
 
-        if(editPostRequest.getContent() != null) post.setContent(editPostRequest.getContent());
+        String oldContent = post.getContent();
+        if(editPostRequest.getContent() != null) {
+            post.setContent(editPostRequest.getContent());
+        }
+        hashtagService.editHashTag(post,oldContent);
     }
 
     @Transactional
