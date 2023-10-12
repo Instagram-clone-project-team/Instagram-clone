@@ -9,12 +9,14 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
 
@@ -45,6 +47,7 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                         member.id.eq(loginId)))
                 .from(member)
                 .where(member.id.in(idListQuery));
+        log.info("생성된 JPQL 쿼리: {}", query.toString());
 
         query.offset(pageable.getOffset());
         query.limit(pageable.getPageSize());

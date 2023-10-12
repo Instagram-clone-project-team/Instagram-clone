@@ -39,11 +39,10 @@ public class FollowService {
             Follow follow = existingFollow.get();
             if (follow.getDeletedAt() != null) {
                 follow.setDeletedAt(null);
-                followRepository.save(follow);
             } else {
                 throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
             }
-        }else {
+        } else {
             final Follow follow = new Follow(member, followMember);
             followRepository.save(follow);
         }
