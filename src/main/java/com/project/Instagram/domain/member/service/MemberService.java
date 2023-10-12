@@ -1,27 +1,51 @@
 package com.project.Instagram.domain.member.service;
+
 import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.member.entity.MemberRole;
+import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.jwt.CustomAuthorityUtils;
+import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
+    private final CustomAuthorityUtils customAuthorityUtils;
     private final SecurityUtil securityUtil;
     private final RefreshTokenService refreshTokenService;
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
+    private final String DELETE_MEMBER_USERNAME="--deleted--";
+    //유저네임(닉네임)에 특수문자를 못하게 막아서, username을 일일히 검색할때 deleted at is null인지 조건이 필요없다.
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
@@ -47,12 +71,9 @@ public class MemberService {
 
     @Transactional
     public void updatePassword(UpdatePasswordRequest updatePasswordRequest){
-//        //로그인 로직(추후 로그인 구현후 쓰임)
-        Member member = memberRepository.findByUsername(updatePasswordRequest.getUsername())
-                .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = securityUtil.getLoginMember();
 
-
-        if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){//요청 비밀번호 현재 비밀번호 매치 확인
+        if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){
             throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
         }
         if(updatePasswordRequest.getNewPassword().equals(updatePasswordRequest.getOldPassword())){
@@ -64,7 +85,8 @@ public class MemberService {
     }
 
     private void createNewMember(SignUpRequest signUpRequest) {
-        Member newMember = convertRegisterRequestToMember(signUpRequest);
+        Set<MemberRole> roles = customAuthorityUtils.createRole(signUpRequest.getEmail());
+        Member newMember = convertRegisterRequestToMember(signUpRequest, roles);
         String encryptedPassword = bCryptPasswordEncoder.encode(newMember.getPassword());
         newMember.setEncryptedPassword(encryptedPassword);
         memberRepository.save(newMember);
@@ -84,19 +106,19 @@ public class MemberService {
         emailAuthService.sendSignUpCode(email);
     }
 
-    private Member convertRegisterRequestToMember(SignUpRequest signUpRequest) {
+    private Member convertRegisterRequestToMember(SignUpRequest signUpRequest, Set<MemberRole> roles) {
         return Member.builder()
                 .username(signUpRequest.getUsername())
                 .name(signUpRequest.getName())
                 .password(signUpRequest.getPassword())
                 .email(signUpRequest.getEmail())
+                .roles(roles)
                 .build();
     }
+
     @Transactional
     public void updateAccount(UpdateAccountRequest updateAccountRequest) {
-        //        //로그인 로직(추후 로그인 구현후 쓰임)
-        Member member = memberRepository.findByUsername(updateAccountRequest.getUsername())
-                .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = securityUtil.getLoginMember();
 
         if(memberRepository.existsByUsername(updateAccountRequest.getUsername())
                 && !member.getUsername().equals(updateAccountRequest.getUsername())){
@@ -144,5 +166,56 @@ public class MemberService {
     @Transactional
     public void logout() {
         refreshTokenService.deleteRefreshTokenByValue(securityUtil.getLoginMember().getId());
+    }
+
+    public Profile getProfile(String username){
+        //유효한 멤버인지 확인
+        Member member=memberRepository.findByUsername(username).orElseThrow(()-> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        return Profile.convertMemberToProfile(member);
+    }
+
+    public PageListResponse<Profile> getProfilePageList(int page, int size){
+        Page<Member> pages = memberRepository.findAllByDeletedAtIsNull(PageRequest.of(page, size));
+        List<Profile> profileList = pages.getContent()
+                .stream()
+                .map(Profile::convertMemberToProfile)
+                .collect(Collectors.toList());
+        return new PageListResponse(profileList, pages);
+    }
+
+    @Transactional
+    public void deleteMember(){
+        Member member=securityUtil.getLoginMember();
+        member.updateUsername(DELETE_MEMBER_USERNAME);
+        member.setDeletedAt(LocalDateTime.now());
+    }
+
+    public Map<String, String> reissueAccessToken(String access, String refresh){
+        if(refresh.isEmpty()){
+            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+        }
+        Member member=securityUtil.getLoginMember();
+
+        jwtTokenProvider.verifySignature(refresh);
+        String jws = access.replace("Bearer ", "");
+        Map<String, Object> claims= jwtTokenProvider.getClaims(jws).getBody();
+        String newAccessToken=jwtTokenProvider.generateAccessToken(claims, member.getEmail());
+        String newRefreshToken=jwtTokenProvider.generateRefreshToken(member.getEmail());
+
+        refreshTokenService.deleteRefreshTokenByValue(member.getId());
+        refreshTokenService.saveRefreshTokenByValue(member.getId(), newRefreshToken);
+
+        List<GrantedAuthority> authorities=new ArrayList<>();
+        Set<MemberRole> set=member.getRoles();
+        for(MemberRole role:set){
+            authorities.add(new SimpleGrantedAuthority(role.toString()));
+        }
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getUsername(), null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Map<String, String> response=new HashMap<>();
+        response.put("access", newAccessToken);
+        response.put("refresh", newRefreshToken);
+        return response;
     }
 }

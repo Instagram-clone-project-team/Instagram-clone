@@ -1,5 +1,8 @@
 package com.project.Instagram.global.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -8,7 +11,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.PreRemove;
 import java.time.LocalDateTime;
 
 @Getter
@@ -16,14 +18,14 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class BaseTimeEntity {
     @CreatedDate
+    @JsonIgnore
     private LocalDateTime createdAt;
-    @LastModifiedDate
-    private LocalDateTime modifiedAt;
-    @Setter
-    private LocalDateTime deletedAt;
 
-    @PreRemove
-    private void preRemove() {
-        deletedAt = LocalDateTime.now();
-    }
+    @LastModifiedDate
+    @JsonIgnore
+    private LocalDateTime modifiedAt;
+
+    @Setter
+    @JsonIgnore
+    private LocalDateTime deletedAt;
 }

@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.comment.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.entity.Post;
@@ -22,7 +23,7 @@ public class Comment extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "member_id")
     private Member writer;
 
@@ -36,15 +37,15 @@ public class Comment extends BaseTimeEntity {
     private Long parentsCommentId;
 
     @Column
-    private int orderNo;
+    private int replyOrder;
 
     @Builder
-    public Comment(Member writer, long postId, String text, Long parentsCommentId, int orderNo){
+    public Comment(Member writer, long postId, String text, Long parentsCommentId, int replyOrder){
         this.writer=writer;
         this.postId=postId;
         this.text=text;
         this.parentsCommentId=parentsCommentId;
-        this.orderNo=orderNo;
+        this.replyOrder=replyOrder;
     }
 
     public void updateText(String text){this.text = text;}

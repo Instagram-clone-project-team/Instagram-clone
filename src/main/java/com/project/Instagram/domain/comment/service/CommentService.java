@@ -1,8 +1,11 @@
 package com.project.Instagram.domain.comment.service;
 
+import com.project.Instagram.domain.comment.dto.CommentRequest;
+import com.project.Instagram.domain.comment.dto.CommentResponse;
 import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.comment.repository.CommentRepository;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.util.SecurityUtil;
@@ -10,9 +13,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,57 +25,69 @@ import java.util.List;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final SecurityUtil securityUtil;
-    private static final String DELETE_COMMENT="삭제된 댓글입니다.";
+    private final PostService postService;
+    private static final String DELETE_COMMENT = "삭제된 댓글입니다.";
 
-    public void create(String text, long postId) {
+    public void createComment(String text, long postId) {
         Member member = securityUtil.getLoginMember();
-        //TODO post가 유효한지 확인
+        //삭제된 게시글인지 확인
+        if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
         Comment newComment = Comment.builder()
                 .writer(member)
                 .text(text)
                 .postId(postId)
                 .parentsCommentId(null)
-                .orderNo(0)
+                .replyOrder(0)
                 .build();
-        log.info("하늘/comment:{}", newComment.getOrderNo());
         commentRepository.save(newComment);
     }
 
-    public void reply(String text, long postId, long parentsCommentId) {
+    public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
-        //TODO post가 유효한지 확인
-        if(!commentRepository.existsById(parentsCommentId))
-            throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
+        //유효한 게시글인지 확인
+        if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        //유효한 부모 댓글인지 확인
+        if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId)) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
         Long count = commentRepository.countCommentsByParentsCommentId(parentsCommentId);
         Comment replyComment = Comment.builder()
                 .writer(member)
                 .text(text)
                 .postId(postId)
                 .parentsCommentId(parentsCommentId)
-                .orderNo(count == null ? 1 : (int) (count + 1))
+                .replyOrder(count == null ? 1 : (int) (count + 1))
                 .build();
         commentRepository.save(replyComment);
     }
 
     @Transactional
-    public void update(long commentId, String text){
-        Comment comment=commentRepository.findById(commentId).orElseThrow(
-                ()->new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+    public void updateComment(long commentId, String text) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
         comment.updateText(text);
     }
 
     @Transactional
-    public void delete(long commentId){
-        Comment comment=commentRepository.findById(commentId).orElseThrow(
-                ()->new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+    public void deleteComment(long commentId) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
         comment.setDeletedAt(LocalDateTime.now());
-        //FIXME 메서드 시그니처 수정하기
         comment.updateText(DELETE_COMMENT);
     }
 
-    public List<Comment> get(long postId){
-        log.info("하늘/post-id {}", postId);
-        List<Comment> comments=commentRepository.findAllByPostIdAndParentsCommentId(postId, 0);
-        return comments;
+    public List<CommentResponse> getCommentsByPostId(long postId) {
+        //유효한 게시글인지 확인
+        if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        List<CommentResponse> list = new ArrayList<>();
+        List<Comment> comments = commentRepository.findAllByPostId(postId);
+        for (Comment c : comments) {
+            if (c.getParentsCommentId() != null) continue;
+            long parentCommentId = c.getId();
+            List<Comment> replies = comments.stream()
+                    .filter(e -> e.getParentsCommentId() != null && e.getParentsCommentId() == parentCommentId)
+                    .sorted(Comparator.comparing(Comment::getReplyOrder).reversed())
+                    .collect(Collectors.toList());
+            list.add(CommentResponse.builder().comment(c).replies(replies).build());
+        }
+        return list;
     }
 }

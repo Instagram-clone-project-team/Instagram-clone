@@ -23,8 +23,15 @@ public class RefreshTokenService {
             List<RefreshToken> refreshTokens = refreshTokenRedisRepository.findAllByMemberId(memberId);
             for (RefreshToken refreshToken : refreshTokens)
                 refreshTokenRedisRepository.delete(refreshToken);
-        } catch (Exception e) {
+        } catch (BusinessException e) {
             throw new BusinessException(ErrorCode.MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST);
         }
+    }
+
+    @SneakyThrows
+    @Transactional
+    public void saveRefreshTokenByValue(Long memberId, String refreshStr) {
+        RefreshToken token=new RefreshToken(memberId, refreshStr);
+        refreshTokenRedisRepository.save(token);
     }
 }
