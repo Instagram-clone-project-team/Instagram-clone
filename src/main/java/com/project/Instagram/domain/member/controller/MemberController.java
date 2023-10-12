@@ -26,7 +26,7 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @PostMapping(value = "/accounts/sign-up")
+    @PostMapping("/accounts/sign-up")
     public ResponseEntity<Object> signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
         final boolean membership = memberService.signUp(signUpRequest);
         if (membership) {
@@ -67,7 +67,7 @@ public class MemberController {
         return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
     }
 
-    @PostMapping(value = "/logout")
+    @PostMapping("/logout")
     public ResponseEntity<ResultResponse> logout() {
         memberService.logout();
         return ResponseEntity.ok(ResultResponse.of(LOGOUT_SUCCESS));
