@@ -56,6 +56,12 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_image", nullable = false)
     private String image = "https://instagram-clone-luee-bucket.s3.ap-northeast-2.amazonaws.com/_f_RqAT2aaKIX1s9EcyxJZ1wFMJWDNteFyQMNG6v0hEr-_bNQfyPLKcp0R8CykUiRS9Rwb26tpPOwP8nKPjy20ftwJvKpYaLaIyWvEUFWOjlMNaMhnaTHkDu5P1a_L1gd1HtVj5-ijEF_wckIiloTA.webp";
 
+    @Column(name = "follower_count")
+    private int followerCount;
+
+    @Column(name = "following_count")
+    private int followingCount;
+
     public void setEncryptedPassword(String encryptedPassword) {
         this.password = encryptedPassword;
     }
@@ -84,4 +90,23 @@ public class Member extends BaseTimeEntity {
     public void updatePhone(String phone){this.phone = phone;}
     public void updateGender(Gender gender){this.gender = gender;}
 
+    public void increaseFollowerCount() {
+        this.followerCount ++;
+    }
+
+    public void decreaseFollowerCount() {
+        if (this.followerCount > 0) {
+            this.followerCount --;
+        }
+    }
+
+    public void increaseFollowingCount() {
+        this.followingCount ++;
+    }
+
+    public void decreaseFollowingCount() {
+        if (this.followingCount > 0) {
+            this.followingCount --;
+        }
+    }
 }

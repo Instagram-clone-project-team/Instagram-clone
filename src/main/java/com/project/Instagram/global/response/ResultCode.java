@@ -17,6 +17,7 @@ public enum ResultCode {
     EMAIL_VERIFICATION_FAIL(400, "이메일 인증에 실패했습니다."),
     LOOK_UP_MEMBER_LIST_SUCCESS(200, "계정 목록 조회가 완료되었습니다."),
     LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다."),
+    REISSUE_JWT_SUCCESS(200, "토큰 재발급이 완료되었습니다"),
   
     //게시글
     GET_POST_PAGE_SUCCESS(200,"게시물 목록 조회가 완료되었습니다."),
@@ -31,7 +32,9 @@ public enum ResultCode {
     FOLLOW_SUCCESS(200, "팔로우에 성공했습니다."),
     UNFOLLOW_SUCCESS(200, "언팔로우에 성공했습니다."),
     FOLLOWINGS_LIST_SUCCESS(200, "팔로잉 목록 조회가 성공했습니다."),
-    FOLLOWERS_LIST_SUCCESS(200, "팔로워 목록 조회가 성공했습니다.");
+    FOLLOWERS_LIST_SUCCESS(200, "팔로워 목록 조회가 성공했습니다."),
+    FOLLOWING_COUNT_SUCCESS(200, "팔로잉 수 조회가 성공했습니다."),
+    FOLLOWER_COUNT_SUCCESS(200, "팔로워 수 조회가 성공했습니다.");
 
     private final int status;
 

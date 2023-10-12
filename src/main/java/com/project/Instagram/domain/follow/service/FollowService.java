@@ -35,17 +35,19 @@ public class FollowService {
 
         Optional<Follow> existingFollow = followRepository.findByMemberIdAndFollowMemberId(member.getId(), followMember.getId());
 
-        if (existingFollow.isPresent()) {
-            Follow follow = existingFollow.get();
-            if (follow.getDeletedAt() != null) {
-                follow.setDeletedAt(null);
-            } else {
+        existingFollow.ifPresentOrElse(follow -> {
+            if (follow.getDeletedAt() == null) {
                 throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
             }
-        } else {
-            final Follow follow = new Follow(member, followMember);
+            follow.setDeletedAt(null);
+            member.increaseFollowingCount();
+            followMember.increaseFollowerCount();
+        }, () -> {
+            Follow follow = new Follow(member, followMember);
             followRepository.save(follow);
-        }
+            member.increaseFollowingCount();
+            followMember.increaseFollowerCount();
+        });
 
         return true;
     }
@@ -53,6 +55,7 @@ public class FollowService {
     @Transactional
     public boolean unfollow(String followMemberUsername) {
         final Long memberId = securityUtil.getLoginMember().getId();
+        final Member member = memberRepository.findById(memberId).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         final Member followMember = memberRepository.findByUsername(followMemberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         if (memberId.equals(followMember.getId())) throw new BusinessException(ErrorCode.UNFOLLOW_MYSELF_FAIL);
@@ -62,6 +65,8 @@ public class FollowService {
         if (follow.getDeletedAt() != null) throw new BusinessException(ErrorCode.FOLLOW_ALREADY_DELETED);
 
         follow.setDeletedAt(LocalDateTime.now());
+        member.decreaseFollowingCount();
+        followMember.decreaseFollowerCount();
         return true;
     }
 
@@ -79,5 +84,17 @@ public class FollowService {
         final Member member = memberRepository.findByUsername(memberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         Page<FollowerDto> pages = followRepository.findFollowers(memberId, member.getId(), PageRequest.of(page, size));
         return new PageListResponse<>(pages.getContent(), pages);
+    }
+
+    @Transactional(readOnly = true)
+    public int getFollowingCount(String memberUsername) {
+        memberRepository.findByUsername(memberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        return followRepository.countActiveFollowsByMemberUsername(memberUsername);
+    }
+
+    @Transactional(readOnly = true)
+    public int getFollowerCount(String memberUsername) {
+        memberRepository.findByUsername(memberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        return followRepository.countActiveFollowersByMemberUsername(memberUsername);
     }
 }
