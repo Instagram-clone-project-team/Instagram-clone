@@ -1,23 +1,32 @@
 package com.project.Instagram.domain.member.service;
+
 import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.MemberRole;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.jwt.CustomAuthorityUtils;
+import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +45,7 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
     private final String DELETE_MEMBER_USERNAME="--delete--";
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public boolean signUp(SignUpRequest signUpRequest) {
@@ -61,12 +71,9 @@ public class MemberService {
 
     @Transactional
     public void updatePassword(UpdatePasswordRequest updatePasswordRequest){
-//        //로그인 로직(추후 로그인 구현후 쓰임)
-        Member member = memberRepository.findByUsername(updatePasswordRequest.getUsername())
-                .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = securityUtil.getLoginMember();
 
-
-        if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){//요청 비밀번호 현재 비밀번호 매치 확인
+        if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){
             throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
         }
         if(updatePasswordRequest.getNewPassword().equals(updatePasswordRequest.getOldPassword())){
@@ -111,9 +118,7 @@ public class MemberService {
 
     @Transactional
     public void updateAccount(UpdateAccountRequest updateAccountRequest) {
-        //        //로그인 로직(추후 로그인 구현후 쓰임)
-        Member member = memberRepository.findByUsername(updateAccountRequest.getUsername())
-                .orElseThrow(() ->new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = securityUtil.getLoginMember();
 
         if(memberRepository.existsByUsername(updateAccountRequest.getUsername())
                 && !member.getUsername().equals(updateAccountRequest.getUsername())){
@@ -178,6 +183,36 @@ public class MemberService {
     public void deleteMember(long memberId){
         Member member=securityUtil.getLoginMember();
         member.updateUsername(DELETE_MEMBER_USERNAME);
-        member.setDeletedAt(LocalDateTime.now()); //FIXME 로컬 타임으로 나중에 바꿔야 한다.
+        member.setDeletedAt(LocalDateTime.now());
     }
+
+    public Map<String, String> reissueAccessToken(String access, String refresh){
+        if(refresh.isEmpty()){
+            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+        }
+        Member member=securityUtil.getLoginMember();
+
+        jwtTokenProvider.verifySignature(refresh);
+        String jws = access.replace("Bearer ", "");
+        Map<String, Object> claims= jwtTokenProvider.getClaims(jws).getBody();
+        String newAccessToken=jwtTokenProvider.generateAccessToken(claims, member.getEmail());
+        String newRefreshToken=jwtTokenProvider.generateRefreshToken(member.getEmail());
+
+        refreshTokenService.deleteRefreshTokenByValue(member.getId());
+        refreshTokenService.saveRefreshTokenByValue(member.getId(), newRefreshToken);
+
+        List<GrantedAuthority> authorities=new ArrayList<>();
+        Set<MemberRole> set=member.getRoles();
+        for(MemberRole role:set){
+            authorities.add(new SimpleGrantedAuthority(role.toString()));
+        }
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getUsername(), null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Map<String, String> response=new HashMap<>();
+        response.put("access", newAccessToken);
+        response.put("refresh", newRefreshToken);
+        return response;
+    }
+
 }

@@ -11,8 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+
+import java.util.Map;
 
 import static com.project.Instagram.global.response.ResultCode.*;
 
@@ -24,7 +27,7 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @PostMapping(value = "accounts/sign-up")
+    @PostMapping("/accounts/sign-up")
     public ResponseEntity<Object> signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
         final boolean membership = memberService.signUp(signUpRequest);
         if (membership) {
@@ -34,12 +37,16 @@ public class MemberController {
         }
     }
 
-    @PostMapping("accounts/email")
+    @PostMapping("/accounts/email")
     public ResponseEntity<Object> sendAuthCodeByEmail(@Valid @RequestBody SendAuthEmailRequest sendAuthEmailRequest) {
         memberService.sendAuthEmail(sendAuthEmailRequest.getEmail());
         return ResponseEntity.ok(ResultResponse.of(SEND_EMAIL_SUCCESS));
     }
-
+    @PatchMapping("/account/update")
+    public ResponseEntity<ResultResponse> updateAccount(@Valid @RequestBody UpdateAccountRequest updateAccountRequest){
+        memberService.updateAccount(updateAccountRequest);
+        return ResponseEntity.ok(ResultResponse.of(UPDATE_ACCOUNT_SUCCESS));
+    }
     @PatchMapping("/password/patch")
     public ResponseEntity<ResultResponse> updatePassword(
             @Valid @RequestBody UpdatePasswordRequest updatePasswordRequest){
@@ -61,23 +68,33 @@ public class MemberController {
         return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
     }
 
-    @PostMapping(value = "/logout")
+    @PostMapping("/logout")
     public ResponseEntity<ResultResponse> logout() {
         memberService.logout();
         return ResponseEntity.ok(ResultResponse.of(LOGOUT_SUCCESS));
     }
 
-    @DeleteMapping("member/{id}")
+    @DeleteMapping("/member/{id}")
     public ResponseEntity<ResultResponse> delete(@PathVariable long id) {
         memberService.deleteMember(id);
         return ResponseEntity.ok(ResultResponse.of(DELETE_SUCCESS));
     }
 
-    @GetMapping("member")
-    public ResponseEntity<ResultResponse> lookup(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
+    @GetMapping("/member")
+    public ResponseEntity<ResultResponse> getProfilesPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                           @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
         PageListResponse<Profile> response = memberService.getProfilePageList(page - 1, size);
         return ResponseEntity.ok(ResultResponse.of(LOOK_UP_MEMBER_LIST_SUCCESS, response));
+    }
+
+    @PostMapping("/token/reissue")
+    public ResponseEntity<ResultResponse> reissueRefreshToken(HttpServletResponse response,
+            @RequestHeader(value="refresh", defaultValue = "") String refresh,
+            @RequestHeader(value="Authorization", defaultValue = "") String access){
+        Map<String, String> result=memberService.reissueAccessToken(access, refresh);
+        response.setHeader("Authorization", "Bearer " +result.get("access"));
+        response.setHeader("Refresh", result.get("refresh"));
+        return ResponseEntity.ok(ResultResponse.of(REISSUE_JWT_SUCCESS));
     }
 
 }

@@ -27,4 +27,11 @@ public class RefreshTokenService {
             throw new BusinessException(ErrorCode.MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST);
         }
     }
+
+    @SneakyThrows
+    @Transactional
+    public void saveRefreshTokenByValue(Long memberId, String refreshStr) {
+        RefreshToken token=new RefreshToken(memberId, refreshStr);
+        refreshTokenRedisRepository.save(token);
+    }
 }
