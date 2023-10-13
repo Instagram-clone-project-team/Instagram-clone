@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.member.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.Instagram.global.entity.BaseTimeEntity;
 
 import lombok.*;
@@ -15,8 +14,6 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "members")
-@JsonIgnoreProperties({"id", "roles", "password", "link", "phone", "gender", "name", "introduce", "email"})
-//TODO member객체 그 자체로 보내는게 맞는가?, dto로 안보내도 되는건가?
 public class Member extends BaseTimeEntity {
 
     @Id

@@ -1,8 +1,5 @@
 package com.project.Instagram.global.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -18,14 +15,9 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class BaseTimeEntity {
     @CreatedDate
-    @JsonIgnore
     private LocalDateTime createdAt;
-
     @LastModifiedDate
-    @JsonIgnore
-    private LocalDateTime modifiedAt;
-
+    private LocalDateTime modifiedDate;
     @Setter
-    @JsonIgnore
     private LocalDateTime deletedAt;
 }

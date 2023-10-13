@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     Long countCommentsByParentsCommentId(Long parentsCommentId);
-    List<Comment> findAllByPostIdAndParentsCommentIdIsNullOrderByCreatedAtAsc(long postId);
-    List<Comment> findAllByPostIdAndParentsCommentIdOOrderByReplyOrderAsc(long postId, long parentsCommentId);
-    List<Comment> findAllByPostId(long postId);
+   List<Comment> findAllByPostId(long postId);
     boolean existsByIdAndDeletedAtIsNull(long commentId);
 }

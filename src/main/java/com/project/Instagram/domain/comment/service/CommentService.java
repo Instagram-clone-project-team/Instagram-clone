@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.comment.service;
 
-import com.project.Instagram.domain.comment.dto.CommentRequest;
 import com.project.Instagram.domain.comment.dto.CommentResponse;
 import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.comment.repository.CommentRepository;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StopWatch;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,7 +28,6 @@ public class CommentService {
 
     public void createComment(String text, long postId) {
         Member member = securityUtil.getLoginMember();
-        //삭제된 게시글인지 확인
         if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
         Comment newComment = Comment.builder()
                 .writer(member)
@@ -44,9 +41,7 @@ public class CommentService {
 
     public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
-        //유효한 게시글인지 확인
         if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
-        //유효한 부모 댓글인지 확인
         if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId)) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
         Long count = commentRepository.countCommentsByParentsCommentId(parentsCommentId);
         Comment replyComment = Comment.builder()
@@ -75,15 +70,14 @@ public class CommentService {
     }
 
     public List<CommentResponse> getCommentsByPostId(long postId) {
-        //유효한 게시글인지 확인
         if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
         List<CommentResponse> list = new ArrayList<>();
         List<Comment> comments = commentRepository.findAllByPostId(postId);
-        for (Comment c : comments) {
-            if (c.getParentsCommentId() != null) continue;
-            long parentCommentId = c.getId();
-            List<Comment> replies = comments.stream()
-                    .filter(e -> e.getParentsCommentId() != null && e.getParentsCommentId() == parentCommentId)
+        for(Comment c:comments){
+            if(c.getParentsCommentId()!=null) continue;
+            long parentCommentId=c.getId();
+            List<Comment> replies=comments.stream()
+                    .filter(e->e.getParentsCommentId()!=null && e.getParentsCommentId()==parentCommentId)
                     .sorted(Comparator.comparing(Comment::getReplyOrder).reversed())
                     .collect(Collectors.toList());
             list.add(CommentResponse.builder().comment(c).replies(replies).build());

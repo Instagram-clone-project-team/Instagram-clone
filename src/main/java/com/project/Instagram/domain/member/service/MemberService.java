@@ -24,14 +24,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-
+import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +41,6 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
     private final String DELETE_MEMBER_USERNAME="--deleted--";
-    //유저네임(닉네임)에 특수문자를 못하게 막아서, username을 일일히 검색할때 deleted at is null인지 조건이 필요없다.
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional

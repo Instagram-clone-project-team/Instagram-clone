@@ -10,12 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-
 import java.util.Map;
+import javax.validation.constraints.Positive;
 
 import static com.project.Instagram.global.response.ResultCode.*;
 
@@ -41,6 +39,7 @@ public class MemberController {
         memberService.sendAuthEmail(sendAuthEmailRequest.getEmail());
         return ResponseEntity.ok(ResultResponse.of(SEND_EMAIL_SUCCESS));
     }
+
     @PatchMapping("/account/update")
     public ResponseEntity<ResultResponse> updateAccount(@Valid @RequestBody UpdateAccountRequest updateAccountRequest){
         memberService.updateAccount(updateAccountRequest);
