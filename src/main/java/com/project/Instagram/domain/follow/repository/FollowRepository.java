@@ -13,5 +13,4 @@ public interface FollowRepository extends JpaRepository<Follow, Long> ,FollowRep
     int countActiveFollowsByMemberUsername(@Param("memberUsername") String memberUsername);
     @Query("SELECT COUNT(f) FROM Follow f JOIN f.followMember fm WHERE fm.username = :memberUsername AND f.deletedAt IS NULL")
     int countActiveFollowersByMemberUsername(@Param("memberUsername") String memberUsername);
-
 }

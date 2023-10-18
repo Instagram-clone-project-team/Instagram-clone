@@ -17,7 +17,6 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
-
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override

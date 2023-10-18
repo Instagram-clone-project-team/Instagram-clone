@@ -9,3 +9,4 @@ public interface FollowRepositoryQuerydsl {
 
     Page<FollowerDto> findFollowers(Long loginId, Long memberId, Pageable pageable);
 }
+
