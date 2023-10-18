@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.comment.service;
 
 import com.project.Instagram.domain.comment.dto.CommentResponse;
+import com.project.Instagram.domain.comment.dto.SimpleComment;
 import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.comment.repository.CommentRepository;
 import com.project.Instagram.domain.member.entity.Member;
@@ -76,11 +77,12 @@ public class CommentService {
         for(Comment c:comments){
             if(c.getParentsCommentId()!=null) continue;
             long parentCommentId=c.getId();
-            List<Comment> replies=comments.stream()
+            List<SimpleComment> replies=comments.stream()
                     .filter(e->e.getParentsCommentId()!=null && e.getParentsCommentId()==parentCommentId)
                     .sorted(Comparator.comparing(Comment::getReplyOrder).reversed())
+                    .map(SimpleComment::new)
                     .collect(Collectors.toList());
-            list.add(CommentResponse.builder().comment(c).replies(replies).build());
+            list.add(CommentResponse.builder().comment(new SimpleComment(c)).replies(replies).build());
         }
         return list;
     }

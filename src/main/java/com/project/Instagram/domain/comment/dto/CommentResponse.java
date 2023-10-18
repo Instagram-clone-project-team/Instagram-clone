@@ -10,11 +10,11 @@ import java.util.List;
 
 @Getter
 public class CommentResponse {
-    private Comment comment;
-    private List<Comment> replies;
+    private SimpleComment comment;
+    private List<SimpleComment> replies;
 
     @Builder
-    public CommentResponse(Comment comment, List<Comment> replies){
+    public CommentResponse(SimpleComment comment, List<SimpleComment> replies){
         this.comment=comment;
         this.replies=replies;
     }
