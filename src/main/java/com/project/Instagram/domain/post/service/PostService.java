@@ -44,7 +44,7 @@ public class PostService {
                 .content(postCreateRequest.getContent())
                 .build();
         postRepository.save(newPost);
-        hashtagService.registerHashtags(newPost);
+        hashtagService.registerHashtagsOnPost(newPost);
     }
     public PageListResponse<PostResponse> getPostPageList(int page, int size) {
         securityUtil.checkLoginMember();
