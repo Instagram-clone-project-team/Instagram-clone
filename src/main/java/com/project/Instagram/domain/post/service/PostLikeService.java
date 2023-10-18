@@ -38,6 +38,7 @@ public class PostLikeService {
         }
         PostLike postLike=new PostLike(member,post);
         postLikeRepository.save(postLike);
+        post.upLikeCount(post);
     }
     @Transactional
     public void postunlike(Long postId) {
@@ -47,6 +48,7 @@ public class PostLikeService {
         final PostLike postLike = postLikeRepository.findByMemberAndPost(member,post)
                 .orElseThrow(()->new BusinessException(ErrorCode.POSTLIKE_NOT_FOUND));
         postLike.setDeletedAt(LocalDateTime.now());
+        post.downLikeCount(post);
     }
     @Transactional(readOnly = true)
     public PageListResponse<LikesMemberResponseDto> getPostLikeUsers(Long postId, int page, int size) {
