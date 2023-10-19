@@ -35,7 +35,8 @@ public enum ErrorCode {
     //좋아요
     POSTLIKE_ALREADY_EXIST(500,"이미 해당 게시물에 좋아요하셨습니다."),
     POSTLIKE_NOT_FOUND(500,"해당 게시물 좋아요를 찾을 수 없습니다."),
-
+    COMMENTLIKE_ALREADY_EXIST(500,"이미 해당 댓글에 좋아요 하셨습니다."),
+    COMMENTLIKE_NOT_FOUND(500,"해당 댓글 좋아요를 찾을 수 없습니다."),
     //공통
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
 
