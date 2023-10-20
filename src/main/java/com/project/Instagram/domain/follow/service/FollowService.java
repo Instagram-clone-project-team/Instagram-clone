@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,5 +98,12 @@ public class FollowService {
     public int getFollowerCount(String memberUsername) {
         memberRepository.findByUsername(memberUsername).orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         return followRepository.countActiveFollowersByMemberUsername(memberUsername);
+
     }
+    public List<Long> getFollowedMemberIds(Long memberId) {
+        List<Follow> follows = followRepository.findByMemberIdAndDeletedAtIsNull(memberId);
+        return follows.stream()
+                .map(follow -> follow.getFollowMember().getId())
+                .collect(Collectors.toList());
+
 }

@@ -24,7 +24,7 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column
+    @Column(name = "post_image")
     private String image;
 
     @Lob

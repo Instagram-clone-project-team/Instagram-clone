@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.post.service;
 
+import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.dto.PostResponse;
 import com.project.Instagram.domain.post.dto.PostCreateRequest;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
+
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -30,9 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
     private final SecurityUtil securityUtil;
     private final PostRepository postRepository;
-
-
     private final S3Uploader s3Uploader;
+    private final FollowService followService;
     private static final String DIR_NAME = "story";
 
     public void create(PostCreateRequest postCreateRequest) throws IOException {
@@ -108,5 +110,15 @@ public class PostService {
 
     public Post getPostWithMember(Long postId) {
         return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+    }
+
+    @Transactional
+    public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {
+        final Long loginMemberId = securityUtil.getLoginMember().getId();
+        List<Long> followedMemberIds = followService.getFollowedMemberIds(loginMemberId);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Post> posts = postRepository.findByMemberIds(followedMemberIds, pageable);
+
+        return getPostResponseListToPostResponsePage(posts);
     }
 }
