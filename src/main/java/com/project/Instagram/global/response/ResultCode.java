@@ -17,7 +17,10 @@ public enum ResultCode {
     EMAIL_VERIFICATION_FAIL(400, "이메일 인증에 실패했습니다."),
     LOOK_UP_MEMBER_LIST_SUCCESS(200, "계정 목록 조회가 완료되었습니다."),
     LOGOUT_SUCCESS(200, "로그아웃에 성공하였습니다."),
+    POST_LIKE_SUCCESS(200,"좋아요 성공하였습니다."),
+    POST_UNLIKE_SUCCESS(200,"좋아요 취소하였습니다."),
     REISSUE_JWT_SUCCESS(200, "토큰 재발급이 완료되었습니다"),
+    GET_POSTLIKE_USERS_SUCCESS(200,"해당 게시글 좋아요한 유저 조회가 완료되었습니다."),
 
     //게시글
     GET_POST_PAGE_SUCCESS(200,"게시물 목록 조회가 완료되었습니다."),

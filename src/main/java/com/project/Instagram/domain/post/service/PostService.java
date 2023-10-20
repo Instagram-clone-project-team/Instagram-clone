@@ -85,7 +85,6 @@ public class PostService {
         PageListResponse<PostResponse> postResponsePage = new PageListResponse<>(postResponses, postPage);
         return postResponsePage;
     }
-
     @Transactional
     public void editPost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
@@ -107,7 +106,7 @@ public class PostService {
         post.setDeletedAt(LocalDateTime.now());
     }
 
-    private Post getPostWithMember(Long postId) {
+    public Post getPostWithMember(Long postId) {
         return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
 }

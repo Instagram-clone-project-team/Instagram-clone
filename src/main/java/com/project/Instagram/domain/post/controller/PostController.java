@@ -19,9 +19,10 @@ import javax.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import static com.project.Instagram.global.response.ResultCode.POST_CREATE_SUCCESS;
 import javax.validation.Valid;
-  
+
+import static com.project.Instagram.global.response.ResultCode.*;
+
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +30,6 @@ import javax.validation.Valid;
 public class PostController {
 
     private final PostService postService;
-
     @PostMapping
     public ResponseEntity<ResultResponse> createPost(@ModelAttribute PostCreateRequest postCreateRequest) throws IOException {
         postService.create(postCreateRequest);
