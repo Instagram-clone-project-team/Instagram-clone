@@ -19,9 +19,10 @@ import javax.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import static com.project.Instagram.global.response.ResultCode.POST_CREATE_SUCCESS;
 import javax.validation.Valid;
-  
+
+import static com.project.Instagram.global.response.ResultCode.*;
+
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +30,6 @@ import javax.validation.Valid;
 public class PostController {
 
     private final PostService postService;
-
     @PostMapping
     public ResponseEntity<ResultResponse> createPost(@ModelAttribute PostCreateRequest postCreateRequest) throws IOException {
         postService.create(postCreateRequest);
@@ -62,7 +62,7 @@ public class PostController {
     }
 
     @PatchMapping("/update/content/{post_id}")
-    public ResponseEntity<ResultResponse> editPost(@RequestBody @Valid EditPostRequest updatePostRequest, @PathVariable("post_id") Long postId) {
+    public ResponseEntity<ResultResponse> editPost(@ModelAttribute EditPostRequest updatePostRequest, @PathVariable("post_id") Long postId) throws IOException {
         postService.editPost(updatePostRequest, postId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.UPDATE_POST_SUCCESS));
     }
@@ -70,5 +70,12 @@ public class PostController {
     public ResponseEntity<ResultResponse> deletePost(@PathVariable("post_id") Long postId) {
         postService.delete(postId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.DELETE_POST_SUCCESS));
+    }
+
+    @GetMapping("/followed-posts")
+    public ResponseEntity<ResultResponse> getFollowedPostsPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
+                                                               @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
+        PageListResponse<PostResponse> response = postService.getPostsByFollowedMembersPage(page - 1, size);
+        return ResponseEntity.ok(ResultResponse.of(ResultCode.GET_FOLLOWED_POSTS_SUCCESS, response));
     }
 }

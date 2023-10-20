@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.post.service;
 
+import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.dto.PostResponse;
 import com.project.Instagram.domain.post.dto.PostCreateRequest;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
+
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -31,8 +34,8 @@ public class PostService {
     private final SecurityUtil securityUtil;
     private final PostRepository postRepository;
     private final HashtagService hashtagService;
-
     private final S3Uploader s3Uploader;
+    private final FollowService followService;
     private static final String DIR_NAME = "story";
 
     public void create(PostCreateRequest postCreateRequest) throws IOException {
@@ -58,7 +61,7 @@ public class PostService {
         securityUtil.checkLoginMember();
         final Post post = postRepository.findById(postId)
                 .orElseThrow(() ->new BusinessException(ErrorCode.POST_NOT_FOUND));
-        PostResponse postResponse = new PostResponse(post.getMember().getUsername(),post.getContent());
+        PostResponse postResponse = new PostResponse(post.getMember().getUsername(),post.getContent(),post.getImage());
 
         return postResponse;
     }
@@ -81,24 +84,25 @@ public class PostService {
         List<Post> posts = postPage.getContent();
         List<PostResponse> postResponses =  new ArrayList<>();
         for(Post post : posts){
-            postResponses.add(new PostResponse(post.getMember().getUsername(),post.getContent()));
+            postResponses.add(new PostResponse(post.getMember().getUsername(),post.getContent(),post.getImage()));
         }
         PageListResponse<PostResponse> postResponsePage = new PageListResponse<>(postResponses, postPage);
         return postResponsePage;
     }
-
     @Transactional
-    public void editPost(EditPostRequest editPostRequest, Long postId) {
+    public void editPost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
         final Post post = getPostWithMember(postId);
+        String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
-
         String oldContent = post.getContent();
         if(editPostRequest.getContent() != null) {
             post.setContent(editPostRequest.getContent());
         }
         hashtagService.editHashTag(post,oldContent);
+
+        post.editPost(editPostRequest.getContent(), image);
     }
 
     @Transactional
@@ -107,12 +111,22 @@ public class PostService {
         final Post post = getPostWithMember(postId);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_DELETE_FAILED);
-
         if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
+
         post.setDeletedAt(LocalDateTime.now());
     }
 
-    private Post getPostWithMember(Long postId) {
+    public Post getPostWithMember(Long postId) {
         return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+    }
+
+    @Transactional
+    public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {
+        final Long loginMemberId = securityUtil.getLoginMember().getId();
+        List<Long> followedMemberIds = followService.getFollowedMemberIds(loginMemberId);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Post> posts = postRepository.findByMemberIds(followedMemberIds, pageable);
+
+        return getPostResponseListToPostResponsePage(posts);
     }
 }
