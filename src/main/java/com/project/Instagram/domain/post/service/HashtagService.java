@@ -33,11 +33,11 @@ public class HashtagService {
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
         tagsOnContent.forEach(tagName -> {
             Hashtag tempHashtag;
-            if(hashtagMap.containsKey(tagName)){//해시태그 있는경우
+            if(hashtagMap.containsKey(tagName)){
                 tempHashtag=hashtagMap.get(tagName);
                 tempHashtag.updatecount(1);
             }
-            else{//없는경우
+            else{
                 tempHashtag = hashtagRepository.save(new Hashtag(tagName));
             }
 
@@ -76,7 +76,7 @@ public class HashtagService {
             return;
         }
         Hashtag tempHashtag;
-        if(hashtagMap.containsKey(tagName)){//해시태그 있는경우
+        if(hashtagMap.containsKey(tagName)){
             tempHashtag= hashtagMap.get(tagName);
             if(tempHashtag.getCount()==0){
                 tempHashtag.setDeletedAt(null);
@@ -112,7 +112,7 @@ public class HashtagService {
         final Matcher matching = pattern.matcher(content);
 
         while(matching.find()){
-            hashtags.add(matching.group().substring(1));//#제외
+            hashtags.add(matching.group().substring(1));
         }
         return new HashSet<>(hashtags);
     }
