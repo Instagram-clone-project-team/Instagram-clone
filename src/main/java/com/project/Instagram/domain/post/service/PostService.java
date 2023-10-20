@@ -89,20 +89,17 @@ public class PostService {
         PageListResponse<PostResponse> postResponsePage = new PageListResponse<>(postResponses, postPage);
         return postResponsePage;
     }
+
     @Transactional
-    public void editPost(EditPostRequest editPostRequest, Long postId) throws IOException {
+    public void updatePost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
         final Post post = getPostWithMember(postId);
         String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
         String oldContent = post.getContent();
-        if(editPostRequest.getContent() != null) {
-            post.setContent(editPostRequest.getContent());
-        }
+        post.updatePost(editPostRequest.getContent(), image);
         hashtagService.editHashTag(post,oldContent);
-
-        post.editPost(editPostRequest.getContent(), image);
     }
 
     @Transactional
