@@ -31,6 +31,13 @@ public enum ErrorCode {
     POST_DELETE_FAILED(400, "게시판은 게시자만 삭제할 수 있습니다."),
     POST_EDIT_FAILED(400, "게시판 수정은 게시자만 삭제할 수 있습니다."),
     POST_ALREADY_DELETED(400, "이미 삭제된 게시물입니다."),
+  
+    // 팔로우  
+    FOLLOW_MYSELF_FAIL(400, "자기 자신은 팔로우할 수 없습니다."),
+    FOLLOW_ALREADY_EXIST(400,"이미 팔로우 한 유저입니다."),
+    UNFOLLOW_MYSELF_FAIL(400, "자기 자신을 언팔로우할 수 없습니다."),
+    UNFOLLOW_FAIL(400, "팔로우하지 않은 유저는 언팔로우를 할 수 없습니다."),
+    FOLLOW_ALREADY_DELETED(400, "이미 언팔로우 한 사용자입니다."),
 
     //좋아요
     POSTLIKE_ALREADY_EXIST(500,"이미 해당 게시물에 좋아요하셨습니다."),
@@ -38,7 +45,6 @@ public enum ErrorCode {
 
     //공통
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
-
 
     private final int status;
     private final String message;

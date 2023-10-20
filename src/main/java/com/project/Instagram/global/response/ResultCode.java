@@ -20,18 +20,26 @@ public enum ResultCode {
     POST_LIKE_SUCCESS(200,"좋아요 성공하였습니다."),
     POST_UNLIKE_SUCCESS(200,"좋아요 취소하였습니다."),
     REISSUE_JWT_SUCCESS(200, "토큰 재발급이 완료되었습니다"),
-    GET_POSTLIKE_USERS_SUCCESS(200,"해당 게시글 좋아요한 유저 조회가 완료되었습니다."),
-
+  
     //게시글
     GET_POST_PAGE_SUCCESS(200,"게시물 목록 조회가 완료되었습니다."),
     GET_POST_SUCCESS(200,"게시물 상세 조회가 완료되었습니다."),
     GET_POST_USER_PAGE_SUCCESS(200,"해당 유저 게시물 목록 조회가 완료되었습니다."),
     POST_CREATE_SUCCESS(200, "게시글 생성에 성공하였습니다."),
     DELETE_POST_SUCCESS(200, "게시물 삭제에 성공하였습니다."),
-    UPDATE_POST_SUCCESS(200, "게시물 수정이 완료되었습니다.");
-
-
-
+    UPDATE_POST_SUCCESS(200, "게시물 수정이 완료되었습니다."),
+  
+    // 팔로우
+    FOLLOW_FAIL(400, "팔로우에 실패했습니다."),
+    FOLLOW_SUCCESS(200, "팔로우에 성공했습니다."),
+    UNFOLLOW_SUCCESS(200, "언팔로우에 성공했습니다."),
+    FOLLOWINGS_LIST_SUCCESS(200, "팔로잉 목록 조회가 성공했습니다."),
+    FOLLOWERS_LIST_SUCCESS(200, "팔로워 목록 조회가 성공했습니다."),
+    FOLLOWING_COUNT_SUCCESS(200, "팔로잉 수 조회가 성공했습니다."),
+    FOLLOWER_COUNT_SUCCESS(200, "팔로워 수 조회가 성공했습니다."),
+  
+    //좋아요
+    GET_POSTLIKE_USERS_SUCCESS(200,"해당 게시글 좋아요한 유저 조회가 완료되었습니다.");
 
     private final int status;
 
