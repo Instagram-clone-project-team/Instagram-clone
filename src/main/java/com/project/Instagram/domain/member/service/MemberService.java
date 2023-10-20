@@ -25,14 +25,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-
+import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +41,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
-    private final String DELETE_MEMBER_USERNAME="--delete--";
+    private final String DELETE_MEMBER_USERNAME="--deleted--";
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
@@ -168,19 +165,23 @@ public class MemberService {
         refreshTokenService.deleteRefreshTokenByValue(securityUtil.getLoginMember().getId());
     }
 
-    public PageListResponse<Profile> getProfilePageList(int page, int size){
+    public Profile getProfile(String username){
+        //유효한 멤버인지 확인
+        Member member=memberRepository.findByUsername(username).orElseThrow(()-> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        return Profile.convertMemberToProfile(member);
+    }
 
+    public PageListResponse<Profile> getProfilePageList(int page, int size){
         Page<Member> pages = memberRepository.findAllByDeletedAtIsNull(PageRequest.of(page, size));
         List<Profile> profileList = pages.getContent()
                 .stream()
-                .map(Profile::convertFromMember)
+                .map(Profile::convertMemberToProfile)
                 .collect(Collectors.toList());
         return new PageListResponse(profileList, pages);
-
     }
 
     @Transactional
-    public void deleteMember(long memberId){
+    public void deleteMember(){
         Member member=securityUtil.getLoginMember();
         member.updateUsername(DELETE_MEMBER_USERNAME);
         member.setDeletedAt(LocalDateTime.now());

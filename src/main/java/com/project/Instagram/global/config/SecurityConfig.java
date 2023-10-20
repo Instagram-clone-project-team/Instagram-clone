@@ -58,10 +58,10 @@ public class SecurityConfig {
                 .exceptionHandling()
                 .and()
                 .authorizeRequests(authorize -> authorize
-                        .antMatchers("/api/**/sign-up").permitAll()
-                        .antMatchers("/api/**/email").permitAll()
-                        .antMatchers("/api/**/reset").permitAll()
-                        .antMatchers("/api/**/member").permitAll()
+                        .antMatchers("/**/sign-up").permitAll()
+                        .antMatchers("/**/email").permitAll()
+                        .antMatchers("/**/reset").permitAll()
+                        .antMatchers("/**/member").permitAll()
                         .anyRequest().hasAnyRole("USER","ADMIN")
                 );
         return http.build();

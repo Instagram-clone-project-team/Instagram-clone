@@ -12,7 +12,7 @@ public class Profile {
     private String image;
     private String introduce;
 
-    public static Profile convertFromMember(Member member){
+    public static Profile convertMemberToProfile(Member member){
         return new Profile(member.getUsername(),member.getImage(), member.getIntroduce());
     }
     @QueryProjection

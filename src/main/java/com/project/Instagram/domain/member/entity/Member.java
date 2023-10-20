@@ -54,7 +54,7 @@ public class Member extends BaseTimeEntity {
     private Gender gender;
 
     @Column(name = "member_image", nullable = false)
-    private String image = "https://instagram-clone-luee-bucket.s3.ap-northeast-2.amazonaws.com/_f_RqAT2aaKIX1s9EcyxJZ1wFMJWDNteFyQMNG6v0hEr-_bNQfyPLKcp0R8CykUiRS9Rwb26tpPOwP8nKPjy20ftwJvKpYaLaIyWvEUFWOjlMNaMhnaTHkDu5P1a_L1gd1HtVj5-ijEF_wckIiloTA.webp";
+    private String image = "https://instagram-clone-luee-bucket.s3.ap-northeast-2.amazonaws.com/Profile/%EA%B8%B0%EB%B3%B8%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg";
 
     @Column(name = "follower_count")
     private int followerCount;
@@ -82,13 +82,33 @@ public class Member extends BaseTimeEntity {
         this.name = name;
     }
 
-    public void updateUsername(String username){this.username = username;}
-    public void updateName(String name){this.name = name;}
-    public void updateLink(String link){this.link = link;}
-    public void updateIntroduce(String introduce){this.introduce = introduce;}
-    public void updateEmail(String email){this.email = email;}
-    public void updatePhone(String phone){this.phone = phone;}
-    public void updateGender(Gender gender){this.gender = gender;}
+    public void updateUsername(String username) {
+        this.username = username;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateLink(String link) {
+        this.link = link;
+    }
+
+    public void updateIntroduce(String introduce) {
+        this.introduce = introduce;
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updatePhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void updateGender(Gender gender) {
+        this.gender = gender;
+    }
 
     public void increaseFollowerCount() {
         this.followerCount ++;

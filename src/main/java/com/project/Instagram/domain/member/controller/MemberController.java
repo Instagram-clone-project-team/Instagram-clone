@@ -10,19 +10,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-
 import java.util.Map;
+import javax.validation.constraints.Positive;
 
 import static com.project.Instagram.global.response.ResultCode.*;
 
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
 public class MemberController {
 
     private final MemberService memberService;
@@ -42,6 +39,7 @@ public class MemberController {
         memberService.sendAuthEmail(sendAuthEmailRequest.getEmail());
         return ResponseEntity.ok(ResultResponse.of(SEND_EMAIL_SUCCESS));
     }
+
     @PatchMapping("/account/update")
     public ResponseEntity<ResultResponse> updateAccount(@Valid @RequestBody UpdateAccountRequest updateAccountRequest){
         memberService.updateAccount(updateAccountRequest);
@@ -74,10 +72,16 @@ public class MemberController {
         return ResponseEntity.ok(ResultResponse.of(LOGOUT_SUCCESS));
     }
 
-    @DeleteMapping("/member/{id}")
-    public ResponseEntity<ResultResponse> delete(@PathVariable long id) {
-        memberService.deleteMember(id);
+    @DeleteMapping("/member")
+    public ResponseEntity<ResultResponse> delete() {
+        memberService.deleteMember();
         return ResponseEntity.ok(ResultResponse.of(DELETE_SUCCESS));
+    }
+
+    @GetMapping("/member/{username}")
+    public ResponseEntity<ResultResponse> getProfile(@PathVariable("username") String username ) {
+        memberService.getProfile(username);
+        return ResponseEntity.ok(ResultResponse.of(GET_PROFILE_SUCCESS));
     }
 
     @GetMapping("/member")
