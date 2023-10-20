@@ -30,7 +30,7 @@ public class FollowController {
         }
     }
 
-    @DeleteMapping("/follow/{followMemberUsername}")
+    @DeleteMapping("/unfollow/{followMemberUsername}")
     public ResponseEntity<ResultResponse> unfollow(@PathVariable ("followMemberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String followMemberUsername) {
         final boolean followResponse = followService.unfollow(followMemberUsername);
         return ResponseEntity.ok(ResultResponse.of(UNFOLLOW_SUCCESS, followResponse));
@@ -52,5 +52,17 @@ public class FollowController {
             @PathVariable("memberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String memberUsername) {
         final PageListResponse<FollowerDto> followerResponse = followService.getFollowers(memberUsername, page - 1, size);
         return ResponseEntity.ok(ResultResponse.of(FOLLOWERS_LIST_SUCCESS, followerResponse));
+    }
+
+    @GetMapping("/following-count/{memberUsername}")
+    public ResponseEntity<ResultResponse> getFollowingCount(@PathVariable("memberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String memberUsername) {
+        final int followingCount = followService.getFollowingCount(memberUsername);
+        return ResponseEntity.ok(ResultResponse.of(FOLLOWING_COUNT_SUCCESS, followingCount));
+    }
+
+    @GetMapping("/follower-count/{memberUsername}")
+    public ResponseEntity<ResultResponse> getFollowerCount(@PathVariable("memberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String memberUsername) {
+        final int followerCount = followService.getFollowerCount(memberUsername);
+        return ResponseEntity.ok(ResultResponse.of(FOLLOWER_COUNT_SUCCESS, followerCount));
     }
 }

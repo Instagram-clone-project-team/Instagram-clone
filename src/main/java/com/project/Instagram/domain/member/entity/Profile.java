@@ -15,10 +15,10 @@ public class Profile {
     public static Profile convertFromMember(Member member){
         return new Profile(member.getUsername(),member.getImage(), member.getIntroduce());
     }
-
     @QueryProjection
     public Profile(Member member) {
         this.username = member.getUsername();
+        this.image = member.getImage();
         this.introduce = member.getIntroduce();
     }
 }

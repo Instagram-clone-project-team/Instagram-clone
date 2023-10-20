@@ -33,7 +33,14 @@ public enum ResultCode {
     FOLLOW_SUCCESS(200, "팔로우에 성공했습니다."),
     UNFOLLOW_SUCCESS(200, "언팔로우에 성공했습니다."),
     FOLLOWINGS_LIST_SUCCESS(200, "팔로잉 목록 조회가 성공했습니다."),
-    FOLLOWERS_LIST_SUCCESS(200, "팔로워 목록 조회가 성공했습니다.");
+    FOLLOWERS_LIST_SUCCESS(200, "팔로워 목록 조회가 성공했습니다."),
+    FOLLOWING_COUNT_SUCCESS(200, "팔로잉 수 조회가 성공했습니다."),
+    FOLLOWER_COUNT_SUCCESS(200, "팔로워 수 조회가 성공했습니다."),
+  
+    //좋아요
+    POST_LIKE_SUCCESS(200,"좋아요 성공하였습니다."),
+    POST_UNLIKE_SUCCESS(200,"좋아요 취소하였습니다."),
+    GET_POSTLIKE_USERS_SUCCESS(200,"해당 게시글 좋아요한 유저 조회가 완료되었습니다.");
 
     private final int status;
 

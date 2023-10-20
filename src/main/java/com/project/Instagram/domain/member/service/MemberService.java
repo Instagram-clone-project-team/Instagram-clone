@@ -6,6 +6,7 @@ import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.MemberRole;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
@@ -213,4 +214,5 @@ public class MemberService {
         response.put("refresh", newRefreshToken);
         return response;
     }
+
 }

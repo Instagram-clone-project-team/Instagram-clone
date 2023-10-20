@@ -39,9 +39,12 @@ public enum ErrorCode {
     UNFOLLOW_FAIL(400, "팔로우하지 않은 유저는 언팔로우를 할 수 없습니다."),
     FOLLOW_ALREADY_DELETED(400, "이미 언팔로우 한 사용자입니다."),
 
+    //좋아요
+    POSTLIKE_ALREADY_EXIST(500,"이미 해당 게시물에 좋아요하셨습니다."),
+    POSTLIKE_NOT_FOUND(500,"해당 게시물 좋아요를 찾을 수 없습니다."),
+
     //공통
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
-
 
     private final int status;
     private final String message;

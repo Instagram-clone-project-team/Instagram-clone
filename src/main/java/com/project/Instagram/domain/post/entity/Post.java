@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -29,6 +31,7 @@ public class Post extends BaseTimeEntity {
     @Column(name = "post_content")
     private String content;
 
+    private int likeCount;
     @Builder
     public Post(Member member, String image, String content) {
         this.member = member;
@@ -36,7 +39,14 @@ public class Post extends BaseTimeEntity {
         this.content = content;
     }
 
-    public void setContent(String content) {
+    public void editPost(String content, String image) {
         this.content = content;
+        this.image = image;
     }
+    public void upLikeCount(Post post){this.likeCount=likeCount+1;}
+    public void downLikeCount(Post post){this.likeCount=likeCount-1;}
+    @OneToMany(mappedBy = "post")
+    private List<PostLike> postLikes = new ArrayList<>();
+
+
 }
