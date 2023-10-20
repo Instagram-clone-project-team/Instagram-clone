@@ -62,7 +62,7 @@ public class PostController {
     }
 
     @PatchMapping("/update/content/{post_id}")
-    public ResponseEntity<ResultResponse> editPost(@RequestBody @Valid EditPostRequest updatePostRequest, @PathVariable("post_id") Long postId) {
+    public ResponseEntity<ResultResponse> editPost(@ModelAttribute EditPostRequest updatePostRequest, @PathVariable("post_id") Long postId) throws IOException {
         postService.editPost(updatePostRequest, postId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.UPDATE_POST_SUCCESS));
     }
