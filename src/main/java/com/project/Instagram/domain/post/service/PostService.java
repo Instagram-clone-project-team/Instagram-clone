@@ -117,8 +117,9 @@ public class PostService {
         return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
 
-    public boolean isExistsAndNotDeleted(long postId){
+    public boolean isExistsAndNotDeleted(long postId) {
         return postRepository.existsByIdAndDeletedAtIsNull(postId);
+    }
       
     @Transactional
     public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {

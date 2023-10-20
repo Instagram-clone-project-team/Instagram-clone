@@ -100,10 +100,12 @@ public class FollowService {
         return followRepository.countActiveFollowersByMemberUsername(memberUsername);
 
     }
+
     public List<Long> getFollowedMemberIds(Long memberId) {
         List<Follow> follows = followRepository.findByMemberIdAndDeletedAtIsNull(memberId);
         return follows.stream()
                 .map(follow -> follow.getFollowMember().getId())
                 .collect(Collectors.toList());
 
+    }
 }
