@@ -57,7 +57,7 @@ public class PostService {
         securityUtil.checkLoginMember();
         final Post post = postRepository.findById(postId)
                 .orElseThrow(() ->new BusinessException(ErrorCode.POST_NOT_FOUND));
-        PostResponse postResponse = new PostResponse(post.getMember().getUsername(),post.getContent());
+        PostResponse postResponse = new PostResponse(post.getMember().getUsername(),post.getContent(),post.getImage());
 
         return postResponse;
     }
@@ -80,20 +80,19 @@ public class PostService {
         List<Post> posts = postPage.getContent();
         List<PostResponse> postResponses =  new ArrayList<>();
         for(Post post : posts){
-            postResponses.add(new PostResponse(post.getMember().getUsername(),post.getContent()));
+            postResponses.add(new PostResponse(post.getMember().getUsername(),post.getContent(),post.getImage()));
         }
         PageListResponse<PostResponse> postResponsePage = new PageListResponse<>(postResponses, postPage);
         return postResponsePage;
     }
-
     @Transactional
-    public void editPost(EditPostRequest editPostRequest, Long postId) {
+    public void editPost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
         final Post post = getPostWithMember(postId);
+        String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
-
-        if(editPostRequest.getContent() != null) post.setContent(editPostRequest.getContent());
+        post.editPost(editPostRequest.getContent(), image);
     }
 
     @Transactional
@@ -102,12 +101,12 @@ public class PostService {
         final Post post = getPostWithMember(postId);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_DELETE_FAILED);
-
         if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
+
         post.setDeletedAt(LocalDateTime.now());
     }
 
-    private Post getPostWithMember(Long postId) {
+    public Post getPostWithMember(Long postId) {
         return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
 }
