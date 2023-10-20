@@ -16,10 +16,11 @@ import static com.project.Instagram.global.response.ResultCode.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/follow")
 public class FollowController {
     private final FollowService followService;
 
-    @PostMapping("/follow/{followMemberUsername}")
+    @PostMapping("{followMemberUsername}")
     public ResponseEntity<ResultResponse> follow(@PathVariable("followMemberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String followMemberUsername) {
         final boolean followResponse = followService.follow(followMemberUsername);
 
@@ -30,7 +31,7 @@ public class FollowController {
         }
     }
 
-    @DeleteMapping("/unfollow/{followMemberUsername}")
+    @DeleteMapping("{followMemberUsername}")
     public ResponseEntity<ResultResponse> unfollow(@PathVariable ("followMemberUsername") @Validated @NotBlank(message = "사용자 이름이 필요합니다.") String followMemberUsername) {
         final boolean followResponse = followService.unfollow(followMemberUsername);
         return ResponseEntity.ok(ResultResponse.of(UNFOLLOW_SUCCESS, followResponse));

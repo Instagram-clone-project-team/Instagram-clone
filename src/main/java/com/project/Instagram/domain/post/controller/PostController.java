@@ -61,12 +61,12 @@ public class PostController {
         return ResponseEntity.ok(ResultResponse.of(ResultCode.GET_POST_USER_PAGE_SUCCESS,response));
     }
 
-    @PatchMapping("/update/content/{post_id}")
+    @PatchMapping("{post_id}")
     public ResponseEntity<ResultResponse> updatePost(@ModelAttribute EditPostRequest updatePostRequest, @PathVariable("post_id") Long postId) throws IOException {
         postService.updatePost(updatePostRequest, postId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.UPDATE_POST_SUCCESS));
     }
-    @DeleteMapping("/delete/{post_id}")
+    @DeleteMapping("{post_id}")
     public ResponseEntity<ResultResponse> deletePost(@PathVariable("post_id") Long postId) {
         postService.delete(postId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.DELETE_POST_SUCCESS));
