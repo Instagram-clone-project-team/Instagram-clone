@@ -13,5 +13,6 @@ public class PostResponse {
 
     private String username;
     private String content;
+    private String image;
 
 }
