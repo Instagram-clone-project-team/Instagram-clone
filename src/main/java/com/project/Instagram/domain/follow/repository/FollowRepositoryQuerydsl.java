@@ -12,6 +12,6 @@ public interface FollowRepositoryQuerydsl {
 
     Page<FollowerDto> findFollowers(Long loginId, Long memberId, Pageable pageable);
 
-    List<Follow> findFollows(Long memberId, List<Long> agentIds);
+//    List<Follow> findFollows(Long memberId, List<Long> agentIds);
 }
 

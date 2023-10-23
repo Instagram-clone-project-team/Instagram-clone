@@ -31,15 +31,15 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
         return findFollowerDtoList(loginId, findFollowerIdList(memberId), pageable);
     }
 
-    @Override
-    public List<Follow> findFollows(Long memberId, List<Long> agentIds) {
-        return jpaQueryFactory
-                .selectFrom(follow)
-                .where(isFollowing(memberId, agentIds))
-                .innerJoin(follow.member, member).fetchJoin()
-                .innerJoin(follow.followMember, member).fetchJoin()
-                .fetch();
-    }
+//    @Override
+//    public List<Follow> findFollows(Long memberId, List<Long> agentIds) {
+//        return jpaQueryFactory
+//                .selectFrom(follow)
+//                .where(isFollowing(memberId, agentIds))
+//                .innerJoin(follow.member, member).fetchJoin()
+//                .innerJoin(follow.followMember, member).fetchJoin()
+//                .fetch();
+//    }
 
     private BooleanExpression isFollowing(Long memberId, List<Long> agentIds) {
         return follow.member.id.eq(memberId).and(follow.followMember.id.in(agentIds));
@@ -75,8 +75,7 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                 .select(follow.followMember.id)
                 .from(follow)
                 .where(follow.member.id.eq(memberId)
-                        .and(member.deletedAt.isNull())
-                        .and(follow.deletedAt.isNull()));
+                        .and(member.deletedAt.isNull()));
     }
 
     private JPQLQuery<Long> findFollowerIdList(Long memberId) {
@@ -84,7 +83,6 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                 .select(follow.member.id)
                 .from(follow)
                 .where(follow.followMember.id.eq(memberId)
-                        .and(member.deletedAt.isNull())
-                        .and(follow.deletedAt.isNull()));
+                        .and(member.deletedAt.isNull()));
     }
 }
