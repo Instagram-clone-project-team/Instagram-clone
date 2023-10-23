@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,12 +74,11 @@ public class AlarmService {
     }
 
     @Transactional
-    public void sendPostLikeAlarm(AlarmType type, Member target, Post post) {
+    public void sendPostLikeAlarm(AlarmType type, Member agent, Member target, Post post) {
         if (!type.equals(LIKE_POST)) throw new BusinessException(MISMATCHED_ALARM_TYPE);
-        final Member loginMember = securityUtil.getLoginMember();
         final Alarm alarm = Alarm.builder()
                 .type(type)
-                .agent(loginMember)
+                .agent(agent)
                 .target(target)
                 .post(post)
                 .build();
@@ -105,20 +105,19 @@ public class AlarmService {
     }
 
     @Transactional
-    public void sendMentionPostAlarm(AlarmType type, List<Member> targets, Post post) {
+    public void sendMentionPostAlarm(AlarmType type, Member agent, List<String> targets, Post post) {
         if (!type.equals(MENTION_POST)) throw new BusinessException(MISMATCHED_ALARM_TYPE);
-        final Member loginMember = securityUtil.getLoginMember();
-        alarmRepository.saveMentionPostAlarms(loginMember, targets, post);
+        List<Member> target = memberRepository.findAllByUsernameIn(targets);
+        alarmRepository.saveMentionPostAlarms(agent, target, post);
     }
 
-    // 맨션 있어야함 코맨트랑
-//    @Transactional
-//    public void sendMentionCommentAlarm(AlarmType type, List<Member> targets, Post post, Comment comment) {
-//        if (!type.equals(MENTION_COMMENT)) throw new BusinessException(MISMATCHED_ALARM_TYPE);
-//        final Member loginMember = securityUtil.getLoginMember();
-//        alarmRepository.saveMentionCommentAlarms(loginMember, targets, post, comment);
-//
-//    }
+    @Transactional
+    public void sendMentionCommentAlarm(AlarmType type, Member agent, List<String> targets, Post post, Comment comment) {
+        if (!type.equals(MENTION_COMMENT)) throw new BusinessException(MISMATCHED_ALARM_TYPE);
+        List<Member> target = memberRepository.findAllByUsernameIn(targets);
+        alarmRepository.saveMentionCommentAlarms(agent, target, post, comment);
+
+    }
 
     @Transactional
     public void deletePostLikeAlarm(AlarmType type, Member target, Post post) {
