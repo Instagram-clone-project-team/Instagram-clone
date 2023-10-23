@@ -43,6 +43,7 @@ public class Post extends BaseTimeEntity {
         this.content = content;
         this.image = image;
     }
+
     public void upLikeCount(Post post){this.likeCount=likeCount+1;}
     public void downLikeCount(Post post){this.likeCount=likeCount-1;}
     @OneToMany(mappedBy = "post")

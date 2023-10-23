@@ -46,6 +46,9 @@ public enum ErrorCode {
     //댓글
     COMMENT_NOT_FOUND(500, "해당 댓글이 존재하지 않습니다."),
 
+    // 알람
+    MISMATCHED_ALARM_TYPE(400, "알람 타입이 올바르지 않습니다."),
+
     //공통
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
 

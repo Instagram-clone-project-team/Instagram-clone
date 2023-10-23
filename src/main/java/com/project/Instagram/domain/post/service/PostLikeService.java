@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.post.service;
 
+import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.member.dto.LikesMemberResponseDto;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.entity.Post;
@@ -21,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.project.Instagram.domain.alarm.dto.AlarmType.LIKE_POST;
+
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,8 @@ public class PostLikeService {
     private final PostRepository postRepository;
     private final SecurityUtil securityUtil;
     private final PostLikeRepository postLikeRepository;
+    private final AlarmService alarmService;
+
     @Transactional
     public void postlike(Long postId) {
         final Post post = getPostbypostId(postId);
@@ -38,6 +43,7 @@ public class PostLikeService {
         }
         PostLike postLike=new PostLike(member,post);
         postLikeRepository.save(postLike);
+        alarmService.sendPostLikeAlarm(LIKE_POST, post.getMember(), post);
         post.upLikeCount(post);
     }
     @Transactional
@@ -49,6 +55,7 @@ public class PostLikeService {
                 .orElseThrow(()->new BusinessException(ErrorCode.POSTLIKE_NOT_FOUND));
         postLike.setDeletedAt(LocalDateTime.now());
         post.downLikeCount(post);
+        alarmService.deletePostLikeAlarm(LIKE_POST, post.getMember(), post);
     }
     @Transactional(readOnly = true)
     public PageListResponse<LikesMemberResponseDto> getPostLikeUsers(Long postId, int page, int size) {
