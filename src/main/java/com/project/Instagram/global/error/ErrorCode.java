@@ -45,6 +45,7 @@ public enum ErrorCode {
 
     //댓글
     COMMENT_NOT_FOUND(500, "해당 댓글이 존재하지 않습니다."),
+    COMMENT_WRITER_FAIL(500, "해당 댓글의 작성자가 아닙니다."),
 
     // 알람
     MISMATCHED_ALARM_TYPE(400, "알람 타입이 올바르지 않습니다."),

@@ -38,7 +38,7 @@ public class CommentService {
 
     public void createComment(String text, long postId) {
         Member member = securityUtil.getLoginMember();
-        Post post=postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(()->new BusinessException(ErrorCode.POST_NOT_FOUND));
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         Comment newComment = Comment.builder()
                 .writer(member)
                 .text(text)
@@ -53,7 +53,8 @@ public class CommentService {
     public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
         if (!postRepository.existsByIdAndDeletedAtIsNull(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
-        if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId)) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
+        if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId))
+            throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
         Long count = commentRepository.countCommentsByParentsCommentId(parentsCommentId);
         Comment replyComment = Comment.builder()
                 .writer(member)
@@ -67,16 +68,20 @@ public class CommentService {
 
     @Transactional
     public void updateComment(long commentId, String text) {
+        Member member = securityUtil.getLoginMember();
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+        if (comment.getWriter() != member) throw new BusinessException(ErrorCode.COMMENT_WRITER_FAIL);
         comment.updateText(text);
     }
 
     @Transactional
     public void deleteComment(long commentId) {
+        Member member = securityUtil.getLoginMember();
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
         comment.setDeletedAt(LocalDateTime.now());
+        if (comment.getWriter() != member) throw new BusinessException(ErrorCode.COMMENT_WRITER_FAIL);
         comment.updateText(DELETE_COMMENT);
     }
 
@@ -84,11 +89,11 @@ public class CommentService {
         if (!postRepository.existsByIdAndDeletedAtIsNull(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
         List<CommentResponse> list = new ArrayList<>();
         List<Comment> comments = commentRepository.findAllByPostId(postId);
-        for(Comment c:comments){
-            if(c.getParentsCommentId()!=null) continue;
-            long parentCommentId=c.getId();
-            List<SimpleComment> replies=comments.stream()
-                    .filter(e->e.getParentsCommentId()!=null && e.getParentsCommentId()==parentCommentId)
+        for (Comment c : comments) {
+            if (c.getParentsCommentId() != null) continue;
+            long parentCommentId = c.getId();
+            List<SimpleComment> replies = comments.stream()
+                    .filter(e -> e.getParentsCommentId() != null && e.getParentsCommentId() == parentCommentId)
                     .sorted(Comparator.comparing(Comment::getReplyOrder).reversed())
                     .map(SimpleComment::new)
                     .collect(Collectors.toList());
