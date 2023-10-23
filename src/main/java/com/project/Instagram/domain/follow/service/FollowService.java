@@ -49,7 +49,7 @@ public class FollowService {
         }, () -> {
             Follow follow = new Follow(member, followMember);
             followRepository.save(follow);
-            alarmService.sendFollowAlarm(followMember, follow);
+            alarmService.sendFollowAlarm(member, followMember, follow);
             member.increaseFollowingCount();
             followMember.increaseFollowerCount();
         });
@@ -72,7 +72,7 @@ public class FollowService {
         follow.setDeletedAt(LocalDateTime.now());
         member.decreaseFollowingCount();
         followMember.decreaseFollowerCount();
-        alarmService.deleteFollowAlarm(followMember, follow);
+        alarmService.deleteFollowAlarm(member, followMember, follow);
         return true;
     }
 

@@ -5,6 +5,7 @@ import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.follow.entity.Follow;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.entity.Post;
+import com.project.Instagram.domain.post.entity.PostLike;
 import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,4 +55,5 @@ public class Alarm extends BaseTimeEntity {
         this.comment = comment;
         this.follow = follow;
     }
+
 }

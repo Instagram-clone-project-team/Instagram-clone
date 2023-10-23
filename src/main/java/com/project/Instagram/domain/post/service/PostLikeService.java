@@ -43,9 +43,10 @@ public class PostLikeService {
         }
         PostLike postLike=new PostLike(member,post);
         postLikeRepository.save(postLike);
-        alarmService.sendPostLikeAlarm(LIKE_POST, post.getMember(), post);
+        alarmService.sendPostLikeAlarm(LIKE_POST, member, post.getMember(), postLike);
         post.upLikeCount(post);
     }
+
     @Transactional
     public void postunlike(Long postId) {
         final Post post = getPostbypostId(postId);
@@ -55,8 +56,9 @@ public class PostLikeService {
                 .orElseThrow(()->new BusinessException(ErrorCode.POSTLIKE_NOT_FOUND));
         postLike.setDeletedAt(LocalDateTime.now());
         post.downLikeCount(post);
-        alarmService.deletePostLikeAlarm(LIKE_POST, post.getMember(), post);
+        alarmService.deletePostLikeAlarm(LIKE_POST, member, post.getMember(), post);
     }
+
     @Transactional(readOnly = true)
     public PageListResponse<LikesMemberResponseDto> getPostLikeUsers(Long postId, int page, int size) {
         final Pageable pageable = PageRequest.of(page,size);
@@ -75,7 +77,4 @@ public class PostLikeService {
                 .orElseThrow(()-> new BusinessException(ErrorCode.POST_NOT_FOUND));
         return post;
     }
-
-
-
 }
