@@ -1,11 +1,15 @@
 package com.project.Instagram.domain.comment.service;
 
+import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.comment.dto.CommentResponse;
 import com.project.Instagram.domain.comment.dto.SimpleComment;
 import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.comment.repository.CommentRepository;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.mention.service.MentionService;
+import com.project.Instagram.domain.post.entity.Post;
+import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
@@ -27,13 +31,14 @@ import static com.project.Instagram.domain.alarm.dto.AlarmType.COMMENT;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final SecurityUtil securityUtil;
-    private final PostService postService;
+    private final PostRepository postRepository;
     private final AlarmService alarmService;
+    private final MentionService mentionService;
     private static final String DELETE_COMMENT = "삭제된 댓글입니다.";
 
     public void createComment(String text, long postId) {
         Member member = securityUtil.getLoginMember();
-        if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        Post post=postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(()->new BusinessException(ErrorCode.POST_NOT_FOUND));
         Comment newComment = Comment.builder()
                 .writer(member)
                 .text(text)
@@ -42,12 +47,12 @@ public class CommentService {
                 .replyOrder(0)
                 .build();
         commentRepository.save(newComment);
-
+        mentionService.checkMentionsFromComment(member, text, post, newComment);
     }
 
     public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
-        if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        if (!postRepository.existsByIdAndDeletedAtIsNull(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
         if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId)) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
         Long count = commentRepository.countCommentsByParentsCommentId(parentsCommentId);
         Comment replyComment = Comment.builder()
@@ -76,7 +81,7 @@ public class CommentService {
     }
 
     public List<CommentResponse> getCommentsByPostId(long postId) {
-        if (!postService.isExistsAndNotDeleted(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        if (!postRepository.existsByIdAndDeletedAtIsNull(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
         List<CommentResponse> list = new ArrayList<>();
         List<Comment> comments = commentRepository.findAllByPostId(postId);
         for(Comment c:comments){
