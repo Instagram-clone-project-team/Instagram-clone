@@ -5,7 +5,7 @@ import com.project.Instagram.domain.member.entity.Profile;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import static com.project.Instagram.domain.member.entity.Profile.convertFromMember;
+import static com.project.Instagram.domain.member.entity.Profile.convertMemberToProfile;
 
 @Getter
 @NoArgsConstructor
@@ -14,6 +14,6 @@ public class LikesMemberResponseDto {
 
 
     public LikesMemberResponseDto(Member member){
-        this.profile = convertFromMember(member);
+        this.profile = convertMemberToProfile(member);
     }
 }

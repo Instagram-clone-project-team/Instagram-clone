@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.follow.service;
 
+import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.follow.dto.FollowerDto;
 import com.project.Instagram.domain.follow.entity.Follow;
 import com.project.Instagram.domain.follow.repository.FollowRepository;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class FollowService {
     private final FollowRepository followRepository;
     private final MemberRepository memberRepository;
+    private final AlarmService alarmService;
     private final SecurityUtil securityUtil;
 
     @Transactional
@@ -47,6 +49,7 @@ public class FollowService {
         }, () -> {
             Follow follow = new Follow(member, followMember);
             followRepository.save(follow);
+            alarmService.sendFollowAlarm(followMember, follow);
             member.increaseFollowingCount();
             followMember.increaseFollowerCount();
         });
@@ -69,6 +72,7 @@ public class FollowService {
         follow.setDeletedAt(LocalDateTime.now());
         member.decreaseFollowingCount();
         followMember.decreaseFollowerCount();
+        alarmService.deleteFollowAlarm(followMember, follow);
         return true;
     }
 

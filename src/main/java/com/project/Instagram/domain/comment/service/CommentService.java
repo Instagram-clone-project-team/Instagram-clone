@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.comment.service;
 
+import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.comment.dto.CommentResponse;
 import com.project.Instagram.domain.comment.dto.SimpleComment;
 import com.project.Instagram.domain.comment.entity.Comment;
@@ -18,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.project.Instagram.domain.alarm.dto.AlarmType.COMMENT;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,6 +28,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final SecurityUtil securityUtil;
     private final PostService postService;
+    private final AlarmService alarmService;
     private static final String DELETE_COMMENT = "삭제된 댓글입니다.";
 
     public void createComment(String text, long postId) {
@@ -38,6 +42,7 @@ public class CommentService {
                 .replyOrder(0)
                 .build();
         commentRepository.save(newComment);
+
     }
 
     public void createReplyComment(String text, long postId, long parentsCommentId) {
