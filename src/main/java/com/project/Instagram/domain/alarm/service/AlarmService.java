@@ -12,6 +12,8 @@ import com.project.Instagram.domain.follow.repository.FollowRepository;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.domain.post.entity.Post;
+import com.project.Instagram.domain.post.entity.PostLike;
+import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ public class AlarmService {
     private final AlarmRepository alarmRepository;
     private final FollowRepository followRepository;
     private final MemberRepository memberRepository;
+    private final PostRepository postRepository;
     private final SecurityUtil securityUtil;
 
     // 댓글 해시태그 멘션 합쳐야함
@@ -61,11 +64,10 @@ public class AlarmService {
 //    }
 
     @Transactional
-    public void sendFollowAlarm(Member target, Follow follow) {
-        final Member loginMember = securityUtil.getLoginMember();
+    public void sendFollowAlarm(Member agent, Member target, Follow follow) {
         final Alarm alarm = Alarm.builder()
                 .type(FOLLOW)
-                .agent(loginMember)
+                .agent(agent)
                 .target(target)
                 .follow(follow)
                 .build();
@@ -74,28 +76,27 @@ public class AlarmService {
     }
 
     @Transactional
-    public void sendPostLikeAlarm(AlarmType type, Member agent, Member target, Post post) {
+    public void sendPostLikeAlarm(AlarmType type, Member agent, Member target, PostLike post) {
         if (!type.equals(LIKE_POST)) throw new BusinessException(MISMATCHED_ALARM_TYPE);
         final Alarm alarm = Alarm.builder()
                 .type(type)
                 .agent(agent)
                 .target(target)
-                .post(post)
+                .post(post.getPost())
                 .build();
 
         alarmRepository.save(alarm);
     }
 
     @Transactional
-    public void sendCommentAlarm(AlarmType type, Member target, Post post, Comment comment) {
+    public void sendCommentAlarm(AlarmType type, Member agent, Member target, Post post, Comment comment) {
         if (!type.equals(COMMENT) && !type.equals(LIKE_COMMENT) && !type.equals(MENTION_COMMENT)) {
             throw new BusinessException(MISMATCHED_ALARM_TYPE);
         }
 
-        final Member loginMember = securityUtil.getLoginMember();
         final Alarm alarm = Alarm.builder()
                 .type(type)
-                .agent(loginMember)
+                .agent(agent)
                 .target(target)
                 .post(post)
                 .comment(comment)
@@ -120,21 +121,18 @@ public class AlarmService {
     }
 
     @Transactional
-    public void deletePostLikeAlarm(AlarmType type, Member target, Post post) {
-        final Member loginMember = securityUtil.getLoginMember();
-        alarmRepository.deleteByTypeAndAgentAndTargetAndPost(type, loginMember, target, post);
+    public void deletePostLikeAlarm(AlarmType type, Member agent, Member target, Post post) {
+        alarmRepository.deleteByTypeAndAgentAndTargetAndPost(type, agent, target, post);
     }
 
     @Transactional
-    public void deleteCommentLikeAlarm(AlarmType type, Member target, Comment comment) {
-        final Member loginMember = securityUtil.getLoginMember();
-        alarmRepository.deleteByTypeAndAgentAndTargetAndComment(type, loginMember, target, comment);
+    public void deleteCommentLikeAlarm(AlarmType type, Member agent, Member target, Comment comment) {
+        alarmRepository.deleteByTypeAndAgentAndTargetAndComment(type, agent, target, comment);
     }
 
     @Transactional
-    public void deleteFollowAlarm(Member target, Follow follow) {
-        final Member loginMember = securityUtil.getLoginMember();
-        alarmRepository.deleteByTypeAndAgentAndTargetAndFollow(FOLLOW, loginMember, target, follow);
+    public void deleteFollowAlarm(Member agent, Member target, Follow follow) {
+        alarmRepository.deleteByTypeAndAgentAndTargetAndFollow(FOLLOW, agent, target, follow);
     }
 
     @Transactional
