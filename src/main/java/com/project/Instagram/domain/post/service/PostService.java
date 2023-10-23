@@ -1,7 +1,9 @@
 package com.project.Instagram.domain.post.service;
 
+import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.mention.service.MentionService;
 import com.project.Instagram.domain.post.dto.PostResponse;
 import com.project.Instagram.domain.post.dto.PostCreateRequest;
 import com.project.Instagram.domain.post.dto.EditPostRequest;
@@ -36,6 +38,7 @@ public class PostService {
     private final HashtagService hashtagService;
     private final S3Uploader s3Uploader;
     private final FollowService followService;
+    private final MentionService mentionService;
     private static final String DIR_NAME = "story";
 
     public void create(PostCreateRequest postCreateRequest) throws IOException {
@@ -48,6 +51,7 @@ public class PostService {
                 .build();
         postRepository.save(newPost);
         hashtagService.registerHashtags(newPost);
+        mentionService.checkMentionsFromPost(member, postCreateRequest.getContent(), newPost);
     }
     public PageListResponse<PostResponse> getPostPageList(int page, int size) {
         securityUtil.checkLoginMember();
@@ -115,10 +119,6 @@ public class PostService {
 
     public Post getPostWithMember(Long postId) {
         return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-    }
-
-    public boolean isExistsAndNotDeleted(long postId) {
-        return postRepository.existsByIdAndDeletedAtIsNull(postId);
     }
       
     @Transactional
