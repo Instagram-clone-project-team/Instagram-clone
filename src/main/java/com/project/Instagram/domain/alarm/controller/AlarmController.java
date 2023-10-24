@@ -20,7 +20,7 @@ import static com.project.Instagram.global.response.ResultCode.GET_ALARMS_SUCCES
 @RestController
 @RequiredArgsConstructor
 public class AlarmController {
-    private final AlarmService alarmService;
+//    private final AlarmService alarmService;
 
 //    @GetMapping("/alarms")
 //    public ResponseEntity<ResultResponse> getAlarmsPage(

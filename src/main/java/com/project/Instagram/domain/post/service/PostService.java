@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.post.service;
 
 import com.project.Instagram.domain.alarm.dto.AlarmType;
+import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.mention.service.MentionService;
@@ -39,6 +40,8 @@ public class PostService {
     private final S3Uploader s3Uploader;
     private final FollowService followService;
     private final MentionService mentionService;
+    private final AlarmService alarmService;
+
     private static final String DIR_NAME = "story";
 
     public void create(PostCreateRequest postCreateRequest) throws IOException {
@@ -103,7 +106,7 @@ public class PostService {
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
         String oldContent = post.getContent();
         post.updatePost(editPostRequest.getContent(), image);
-        hashtagService.editHashTag(post,oldContent);
+        hashtagService.editHashTag(post, oldContent);
     }
 
     @Transactional
@@ -115,6 +118,7 @@ public class PostService {
         if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
 
         post.setDeletedAt(LocalDateTime.now());
+        alarmService.deleteAllPostAlarm(post);
     }
 
     public Post getPostWithMember(Long postId) {

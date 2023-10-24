@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface AlarmRepository extends JpaRepository<Alarm, Long>, AlarmRepositoryQuerydsl, AlarmRepositoryJdbc {
+public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 
     void deleteByTypeAndAgentAndTargetAndPost(AlarmType type, Member agent, Member target, Post post);
 
@@ -21,4 +21,5 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long>, AlarmReposi
     List<Alarm> findAllByPost(Post post);
 
     List<Alarm> findAllByCommentIn(List<Comment> comments);
+
 }
