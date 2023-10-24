@@ -1,5 +1,8 @@
 package com.project.Instagram.domain.post.service;
 
+import com.project.Instagram.domain.comment.entity.Comment;
+import com.project.Instagram.domain.comment.entity.CommentHashtag;
+import com.project.Instagram.domain.comment.repository.CommentHashtagRepository;
 import com.project.Instagram.domain.post.entity.Hashtag;
 import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.entity.PostHashtag;
@@ -19,14 +22,27 @@ import java.util.stream.Collectors;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
+    private final CommentHashtagRepository commentHashtagRepository;
 
     @Transactional
-    public void registerHashtags(Post post){
-        registerHashTag(post, post.getContent());
+    public void registerHashTagOnComment(Comment comment, String content ){
+        final Set<String> tagsOnText = filteringHashtag(content);
+        final Map<String, Hashtag> hashtagMap = hashtagRepository.findByTagNameIn(tagsOnText).stream()
+                .collect((Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag)));
+        tagsOnText.forEach(tagName ->{
+            Hashtag tempHashtag;
+            if(hashtagMap.containsKey(tagName)){
+                tempHashtag=hashtagMap.get(tagName);
+                tempHashtag.updatecount(1);
+            }
+            else {
+                tempHashtag = hashtagRepository.save(new Hashtag(tagName));
+            }
+            commentHashtagRepository.save(new CommentHashtag(tempHashtag, comment));
+        });
     }
-
-
-    public void registerHashTag(Post post, String content){
+    @Transactional
+    public void registerHashTagOnPost(Post post, String content){
         final Set<String> tagsOnContent = filteringHashtag(content);
         final Map<String, Hashtag> hashtagMap = hashtagRepository.findByTagNameIn(tagsOnContent).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
@@ -44,7 +60,24 @@ public class HashtagService {
         });
     }
     @Transactional
-    public void editHashTag(Post post, String beforeContent){
+    public void editHashTagOnComment(Comment comment, String beforeContent){
+        final Set<String> afterTags = filteringHashtag(comment.getText());
+        final Set<String> beforeTags = filteringHashtag(beforeContent);
+
+        final Map<String, Hashtag> afterHashtagMap = hashtagRepository.findByTagNameIn(afterTags).stream()
+                .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
+        final Map<String, Hashtag> beforeHashtagMap = hashtagRepository.findByTagNameIn(beforeTags).stream()
+                .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
+        beforeTags.forEach(tagName -> {
+            deleteHashtagsOnComment(afterHashtagMap, beforeHashtagMap, tagName,comment);
+        });
+        afterTags.forEach(tagName -> {
+            saveHashtagsOnComment(afterHashtagMap, beforeHashtagMap,tagName,comment);
+        });
+
+    }
+    @Transactional
+    public void editHashTagOnPost(Post post, String beforeContent){
         final Set<String> afterNames = filteringHashtag(post.getContent());
         final Set<String> beforeNames = filteringHashtag(beforeContent);
 
@@ -53,14 +86,14 @@ public class HashtagService {
         final Map<String, Hashtag> beforeHashtagMap = hashtagRepository.findByTagNameIn(beforeNames).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
         beforeNames.forEach(tagName -> {
-            filteringAndDeleteHashtags(afterhashtagMap, beforeHashtagMap, tagName,post);
+            deleteHashtagsOnPost(afterhashtagMap, beforeHashtagMap, tagName,post);
         });
         afterNames.forEach(tagName -> {
-            filteringAndSaveHashtags(post, afterhashtagMap, beforeHashtagMap, tagName);
+            saveHashtagsOnPost(afterhashtagMap, beforeHashtagMap, tagName,post);
         });
     }
-
-    private void filteringAndSaveHashtags(Post post, Map<String, Hashtag> afterhashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName) {
+    @Transactional
+    private void saveHashtagsOnPost(Map<String, Hashtag> afterhashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName, Post post) {
         if(beforeHashtagMap.containsKey(tagName)){
             return;
         }
@@ -74,8 +107,23 @@ public class HashtagService {
         }
         postHashtagRepository.save(new PostHashtag(tempHashtag, post));
     }
-
-    private void filteringAndDeleteHashtags(Map<String, Hashtag> afterhashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName, Post post) {
+    @Transactional
+    private void saveHashtagsOnComment(Map<String, Hashtag> afterhashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName, Comment comment) {
+        if(beforeHashtagMap.containsKey(tagName)){
+            return;
+        }
+        Hashtag tempHashtag;
+        if(afterhashtagMap.containsKey(tagName)){
+            tempHashtag= afterhashtagMap.get(tagName);
+            tempHashtag.updatecount(1);
+        }
+        else{
+            tempHashtag = hashtagRepository.save(new Hashtag(tagName));
+        }
+        commentHashtagRepository.save(new CommentHashtag(tempHashtag, comment));
+    }
+    @Transactional
+    private void deleteHashtagsOnPost(Map<String, Hashtag> afterhashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName, Post post) {
         if(afterhashtagMap.containsKey(tagName)){
             return;
         }
@@ -89,7 +137,21 @@ public class HashtagService {
             postHashtagRepository.delete(postHashtag);
         }
     }
-
+    @Transactional
+    private void deleteHashtagsOnComment(Map<String, Hashtag> afterhashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName, Comment comment) {
+        if(afterhashtagMap.containsKey(tagName)){
+            return;
+        }
+        Hashtag tempHashtag= beforeHashtagMap.get(tagName);
+        CommentHashtag commentHashtag = commentHashtagRepository.findByHashtagAndComment(tempHashtag,comment);
+        if (tempHashtag.getCount() == 1) {
+            commentHashtagRepository.delete(commentHashtag);
+            hashtagRepository.delete(tempHashtag);
+        } else {
+            tempHashtag.updatecount(-1);
+            commentHashtagRepository.delete(commentHashtag);
+        }
+    }
     public Set<String> filteringHashtag(String content){
         Set<String> hashtags = new HashSet<>();
         final String regex = "#[0-9a-zA-Z가-힣ㄱ-ㅎ_]+";
