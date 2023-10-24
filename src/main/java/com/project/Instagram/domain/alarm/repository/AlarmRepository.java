@@ -6,6 +6,8 @@ import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.follow.entity.Follow;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.entity.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -21,5 +23,7 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     List<Alarm> findAllByPost(Post post);
 
     List<Alarm> findAllByCommentIn(List<Comment> comments);
+
+    Page<Alarm> findByTargetId(Long targetId, Pageable pageable);
 
 }

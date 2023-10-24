@@ -12,6 +12,7 @@ public enum ErrorCode {
     PASSWORD_SAME(400,"기존 비밀번호와 같습니다."),
     MEMBER_NOT_FOUND(400,"존재 하지 않는 유저입니다."),
     USERNAME_ALREADY_EXIST(400,"해당 유저네임은 이미 존재합니다."),
+    EMAIL_ALREADY_EXIST(400, "이미 가입된 이메일입니다."),
     LOGIN_INFORMATION_ERROR(500, "현재 사용자의 ID를 가져오는 중 문제가 발생했습니다."),
     MEMBER_NOT_LOGIN(400,"로그인 상태가 아닙니다."),
     INVALID_ROLE(500,"MemberRole의 role을 가져오는데 실패했습니다."),

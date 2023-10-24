@@ -5,6 +5,7 @@ import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.entity.PostHashtag;
 import com.project.Instagram.domain.post.repository.HashtagRepository;
 import com.project.Instagram.domain.post.repository.PostHashtagRepository;
+import com.project.Instagram.global.util.StringExtractUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
+    private final StringExtractUtil stringExtractUtil;
 
     @Transactional
     public void registerHashtags(Post post){
@@ -28,7 +30,7 @@ public class HashtagService {
 
 
     public void registerHashTag(Post post, String content){
-        final Set<String> tagsOnContent = filteringHashtag(content);
+        final Set<String> tagsOnContent = stringExtractUtil.filteringHashtag(content);
         final Map<String, Hashtag> hashtagMap = hashtagRepository.findByTagNameIn(tagsOnContent).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
         tagsOnContent.forEach(tagName -> {
@@ -46,8 +48,8 @@ public class HashtagService {
     }
     @Transactional
     public void editHashTag(Post post, String beforeContent){
-        final Set<String> afterNames = filteringHashtag(post.getContent());
-        final Set<String> beforeNames = filteringHashtag(beforeContent);
+        final Set<String> afterNames = stringExtractUtil.filteringHashtag(post.getContent());
+        final Set<String> beforeNames = stringExtractUtil.filteringHashtag(beforeContent);
 
         final Map<String, Hashtag> hashtagMap = hashtagRepository.findByTagNameIn(afterNames).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
@@ -104,17 +106,4 @@ public class HashtagService {
             deleteHashtags.add(tempHashtag);
         }
     }
-
-    public Set<String> filteringHashtag(String content){
-        Set<String> hashtags = new HashSet<>();
-        final String regex = "#[0-9a-zA-Z가-힣ㄱ-ㅎ_]+";
-        final Pattern pattern = Pattern.compile(regex);
-        final Matcher matching = pattern.matcher(content);
-
-        while(matching.find()){
-            hashtags.add(matching.group().substring(1));
-        }
-        return new HashSet<>(hashtags);
-    }
-
 }

@@ -9,6 +9,7 @@ import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.util.StringExtractUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,24 +26,15 @@ import java.util.regex.Pattern;
 public class MentionService {
 
     private final AlarmService alarmService;
+    private final StringExtractUtil stringExtractUtil;
 
     public void checkMentionsFromPost(Member agent, String content, Post post) {
-        alarmService.sendMentionPostAlarm(AlarmType.MENTION_POST, agent, filteringMentions(content), post);
+        alarmService.sendMentionPostAlarm(AlarmType.MENTION_POST, agent, stringExtractUtil.filteringMentions(content), post);
     }
 
     public void checkMentionsFromComment(Member agent, String text, Post post, Comment comment) {
-        alarmService.sendMentionCommentAlarm(AlarmType.MENTION_COMMENT, agent, filteringMentions(text), post, comment);
+        alarmService.sendMentionCommentAlarm(AlarmType.MENTION_COMMENT, agent, stringExtractUtil.filteringMentions(text), post, comment);
     }
 
-    private List<String> filteringMentions(String content) {
-        List<String> mention_usernames = new ArrayList<>();
-        String regex = "@[0-9a-zA-Z가-힣ㄱ-ㅎ_]+";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matching = pattern.matcher(content);
 
-        while (matching.find()) {
-            mention_usernames.add(matching.group().substring(1));
-        }
-        return mention_usernames;
-    }
 }

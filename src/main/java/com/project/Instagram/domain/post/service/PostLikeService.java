@@ -43,7 +43,9 @@ public class PostLikeService {
         }
         PostLike postLike=new PostLike(member,post);
         postLikeRepository.save(postLike);
-        alarmService.sendPostLikeAlarm(LIKE_POST, member, post.getMember(), postLike);
+        if (member.getId() != post.getMember().getId()) {
+            alarmService.sendPostLikeAlarm(LIKE_POST, member, post.getMember(), postLike);
+        }
         post.upLikeCount(post);
     }
 

@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.comment.service;
 
-import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.comment.dto.CommentResponse;
 import com.project.Instagram.domain.comment.dto.SimpleComment;
@@ -10,7 +9,6 @@ import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.mention.service.MentionService;
 import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.repository.PostRepository;
-import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.util.SecurityUtil;
@@ -23,8 +21,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.project.Instagram.domain.alarm.dto.AlarmType.COMMENT;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -36,6 +32,7 @@ public class CommentService {
     private final MentionService mentionService;
     private static final String DELETE_COMMENT = "삭제된 댓글입니다.";
 
+    // 해시태그 추가해야 함, 댓글 알람 추가해야 함
     public void createComment(String text, long postId) {
         Member member = securityUtil.getLoginMember();
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
@@ -50,8 +47,10 @@ public class CommentService {
         mentionService.checkMentionsFromComment(member, text, post, newComment);
     }
 
+    // 해시태그 추가해야 함, 댓글 알람 추가해야 함
     public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         if (!postRepository.existsByIdAndDeletedAtIsNull(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
         if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId))
             throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
@@ -64,8 +63,11 @@ public class CommentService {
                 .replyOrder(count == null ? 1 : (int) (count + 1))
                 .build();
         commentRepository.save(replyComment);
+        mentionService.checkMentionsFromComment(member, text, post, replyComment);
+
     }
 
+    // 이 부분도 해시태그, 알람 고려
     @Transactional
     public void updateComment(long commentId, String text) {
         Member member = securityUtil.getLoginMember();
@@ -75,6 +77,7 @@ public class CommentService {
         comment.updateText(text);
     }
 
+    // 알림 삭제도 추가해야 함
     @Transactional
     public void deleteComment(long commentId) {
         Member member = securityUtil.getLoginMember();
