@@ -10,6 +10,7 @@ import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.mention.service.MentionService;
 import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.repository.PostRepository;
+import com.project.Instagram.domain.post.service.HashtagService;
 import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
@@ -34,6 +35,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final AlarmService alarmService;
     private final MentionService mentionService;
+    private final HashtagService hashtagService;
     private static final String DELETE_COMMENT = "삭제된 댓글입니다.";
 
     public void createComment(String text, long postId) {
@@ -47,32 +49,41 @@ public class CommentService {
                 .replyOrder(0)
                 .build();
         commentRepository.save(newComment);
+        //hashtag
+        if(member!=post.getMember()) alarmService.sendCommentAlarm(AlarmType.COMMENT, member, post.getMember(), post, newComment);
         mentionService.checkMentionsFromComment(member, text, post, newComment);
     }
 
     public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
-        if (!postRepository.existsByIdAndDeletedAtIsNull(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId))
             throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
         Long count = commentRepository.countCommentsByParentsCommentId(parentsCommentId);
-        Comment replyComment = Comment.builder()
+        Comment newreplyComment = Comment.builder()
                 .writer(member)
                 .text(text)
                 .postId(postId)
                 .parentsCommentId(parentsCommentId)
                 .replyOrder(count == null ? 1 : (int) (count + 1))
                 .build();
-        commentRepository.save(replyComment);
+        commentRepository.save(newreplyComment);
+        //hashtag
+        if(member!=post.getMember()) alarmService.sendCommentAlarm(AlarmType.COMMENT, member, post.getMember(), post, newreplyComment);
+        mentionService.checkMentionsFromComment(member, text, post, newreplyComment);
     }
 
     @Transactional
-    public void updateComment(long commentId, String text) {
+    public void updateComment(long commentId, String afterText) {
         Member member = securityUtil.getLoginMember();
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+        Post post = postRepository.findByIdAndDeletedAtIsNull(comment.getPostId()).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         if (comment.getWriter() != member) throw new BusinessException(ErrorCode.COMMENT_WRITER_FAIL);
-        comment.updateText(text);
+        String beforeText=comment.getText();
+        comment.updateText(afterText);
+        //hashtag
+        mentionService.checkUpdateMentionsFromComment(member, beforeText, afterText, post, comment);
     }
 
     @Transactional
