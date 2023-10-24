@@ -35,7 +35,8 @@ public class PostLikeService {
 
     @Transactional
     public void postlike(Long postId) {
-        final Post post = getPostbypostId(postId);
+        final Post post = postRepository.findWithMemberById(postId)
+                .orElseThrow(()-> new BusinessException(ErrorCode.POST_NOT_FOUND));
         final Member member = securityUtil.getLoginMember();
 
         if(postLikeRepository.findByMemberAndPost(member,post).isPresent()){
@@ -49,12 +50,13 @@ public class PostLikeService {
 
     @Transactional
     public void postunlike(Long postId) {
-        final Post post = getPostbypostId(postId);
+        final Post post = postRepository.findWithMemberById(postId)
+                .orElseThrow(()-> new BusinessException(ErrorCode.POST_NOT_FOUND));
         final Member member = securityUtil.getLoginMember();
 
         final PostLike postLike = postLikeRepository.findByMemberAndPost(member,post)
                 .orElseThrow(()->new BusinessException(ErrorCode.POSTLIKE_NOT_FOUND));
-        postLike.setDeletedAt(LocalDateTime.now());
+        postLikeRepository.delete(postLike);
         post.downLikeCount(post);
         alarmService.deletePostLikeAlarm(LIKE_POST, member, post.getMember(), post);
     }
@@ -62,19 +64,15 @@ public class PostLikeService {
     @Transactional(readOnly = true)
     public PageListResponse<LikesMemberResponseDto> getPostLikeUsers(Long postId, int page, int size) {
         final Pageable pageable = PageRequest.of(page,size);
-        final Member member = securityUtil.getLoginMember();
+        securityUtil.checkLoginMember();
 
-        Page<PostLike> postlikePage = postLikeRepository.findByPostId(postId,pageable);
-        List<LikesMemberResponseDto> LikeproMemberResponseDtos = new ArrayList<>();
+        Page<PostLike> postlikePage = postLikeRepository.findByPostIdAndDeletedAtIsNull(postId,pageable);
+        List<LikesMemberResponseDto> LikesMemberResponseDtos = new ArrayList<>();
         postlikePage.forEach(postlike->{
-            LikeproMemberResponseDtos.add(new LikesMemberResponseDto(postlike.getMember()));
+            LikesMemberResponseDtos.add(new LikesMemberResponseDto(postlike.getMember()));
         });
-        return new PageListResponse<>(LikeproMemberResponseDtos,postlikePage);
+        return new PageListResponse<>(LikesMemberResponseDtos,postlikePage);
     }
 
-    private Post getPostbypostId(Long postId) {
-        final Post post = postRepository.findWithMemberById(postId)
-                .orElseThrow(()-> new BusinessException(ErrorCode.POST_NOT_FOUND));
-        return post;
-    }
+
 }

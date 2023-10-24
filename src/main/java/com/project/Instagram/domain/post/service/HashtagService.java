@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,39 +48,25 @@ public class HashtagService {
         final Set<String> afterNames = filteringHashtag(post.getContent());
         final Set<String> beforeNames = filteringHashtag(beforeContent);
 
-        final Map<String, Hashtag> hashtagMap = hashtagRepository.findByTagNameIn(afterNames).stream()
+        final Map<String, Hashtag> afterhashtagMap = hashtagRepository.findByTagNameIn(afterNames).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
         final Map<String, Hashtag> beforeHashtagMap = hashtagRepository.findByTagNameIn(beforeNames).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
-        final List<Hashtag> deleteHashtags =new ArrayList<>();
         beforeNames.forEach(tagName -> {
-            filteringBeforeHashtags(hashtagMap, beforeHashtagMap, deleteHashtags, tagName);
+            filteringAndDeleteHashtags(afterhashtagMap, beforeHashtagMap, tagName,post);
         });
         afterNames.forEach(tagName -> {
-            filteringAfterHashtags(post, hashtagMap, beforeHashtagMap, tagName);
-        });
-        deleteAfterHashtags(post, deleteHashtags);
-
-    }
-
-    private void deleteAfterHashtags(Post post, List<Hashtag> deleteHashtags) {
-        deleteHashtags.forEach(hashtag -> {
-            PostHashtag postHashtag =postHashtagRepository.findByPostAndHashtag(hashtag, post);
-            postHashtag.setDeletedAt(LocalDateTime.now());
+            filteringAndSaveHashtags(post, afterhashtagMap, beforeHashtagMap, tagName);
         });
     }
 
-    private void filteringAfterHashtags(Post post, Map<String, Hashtag> hashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName) {
+    private void filteringAndSaveHashtags(Post post, Map<String, Hashtag> afterhashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName) {
         if(beforeHashtagMap.containsKey(tagName)){
             return;
         }
         Hashtag tempHashtag;
-        if(hashtagMap.containsKey(tagName)){
-            tempHashtag= hashtagMap.get(tagName);
-            if(tempHashtag.getCount()==0){
-                tempHashtag.setDeletedAt(null);
-
-            }
+        if(afterhashtagMap.containsKey(tagName)){
+            tempHashtag= afterhashtagMap.get(tagName);
             tempHashtag.updatecount(1);
         }
         else{
@@ -90,18 +75,18 @@ public class HashtagService {
         postHashtagRepository.save(new PostHashtag(tempHashtag, post));
     }
 
-    private static void filteringBeforeHashtags(Map<String, Hashtag> hashtagMap, Map<String, Hashtag> beforeHashtagMap, List<Hashtag> deleteHashtags, String tagName) {
-        if(hashtagMap.containsKey(tagName)){
+    private void filteringAndDeleteHashtags(Map<String, Hashtag> afterhashtagMap, Map<String, Hashtag> beforeHashtagMap, String tagName, Post post) {
+        if(afterhashtagMap.containsKey(tagName)){
             return;
         }
         Hashtag tempHashtag= beforeHashtagMap.get(tagName);
+        PostHashtag postHashtag = postHashtagRepository.findByPostAndHashtag(tempHashtag,post);
         if (tempHashtag.getCount() == 1) {
-            tempHashtag.updatecount(-1);
-            tempHashtag.setDeletedAt(LocalDateTime.now());
-            deleteHashtags.add(tempHashtag);
+            postHashtagRepository.delete(postHashtag);
+            hashtagRepository.delete(tempHashtag);
         } else {
             tempHashtag.updatecount(-1);
-            deleteHashtags.add(tempHashtag);
+            postHashtagRepository.delete(postHashtag);
         }
     }
 

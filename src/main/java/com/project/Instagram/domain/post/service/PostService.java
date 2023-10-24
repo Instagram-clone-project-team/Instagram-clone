@@ -97,7 +97,8 @@ public class PostService {
     @Transactional
     public void updatePost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
-        final Post post = getPostWithMember(postId);
+        final Post post = postRepository.findWithMemberById(postId).orElseThrow
+                (() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
@@ -109,7 +110,8 @@ public class PostService {
     @Transactional
     public void delete(Long postId) {
         final Member loginMember = securityUtil.getLoginMember();
-        final Post post = getPostWithMember(postId);
+        final Post post = postRepository.findWithMemberById(postId).orElseThrow
+                (() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_DELETE_FAILED);
         if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
@@ -117,9 +119,6 @@ public class PostService {
         post.setDeletedAt(LocalDateTime.now());
     }
 
-    public Post getPostWithMember(Long postId) {
-        return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-    }
       
     @Transactional
     public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {

@@ -56,7 +56,9 @@ public enum ResultCode {
     POST_LIKE_SUCCESS(200,"좋아요 성공하였습니다."),
     POST_UNLIKE_SUCCESS(200,"좋아요 취소하였습니다."),
     GET_POSTLIKE_USERS_SUCCESS(200,"해당 게시글 좋아요한 유저 조회가 완료되었습니다."),
-
+    COMMENT_LIKE_SUCCESS(200, "댓글 좋아요 성공하였습니다."),
+    COMMENT_UNLIKE_SUCCESS(200, "댓글 좋아요 취소하였습니다."),
+    GET_COMMENTLIKE_USERS_SUCCESS(200,"해당 댓글에 좋아요한 유저 조회가 완료되었습니다."),
     // 알람
     GET_ALARMS_SUCCESS(200, "알림 조회에 성공하였습니다.");
 

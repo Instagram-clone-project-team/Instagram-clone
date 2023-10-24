@@ -9,11 +9,13 @@ import com.project.Instagram.domain.post.entity.PostLike;
 import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "alarms")
 public class Alarm extends BaseTimeEntity {
 
