@@ -49,7 +49,7 @@ public class PostService {
                 .content(postCreateRequest.getContent())
                 .build();
         postRepository.save(newPost);
-        hashtagService.registerHashtags(newPost);
+        hashtagService.registerHashTagOnPost(newPost, newPost.getContent());
         mentionService.checkMentionsFromPost(member, postCreateRequest.getContent(), newPost);
     }
     public PageListResponse<PostResponse> getPostPageList(int page, int size) {
@@ -103,8 +103,10 @@ public class PostService {
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
         String oldContent = post.getContent();
         post.updatePost(editPostRequest.getContent(), image);
-        hashtagService.editHashTag(post,oldContent);
+
+        hashtagService.editHashTagOnPost(post,oldContent);
         mentionService.checkUpdateMentionsFromPost(loginMember, oldContent, editPostRequest.getContent(), post);
+
     }
 
     @Transactional

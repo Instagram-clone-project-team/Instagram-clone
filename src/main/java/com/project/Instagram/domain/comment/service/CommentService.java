@@ -49,6 +49,8 @@ public class CommentService {
                 .replyOrder(0)
                 .build();
         commentRepository.save(newComment);
+        hashtagService.registerHashTagOnComment(newComment, newComment.getText());
+
         //hashtag
         if(member!=post.getMember()) alarmService.sendCommentAlarm(AlarmType.COMMENT, member, post.getMember(), post, newComment);
         mentionService.checkMentionsFromComment(member, text, post, newComment);
@@ -80,10 +82,15 @@ public class CommentService {
                 () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
         Post post = postRepository.findByIdAndDeletedAtIsNull(comment.getPostId()).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         if (comment.getWriter() != member) throw new BusinessException(ErrorCode.COMMENT_WRITER_FAIL);
+        String beforeText = comment.getText();
+        comment.updateText(text);
+        hashtagService.editHashTagOnComment(comment,beforeText);
+
         String beforeText=comment.getText();
         comment.updateText(afterText);
         //hashtag
         mentionService.checkUpdateMentionsFromComment(member, beforeText, afterText, post, comment);
+
     }
 
     @Transactional
