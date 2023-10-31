@@ -104,6 +104,7 @@ public class PostService {
         String oldContent = post.getContent();
         post.updatePost(editPostRequest.getContent(), image);
         hashtagService.editHashTag(post,oldContent);
+        mentionService.checkUpdateMentionsFromPost(loginMember, oldContent, editPostRequest.getContent(), post);
     }
 
     @Transactional
