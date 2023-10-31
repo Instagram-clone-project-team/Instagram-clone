@@ -50,34 +50,47 @@ public class CommentService {
                 .build();
         commentRepository.save(newComment);
         hashtagService.registerHashTagOnComment(newComment, newComment.getText());
+
+        //hashtag
+        if(member!=post.getMember()) alarmService.sendCommentAlarm(AlarmType.COMMENT, member, post.getMember(), post, newComment);
         mentionService.checkMentionsFromComment(member, text, post, newComment);
     }
 
     public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
-        if (!postRepository.existsByIdAndDeletedAtIsNull(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId))
             throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
         Long count = commentRepository.countCommentsByParentsCommentId(parentsCommentId);
-        Comment replyComment = Comment.builder()
+        Comment newreplyComment = Comment.builder()
                 .writer(member)
                 .text(text)
                 .postId(postId)
                 .parentsCommentId(parentsCommentId)
                 .replyOrder(count == null ? 1 : (int) (count + 1))
                 .build();
-        commentRepository.save(replyComment);
+        commentRepository.save(newreplyComment);
+        //hashtag
+        if(member!=post.getMember()) alarmService.sendCommentAlarm(AlarmType.COMMENT, member, post.getMember(), post, newreplyComment);
+        mentionService.checkMentionsFromComment(member, text, post, newreplyComment);
     }
 
     @Transactional
-    public void updateComment(long commentId, String text) {
+    public void updateComment(long commentId, String afterText) {
         Member member = securityUtil.getLoginMember();
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+        Post post = postRepository.findByIdAndDeletedAtIsNull(comment.getPostId()).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         if (comment.getWriter() != member) throw new BusinessException(ErrorCode.COMMENT_WRITER_FAIL);
         String beforeText = comment.getText();
         comment.updateText(text);
         hashtagService.editHashTagOnComment(comment,beforeText);
+
+        String beforeText=comment.getText();
+        comment.updateText(afterText);
+        //hashtag
+        mentionService.checkUpdateMentionsFromComment(member, beforeText, afterText, post, comment);
+
     }
 
     @Transactional

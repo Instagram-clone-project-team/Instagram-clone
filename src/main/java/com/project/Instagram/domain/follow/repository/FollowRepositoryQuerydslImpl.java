@@ -5,8 +5,6 @@ import static com.project.Instagram.domain.follow.entity.QFollow.*;
 
 import com.project.Instagram.domain.follow.dto.FollowerDto;
 import com.project.Instagram.domain.follow.dto.QFollowerDto;
-import com.project.Instagram.domain.follow.entity.Follow;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -29,20 +27,6 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
     @Override
     public Page<FollowerDto> findFollowers(Long loginId, Long memberId, Pageable pageable) {
         return findFollowerDtoList(loginId, findFollowerIdList(memberId), pageable);
-    }
-
-    @Override
-    public List<Follow> findFollows(Long memberId, List<Long> agentIds) {
-        return jpaQueryFactory
-                .selectFrom(follow)
-                .where(isFollowing(memberId, agentIds))
-                .innerJoin(follow.member, member).fetchJoin()
-                .innerJoin(follow.followMember, member).fetchJoin()
-                .fetch();
-    }
-
-    private BooleanExpression isFollowing(Long memberId, List<Long> agentIds) {
-        return follow.member.id.eq(memberId).and(follow.followMember.id.in(agentIds));
     }
 
     private Page<FollowerDto> findFollowerDtoList(Long loginId, JPQLQuery<Long> idListQuery, Pageable pageable) {
@@ -75,8 +59,7 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                 .select(follow.followMember.id)
                 .from(follow)
                 .where(follow.member.id.eq(memberId)
-                        .and(member.deletedAt.isNull())
-                        .and(follow.deletedAt.isNull()));
+                        .and(member.deletedAt.isNull()));
     }
 
     private JPQLQuery<Long> findFollowerIdList(Long memberId) {
@@ -84,7 +67,6 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                 .select(follow.member.id)
                 .from(follow)
                 .where(follow.followMember.id.eq(memberId)
-                        .and(member.deletedAt.isNull())
-                        .and(follow.deletedAt.isNull()));
+                        .and(member.deletedAt.isNull()));
     }
 }

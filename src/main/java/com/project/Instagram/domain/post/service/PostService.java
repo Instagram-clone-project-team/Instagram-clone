@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.post.service;
 
-import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.mention.service.MentionService;
@@ -104,7 +103,10 @@ public class PostService {
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
         String oldContent = post.getContent();
         post.updatePost(editPostRequest.getContent(), image);
+
         hashtagService.editHashTagOnPost(post,oldContent);
+        mentionService.checkUpdateMentionsFromPost(loginMember, oldContent, editPostRequest.getContent(), post);
+
     }
 
     @Transactional
@@ -120,14 +122,12 @@ public class PostService {
     }
 
       
-    @Transactional
+    @Transactional(readOnly = true)
     public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {
         final Long loginMemberId = securityUtil.getLoginMember().getId();
         List<Long> followedMemberIds = followService.getFollowedMemberIds(loginMemberId);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Post> posts = postRepository.findByMemberIds(followedMemberIds, pageable);
-
         return getPostResponseListToPostResponsePage(posts);
-
     }
 }
