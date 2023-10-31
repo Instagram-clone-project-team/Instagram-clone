@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.comment.service;
 
+import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.comment.dto.CommentResponse;
 import com.project.Instagram.domain.comment.dto.SimpleComment;
@@ -89,11 +90,8 @@ public class CommentService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(comment.getPostId()).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         if (comment.getWriter() != member) throw new BusinessException(ErrorCode.COMMENT_WRITER_FAIL);
         String beforeText = comment.getText();
-        comment.updateText(text);
-        hashtagService.editHashTagOnComment(comment,beforeText);
-
-        String beforeText=comment.getText();
         comment.updateText(afterText);
+        hashtagService.editHashTagOnComment(comment,beforeText);
         //hashtag
         mentionService.checkUpdateMentionsFromComment(member, beforeText, afterText, post, comment);
 

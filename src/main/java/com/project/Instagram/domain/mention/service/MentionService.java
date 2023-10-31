@@ -62,6 +62,10 @@ public class MentionService {
         String regex = "@[0-9a-zA-Z가-힣ㄱ-ㅎ_]+";
         Pattern pattern = Pattern.compile(regex);
         Matcher matching = pattern.matcher(content);
+        while (matching.find()) {
+            mention_usernames.add(matching.group().substring(1));
+        }
+        return mention_usernames;
     }
 
 }
