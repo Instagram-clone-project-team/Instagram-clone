@@ -17,8 +17,10 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -32,9 +34,34 @@ public class MentionService {
         alarmService.sendMentionPostAlarm(AlarmType.MENTION_POST, agent, stringExtractUtil.filteringMentions(content), post);
     }
 
+    public void checkUpdateMentionsFromPost(Member agent, String beforeText, String afterText, Post post) {
+        List<String> beforeMentions = filteringMentions(beforeText);
+        List<String> afterMentions = filteringMentions(afterText);
+        List<String> deletedAfterMentions = afterMentions.stream()
+                .filter(am -> beforeMentions.stream().noneMatch(bm -> am.equals(bm)))
+                .collect(Collectors.toList());
+        alarmService.sendMentionPostAlarm(AlarmType.MENTION_COMMENT, agent, deletedAfterMentions, post);
+    }
+
     public void checkMentionsFromComment(Member agent, String text, Post post, Comment comment) {
         alarmService.sendMentionCommentAlarm(AlarmType.MENTION_COMMENT, agent, stringExtractUtil.filteringMentions(text), post, comment);
     }
 
+
+    public void checkUpdateMentionsFromComment(Member agent, String beforeText, String afterText, Post post, Comment comment) {
+        List<String> beforeMentions = filteringMentions(beforeText);
+        List<String> afterMentions = filteringMentions(afterText);
+        List<String> deletedAfterMentions = afterMentions.stream()
+                .filter(am -> beforeMentions.stream().noneMatch(bm -> am.equals(bm)))
+                .collect(Collectors.toList());
+        alarmService.sendMentionCommentAlarm(AlarmType.MENTION_COMMENT, agent, deletedAfterMentions, post, comment);
+    }
+
+    private List<String> filteringMentions(String content) {
+        List<String> mention_usernames = new ArrayList<>();
+        String regex = "@[0-9a-zA-Z가-힣ㄱ-ㅎ_]+";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matching = pattern.matcher(content);
+    }
 
 }

@@ -6,7 +6,6 @@ import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.MemberRole;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
-import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
@@ -167,7 +166,6 @@ public class MemberService {
     }
 
     public Profile getProfile(String username){
-        //유효한 멤버인지 확인
         Member member=memberRepository.findByUsername(username).orElseThrow(()-> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         return Profile.convertMemberToProfile(member);
     }

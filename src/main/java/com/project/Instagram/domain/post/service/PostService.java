@@ -53,7 +53,7 @@ public class PostService {
                 .content(postCreateRequest.getContent())
                 .build();
         postRepository.save(newPost);
-        hashtagService.registerHashtags(newPost);
+        hashtagService.registerHashTagOnPost(newPost, newPost.getContent());
         mentionService.checkMentionsFromPost(member, postCreateRequest.getContent(), newPost);
     }
     public PageListResponse<PostResponse> getPostPageList(int page, int size) {
@@ -100,19 +100,22 @@ public class PostService {
     @Transactional
     public void updatePost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
-        final Post post = getPostWithMember(postId);
+        final Post post = postRepository.findWithMemberById(postId).orElseThrow
+                (() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
         String oldContent = post.getContent();
         post.updatePost(editPostRequest.getContent(), image);
-        hashtagService.editHashTag(post, oldContent);
+        hashtagService.editHashTagOnPost(post,oldContent);
+        mentionService.checkUpdateMentionsFromPost(loginMember, oldContent, editPostRequest.getContent(), post);
     }
 
     @Transactional
     public void delete(Long postId) {
         final Member loginMember = securityUtil.getLoginMember();
-        final Post post = getPostWithMember(postId);
+        final Post post = postRepository.findWithMemberById(postId).orElseThrow
+                (() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_DELETE_FAILED);
         if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
@@ -121,18 +124,13 @@ public class PostService {
         alarmService.deleteAllPostAlarm(post);
     }
 
-    public Post getPostWithMember(Long postId) {
-        return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-    }
       
-    @Transactional
+    @Transactional(readOnly = true)
     public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {
         final Long loginMemberId = securityUtil.getLoginMember().getId();
         List<Long> followedMemberIds = followService.getFollowedMemberIds(loginMemberId);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Post> posts = postRepository.findByMemberIds(followedMemberIds, pageable);
-
         return getPostResponseListToPostResponsePage(posts);
-
     }
 }

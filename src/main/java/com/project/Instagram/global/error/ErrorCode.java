@@ -32,8 +32,8 @@ public enum ErrorCode {
     POST_DELETE_FAILED(400, "게시판은 게시자만 삭제할 수 있습니다."),
     POST_EDIT_FAILED(400, "게시판 수정은 게시자만 삭제할 수 있습니다."),
     POST_ALREADY_DELETED(400, "이미 삭제된 게시물입니다."),
-  
-    // 팔로우  
+
+    // 팔로우
     FOLLOW_MYSELF_FAIL(400, "자기 자신은 팔로우할 수 없습니다."),
     FOLLOW_ALREADY_EXIST(400,"이미 팔로우 한 유저입니다."),
     UNFOLLOW_MYSELF_FAIL(400, "자기 자신을 언팔로우할 수 없습니다."),
@@ -43,6 +43,8 @@ public enum ErrorCode {
     //좋아요
     POSTLIKE_ALREADY_EXIST(500,"이미 해당 게시물에 좋아요하셨습니다."),
     POSTLIKE_NOT_FOUND(500,"해당 게시물 좋아요를 찾을 수 없습니다."),
+    COMMENTLIKE_ALREADY_EXIST(500,"이미 해당 댓글에 좋아요 하셨습니다."),
+    COMMENTLIKE_NOT_FOUND(500,"해당 댓글 좋아요를 찾을 수 없습니다."),
 
     //댓글
     COMMENT_NOT_FOUND(500, "해당 댓글이 존재하지 않습니다."),
@@ -50,9 +52,9 @@ public enum ErrorCode {
 
     // 알람
     MISMATCHED_ALARM_TYPE(400, "알람 타입이 올바르지 않습니다."),
-
     //공통
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
+
 
     private final int status;
     private final String message;

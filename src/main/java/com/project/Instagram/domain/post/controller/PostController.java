@@ -19,7 +19,6 @@ import javax.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import javax.validation.Valid;
 
 import static com.project.Instagram.global.response.ResultCode.*;
 

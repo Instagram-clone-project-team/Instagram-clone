@@ -10,13 +10,11 @@ import java.util.Optional;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> ,FollowRepositoryQuerydsl {
     Optional<Follow> findByMemberIdAndFollowMemberId(Long memberId, Long followMemberId);
-
-    List<Follow> findByMemberIdAndDeletedAtIsNull(Long memberId);
-
-    @Query("SELECT COUNT(f) FROM Follow f JOIN f.member m WHERE m.username = :memberUsername AND f.deletedAt IS NULL")
+    boolean existsByMemberIdAndFollowMemberId(Long memberId, Long followMemberId);
+    List<Follow> findByMemberId(Long memberId);
+    @Query("SELECT COUNT(f) FROM Follow f JOIN f.member m WHERE m.username = :memberUsername")
     int countActiveFollowsByMemberUsername(@Param("memberUsername") String memberUsername);
-  
-    @Query("SELECT COUNT(f) FROM Follow f JOIN f.followMember fm WHERE fm.username = :memberUsername AND f.deletedAt IS NULL")
+    @Query("SELECT COUNT(f) FROM Follow f JOIN f.followMember fm WHERE fm.username = :memberUsername")
     int countActiveFollowersByMemberUsername(@Param("memberUsername") String memberUsername);
 
     List<Follow> findByMemberIdAndFollowMemberIdIn(Long memberId, List<Long> agentIds);

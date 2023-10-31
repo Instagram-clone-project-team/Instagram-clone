@@ -3,11 +3,13 @@ package com.project.Instagram.domain.post.entity;
 import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "hashtag_posts")
 public class PostHashtag extends BaseTimeEntity {
     @Id
