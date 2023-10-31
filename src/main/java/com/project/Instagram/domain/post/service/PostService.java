@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.post.service;
 
-import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.mention.service.MentionService;
@@ -122,14 +121,12 @@ public class PostService {
         return postRepository.findWithMemberById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
       
-    @Transactional
+    @Transactional(readOnly = true)
     public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {
         final Long loginMemberId = securityUtil.getLoginMember().getId();
         List<Long> followedMemberIds = followService.getFollowedMemberIds(loginMemberId);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Post> posts = postRepository.findByMemberIds(followedMemberIds, pageable);
-
         return getPostResponseListToPostResponsePage(posts);
-
     }
 }
