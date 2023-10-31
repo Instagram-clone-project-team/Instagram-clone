@@ -99,6 +99,7 @@ public class MemberService {
     }
 
     public void sendAuthEmail (String email){
+        if (memberRepository.existsByEmail(email)) throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXIST);
         emailAuthService.sendSignUpCode(email);
     }
 

@@ -5,7 +5,6 @@ import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.follow.entity.Follow;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.entity.Post;
-import com.project.Instagram.domain.post.entity.PostLike;
 import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,7 +40,7 @@ public class Alarm extends BaseTimeEntity {
     private Post post;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coment_id")
+    @JoinColumn(name = "comment_id")
     private Comment comment;
 
     @OneToOne(fetch = FetchType.LAZY)

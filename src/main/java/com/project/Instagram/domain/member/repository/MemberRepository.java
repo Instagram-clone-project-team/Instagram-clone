@@ -16,4 +16,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Member findByUsernameOrEmail(String username, String email);
     Page<Member> findAllByDeletedAtIsNull(Pageable pageable);
     List<Member> findAllByUsernameIn(Collection<String> usernames);
+    boolean existsByEmail(String email);
 }

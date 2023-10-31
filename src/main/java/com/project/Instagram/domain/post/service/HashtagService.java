@@ -8,6 +8,7 @@ import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.entity.PostHashtag;
 import com.project.Instagram.domain.post.repository.HashtagRepository;
 import com.project.Instagram.domain.post.repository.PostHashtagRepository;
+import com.project.Instagram.global.util.StringExtractUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,9 @@ import java.util.stream.Collectors;
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
+    private final StringExtractUtil stringExtractUtil;
     private final CommentHashtagRepository commentHashtagRepository;
+
 
     @Transactional
     public void registerHashTagOnComment(Comment comment, String content ){
@@ -41,6 +44,7 @@ public class HashtagService {
             commentHashtagRepository.save(new CommentHashtag(tempHashtag, comment));
         });
     }
+
     @Transactional
     public void registerHashTagOnPost(Post post, String content){
         final Set<String> tagsOnContent = filteringHashtag(content);
@@ -80,7 +84,6 @@ public class HashtagService {
     public void editHashTagOnPost(Post post, String beforeContent){
         final Set<String> afterNames = filteringHashtag(post.getContent());
         final Set<String> beforeNames = filteringHashtag(beforeContent);
-
         final Map<String, Hashtag> afterhashtagMap = hashtagRepository.findByTagNameIn(afterNames).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
         final Map<String, Hashtag> beforeHashtagMap = hashtagRepository.findByTagNameIn(beforeNames).stream()
@@ -152,6 +155,7 @@ public class HashtagService {
             commentHashtagRepository.delete(commentHashtag);
         }
     }
+
     public Set<String> filteringHashtag(String content){
         Set<String> hashtags = new HashSet<>();
         final String regex = "#[0-9a-zA-Z가-힣ㄱ-ㅎ_]+";
@@ -163,5 +167,4 @@ public class HashtagService {
         }
         return new HashSet<>(hashtags);
     }
-
 }

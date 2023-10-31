@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.comment.service;
 
-import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.comment.dto.CommentResponse;
 import com.project.Instagram.domain.comment.dto.SimpleComment;
@@ -24,8 +23,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.project.Instagram.domain.alarm.dto.AlarmType.COMMENT;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -38,6 +35,7 @@ public class CommentService {
     private final HashtagService hashtagService;
     private static final String DELETE_COMMENT = "삭제된 댓글입니다.";
 
+    
     public void createComment(String text, long postId) {
         Member member = securityUtil.getLoginMember();
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
@@ -56,11 +54,16 @@ public class CommentService {
         mentionService.checkMentionsFromComment(member, text, post, newComment);
     }
 
+    // 해시태그 추가해야 함, 댓글 알람 추가해야 함
     public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+
+        if (!postRepository.existsByIdAndDeletedAtIsNull(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+
         if (!commentRepository.existsByIdAndDeletedAtIsNull(parentsCommentId))
             throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
+      
         Long count = commentRepository.countCommentsByParentsCommentId(parentsCommentId);
         Comment newreplyComment = Comment.builder()
                 .writer(member)
@@ -69,12 +72,15 @@ public class CommentService {
                 .parentsCommentId(parentsCommentId)
                 .replyOrder(count == null ? 1 : (int) (count + 1))
                 .build();
+
         commentRepository.save(newreplyComment);
         //hashtag
         if(member!=post.getMember()) alarmService.sendCommentAlarm(AlarmType.COMMENT, member, post.getMember(), post, newreplyComment);
         mentionService.checkMentionsFromComment(member, text, post, newreplyComment);
+
     }
 
+    // 이 부분도 해시태그, 알람 고려
     @Transactional
     public void updateComment(long commentId, String afterText) {
         Member member = securityUtil.getLoginMember();
@@ -93,6 +99,7 @@ public class CommentService {
 
     }
 
+    // 알림 삭제도 추가해야 함
     @Transactional
     public void deleteComment(long commentId) {
         Member member = securityUtil.getLoginMember();
