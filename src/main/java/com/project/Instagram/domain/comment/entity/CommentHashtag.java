@@ -13,7 +13,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class CommentHashtag extends BaseTimeEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_hashtag_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -21,7 +22,7 @@ public class CommentHashtag extends BaseTimeEntity {
     private Comment comment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hashTag_id")
+    @JoinColumn(name = "hashtag_id")
     private Hashtag hashtag;
 
     @Builder

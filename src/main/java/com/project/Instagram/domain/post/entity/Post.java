@@ -31,7 +31,12 @@ public class Post extends BaseTimeEntity {
     @Column(name = "post_content")
     private String content;
 
+    @Column(name = "post_like_count")
     private int likeCount;
+
+    @OneToMany(mappedBy = "post")
+    private List<PostLike> postLikes = new ArrayList<>();
+
     @Builder
     public Post(Member member, String image, String content) {
         this.member = member;
@@ -46,8 +51,5 @@ public class Post extends BaseTimeEntity {
 
     public void upLikeCount(Post post){this.likeCount=likeCount+1;}
     public void downLikeCount(Post post){this.likeCount=likeCount-1;}
-    @OneToMany(mappedBy = "post")
-    private List<PostLike> postLikes = new ArrayList<>();
-
 
 }

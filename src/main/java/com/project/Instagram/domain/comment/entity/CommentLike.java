@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.comment.entity;
 
-import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.global.entity.BaseTimeEntity;
 import lombok.Builder;
@@ -14,7 +13,8 @@ import javax.persistence.*;
 @Entity
 public class CommentLike extends BaseTimeEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_like_id")
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id")
