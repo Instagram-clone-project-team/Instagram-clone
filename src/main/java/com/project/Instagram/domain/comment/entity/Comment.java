@@ -1,11 +1,7 @@
 package com.project.Instagram.domain.comment.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
-import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.global.entity.BaseTimeEntity;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
