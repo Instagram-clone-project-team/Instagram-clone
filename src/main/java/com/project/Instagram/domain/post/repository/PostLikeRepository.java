@@ -14,6 +14,6 @@ import java.util.Optional;
 
 public interface PostLikeRepository extends JpaRepository<PostLike,Long> {
     Optional<PostLike> findByMemberAndPost(Member member, Post post);
-    @Query("SELECT pl FROM PostLike pl WHERE pl.post.id = :postId AND pl.post.deletedAt IS NULL AND pl.deletedAt IS NULL")
-    Page<PostLike> findByPostId(@Param("postId") Long postId, Pageable pageable);
+
+    Page<PostLike> findByPostIdAndDeletedAtIsNull(@Param("postId") Long postId, Pageable pageable);
 }
