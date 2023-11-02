@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ResultCode {
 
-    //멤버
+    // 멤버
     UPDATE_PASSWORD_SUCCESS(200,"비밀번호 변경이 완료되었습니다."),
     SIGNUP_SUCCESS(200, "회원가입에 성공하였습니다."),
     DELETE_SUCCESS(200,"회원 탈퇴 완료되었습니다."),
@@ -23,7 +23,7 @@ public enum ResultCode {
 
   
 
-    //게시글
+    // 게시글
     GET_POST_PAGE_SUCCESS(200,"게시물 목록 조회가 완료되었습니다."),
     GET_POST_SUCCESS(200,"게시물 상세 조회가 완료되었습니다."),
     GET_POST_USER_PAGE_SUCCESS(200,"해당 유저 게시물 목록 조회가 완료되었습니다."),
@@ -52,7 +52,7 @@ public enum ResultCode {
     FOLLOWER_COUNT_SUCCESS(200, "팔로워 수 조회가 성공했습니다."),
    
   
-    //좋아요
+    // 좋아요
     POST_LIKE_SUCCESS(200,"좋아요 성공하였습니다."),
     POST_UNLIKE_SUCCESS(200,"좋아요 취소하였습니다."),
     GET_POSTLIKE_USERS_SUCCESS(200,"해당 게시글 좋아요한 유저 조회가 완료되었습니다."),
@@ -60,7 +60,12 @@ public enum ResultCode {
     COMMENT_UNLIKE_SUCCESS(200, "댓글 좋아요 취소하였습니다."),
     GET_COMMENTLIKE_USERS_SUCCESS(200,"해당 댓글에 좋아요한 유저 조회가 완료되었습니다."),
     // 알람
-    GET_ALARMS_SUCCESS(200, "알림 조회에 성공하였습니다.");
+    GET_ALARMS_SUCCESS(200, "알림 조회에 성공하였습니다."),
+
+    // 검색
+    SEARCH_SUCCESS(200, "검색에 성공하였습니다."),
+    DELETE_ALL_RECENT_SEARCH_SUCCESS(200, "최근 검색 기록 전체 삭제에 성공하였습니다."),
+    GET_TOP_15_RECENT_SEARCH_SUCCESS(200, "최근 검색 기록 15개 조회에 성공하였습니다.");
 
 
     private final int status;
