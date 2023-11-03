@@ -3,7 +3,9 @@ package com.project.Instagram.domain.follow.repository;
 import static com.project.Instagram.domain.member.entity.QMember.*;
 import static com.project.Instagram.domain.follow.entity.QFollow.*;
 
+import com.project.Instagram.domain.follow.dto.FollowDto;
 import com.project.Instagram.domain.follow.dto.FollowerDto;
+import com.project.Instagram.domain.follow.dto.QFollowDto;
 import com.project.Instagram.domain.follow.dto.QFollowerDto;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -14,6 +16,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
@@ -27,6 +31,20 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
     @Override
     public Page<FollowerDto> findFollowers(Long loginId, Long memberId, Pageable pageable) {
         return findFollowerDtoList(loginId, findFollowerIdList(memberId), pageable);
+    }
+
+    @Override
+    public Map<String, List<FollowDto>> findFollowingMemberFollowMap(Long loginId, List<String> usernames) {
+        final List<FollowDto> follows = jpaQueryFactory
+                .select(new QFollowDto(
+                        follow.member.username,
+                        follow.followMember.username))
+                .from(follow)
+                .where(follow.followMember.username.in(usernames)
+                        .and(follow.member.id.in(findFollowerIdList(loginId))))
+                .fetch();
+        return follows.stream()
+                .collect(Collectors.groupingBy(FollowDto::getFollowMemberUsername));
     }
 
     private Page<FollowerDto> findFollowerDtoList(Long loginId, JPQLQuery<Long> idListQuery, Pageable pageable) {
@@ -59,7 +77,7 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                 .select(follow.followMember.id)
                 .from(follow)
                 .where(follow.member.id.eq(memberId)
-                        .and(member.deletedAt.isNull()));
+                        .and(follow.member.deletedAt.isNull()));
     }
 
     private JPQLQuery<Long> findFollowerIdList(Long memberId) {
@@ -67,6 +85,6 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
                 .select(follow.member.id)
                 .from(follow)
                 .where(follow.followMember.id.eq(memberId)
-                        .and(member.deletedAt.isNull()));
+                        .and(follow.followMember.deletedAt.isNull()));
     }
 }

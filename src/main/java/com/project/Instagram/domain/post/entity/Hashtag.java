@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor
+@Table(name = "hashtags")
 public class Hashtag extends BaseTimeEntity {
 
     @Id
