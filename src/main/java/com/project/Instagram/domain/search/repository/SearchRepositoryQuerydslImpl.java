@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.project.Instagram.domain.follow.entity.QFollow.follow;
-import static com.project.Instagram.domain.member.entity.QMember.member;
-import static com.project.Instagram.domain.post.entity.QHashtag.hashtag;
 import static com.project.Instagram.domain.search.entity.QSearch.search;
 import static com.project.Instagram.domain.search.entity.QSearchHashtag.searchHashtag;
 import static com.project.Instagram.domain.search.entity.QSearchMember.searchMember;
@@ -36,18 +34,15 @@ public class SearchRepositoryQuerydslImpl implements SearchRepositoryQuerydsl {
                                 JPAExpressions
                                         .select(searchMember.id)
                                         .from(searchMember)
-                                        .innerJoin(searchMember.member, member)
                                         .where(searchMember.member.username.like(keyword)
                                                 .or(searchMember.member.name.like(keyword))))
                         .or(search.id.in(
                                 JPAExpressions
                                         .select(searchHashtag.id)
                                         .from(searchHashtag)
-                                        .innerJoin(searchHashtag.hashtag, hashtag)
                                         .where(searchHashtag.hashtag.tagName.like(keyword)))))
                 .orderBy(search.count.desc())
                 .limit(50)
-                .distinct()
                 .fetch();
     }
 
@@ -87,7 +82,6 @@ public class SearchRepositoryQuerydslImpl implements SearchRepositoryQuerydsl {
     public Map<Long, SearchMemberDto> findAllSearchMemberDtoByIdIn(Long loginId, List<Long> searchIds) {
         return jpaQueryFactory
                 .from(searchMember)
-                .innerJoin(searchMember.member, member)
                 .where(searchMember.id.in(searchIds))
                 .transform(GroupBy.groupBy(searchMember.id).as(new QSearchMemberDto(
                         searchMember._super.dtype,
@@ -106,13 +100,11 @@ public class SearchRepositoryQuerydslImpl implements SearchRepositoryQuerydsl {
     public Map<Long, SearchHashtagDto> findAllSearchHashtagDtoByIdIn(List<Long> searchIds) {
         return jpaQueryFactory
                 .from(searchHashtag)
-                .innerJoin(searchHashtag.hashtag, hashtag)
                 .where(searchHashtag.id.in(searchIds))
                 .transform(GroupBy.groupBy(searchHashtag.id).as(new QSearchHashtagDto(
                         searchHashtag.dtype,
                         searchHashtag.hashtag)));
     }
-
 
     private <T> void checkSearchSize(List<T> list) {
         while (list.size() > 50) {
