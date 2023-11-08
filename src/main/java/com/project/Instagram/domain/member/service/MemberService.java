@@ -6,6 +6,8 @@ import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.MemberRole;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.domain.search.entity.SearchMember;
+import com.project.Instagram.domain.search.repository.SearchMemberRepository;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
@@ -40,6 +42,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailAuthService emailAuthService;
+    private final SearchMemberRepository searchMemberRepository;
     private final String DELETE_MEMBER_USERNAME="--deleted--";
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -85,7 +88,8 @@ public class MemberService {
         Member newMember = convertRegisterRequestToMember(signUpRequest, roles);
         String encryptedPassword = bCryptPasswordEncoder.encode(newMember.getPassword());
         newMember.setEncryptedPassword(encryptedPassword);
-        memberRepository.save(newMember);
+        Member member = memberRepository.save(newMember);
+        searchMemberRepository.save(new SearchMember(member));
     }
 
     private void restoreMembership(Member existingMember, SignUpRequest signUpRequest) {
@@ -95,7 +99,8 @@ public class MemberService {
                 bCryptPasswordEncoder.encode(signUpRequest.getPassword()),
                 signUpRequest.getName()
         );
-        memberRepository.save(existingMember);
+        Member member = memberRepository.save(existingMember);
+        searchMemberRepository.save(new SearchMember(member));
     }
 
     public void sendAuthEmail (String email){

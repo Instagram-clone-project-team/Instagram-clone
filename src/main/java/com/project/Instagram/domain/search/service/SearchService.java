@@ -2,13 +2,21 @@ package com.project.Instagram.domain.search.service;
 
 import com.project.Instagram.domain.follow.dto.FollowDto;
 import com.project.Instagram.domain.follow.repository.FollowRepository;
+import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.member.entity.Profile;
+import com.project.Instagram.domain.post.entity.Hashtag;
+import com.project.Instagram.domain.search.dto.HashTagResponseDto;
 import com.project.Instagram.domain.search.dto.SearchDto;
 import com.project.Instagram.domain.search.dto.SearchHashtagDto;
 import com.project.Instagram.domain.search.dto.SearchMemberDto;
+import com.project.Instagram.domain.search.entity.RecentSearch;
 import com.project.Instagram.domain.search.entity.Search;
 import com.project.Instagram.domain.search.repository.RecentSearchRepository;
+import com.project.Instagram.domain.search.repository.SearchHashtagRepository;
+import com.project.Instagram.domain.search.repository.SearchMemberRepository;
 import com.project.Instagram.domain.search.repository.SearchRepository;
-import com.project.Instagram.global.entity.PageListResponse;
+import com.project.Instagram.global.error.BusinessException;
+import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,10 +39,61 @@ public class SearchService {
     private final SearchRepository searchRepository;
     private final FollowRepository followRepository;
     private final RecentSearchRepository recentSearchRepository;
-
+    private final SearchHashtagRepository searchHashtagRepository;
+    private final SearchMemberRepository searchMemberRepository;
     // mewluee
 
     // DongYeopMe
+    @Transactional(readOnly = true)
+    public List<Profile> getAutoMember(String text) {
+        final List<Member> members = searchRepository.findMembersByText(text);
+
+        return members.stream()
+                .map(Profile::convertMemberToProfile)
+                .collect(Collectors.toList());
+    }
+    @Transactional(readOnly = true)
+    public List<HashTagResponseDto> getAutoHashtag(String text) {
+        if(!text.startsWith("#")){
+            throw new BusinessException(ErrorCode.HASHTAG_MISMATCH);
+        }
+        final List<Hashtag> hashtags = searchRepository.findHashTagsByText(text.substring(1));
+
+        return hashtags.stream()
+                .map(HashTagResponseDto::HashTagConvertToReseponseDto)
+                .collect(Collectors.toList());
+
+    }
+    @Transactional
+    public void processAfterSearchAndJoin(String type, String name){
+        final Member loginMember = securityUtil.getLoginMember();
+        final Search search;
+        switch (type){
+            case "Member" :
+                search = searchMemberRepository.findByMemberUsername(name)
+                        .orElseThrow(()-> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+                break;
+            case "Hashtag" :
+                if(!name.startsWith("#")){
+                    throw new BusinessException(ErrorCode.HASHTAG_MISMATCH);
+                }
+                search = searchHashtagRepository.findByHashtagTagName(name.substring(1))
+                        .orElseThrow(()-> new BusinessException(ErrorCode.HASHTAG_NOT_FOUND));
+                break;
+            default:
+                throw new BusinessException(ErrorCode.ENTITY_TYPE_INVALID);
+        }
+        search.upCount();
+        final RecentSearch recentSearch = recentSearchRepository.findByMemberAndSearch(loginMember,search)
+                .orElse(
+                        RecentSearch.builder()
+                                .member(loginMember)
+                                .search(search)
+                                .build()
+                );
+        recentSearch.updateLastSearchedDate();
+        recentSearchRepository.save(recentSearch);
+    }
 
     // Heo-y-y
     @Transactional(readOnly = true)
