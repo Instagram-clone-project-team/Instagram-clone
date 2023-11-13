@@ -65,7 +65,7 @@ public class SearchService {
 
     }
     @Transactional
-    public void processAfterSearchAndJoin(String type, String name){
+    public void addRecentSearchAndUpCount(String type, String name){
         final Member loginMember = securityUtil.getLoginMember();
         final Search search;
         switch (type){

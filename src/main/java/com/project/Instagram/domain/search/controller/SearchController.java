@@ -35,9 +35,9 @@ public class SearchController {
 
         return ResponseEntity.ok(ResultResponse.of(HASHTAG_AUTO_COMPLETE,hashTagResponseDtos));
     }
-    @PostMapping("/AfterJoin")
-    public ResponseEntity<ResultResponse> processAfterSearchAndJoin(@RequestParam String type,@RequestParam String name){
-        searchService.processAfterSearchAndJoin(type,name);
+    @PostMapping("/recent/add")
+    public ResponseEntity<ResultResponse> addRecentSearchAndUpCount(@RequestParam String type,@RequestParam String name){
+        searchService.addRecentSearchAndUpCount(type,name);
 
         return ResponseEntity.ok(ResultResponse.of(SUCCESS_PROCESSING_AFTER_SEARCH_JOIN));
     }
