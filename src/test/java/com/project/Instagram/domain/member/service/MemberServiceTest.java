@@ -1,11 +1,12 @@
 package com.project.Instagram.domain.member.service;
 
 import com.project.Instagram.domain.member.dto.ResetPasswordRequest;
+import com.project.Instagram.domain.member.dto.UpdateAccountRequest;
 import com.project.Instagram.domain.member.dto.UpdatePasswordRequest;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.error.BusinessException;
-import com.project.Instagram.global.error.ErrorCode;
+import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.util.SecurityUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
@@ -17,12 +18,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.Optional;
 
 import static com.project.Instagram.global.error.ErrorCode.*;
 import static org.mockito.BDDMockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -37,6 +38,8 @@ class MemberServiceTest {
     private SecurityUtil securityUtil;
     @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Mock
+    private CustomAuthorityUtils customAuthorityUtils;
 
     @Nested
     class SendEmailConfirmation {
