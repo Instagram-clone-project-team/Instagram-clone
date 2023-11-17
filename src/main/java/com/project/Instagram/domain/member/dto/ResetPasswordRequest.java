@@ -1,7 +1,9 @@
 package com.project.Instagram.domain.member.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
@@ -9,6 +11,8 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
 public class ResetPasswordRequest {
 
     @NotBlank(message = "사용자 이름을 입력해주세요.")
