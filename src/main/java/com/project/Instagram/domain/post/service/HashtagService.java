@@ -26,10 +26,9 @@ public class HashtagService {
     private final StringExtractUtil stringExtractUtil;
     private final CommentHashtagRepository commentHashtagRepository;
 
-
     @Transactional
     public void registerHashTagOnComment(Comment comment, String content ){
-        final Set<String> tagsOnText = filteringHashtag(content);
+        final Set<String> tagsOnText = stringExtractUtil.filteringHashtag(content);
         final Map<String, Hashtag> hashtagMap = hashtagRepository.findByTagNameIn(tagsOnText).stream()
                 .collect((Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag)));
         tagsOnText.forEach(tagName ->{
@@ -47,7 +46,7 @@ public class HashtagService {
 
     @Transactional
     public void registerHashTagOnPost(Post post, String content){
-        final Set<String> tagsOnContent = filteringHashtag(content);
+        final Set<String> tagsOnContent = stringExtractUtil.filteringHashtag(content);
         final Map<String, Hashtag> hashtagMap = hashtagRepository.findByTagNameIn(tagsOnContent).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
         tagsOnContent.forEach(tagName -> {
@@ -65,8 +64,8 @@ public class HashtagService {
     }
     @Transactional
     public void editHashTagOnComment(Comment comment, String beforeContent){
-        final Set<String> afterTags = filteringHashtag(comment.getText());
-        final Set<String> beforeTags = filteringHashtag(beforeContent);
+        final Set<String> afterTags = stringExtractUtil.filteringHashtag(comment.getText());
+        final Set<String> beforeTags = stringExtractUtil.filteringHashtag(beforeContent);
 
         final Map<String, Hashtag> afterHashtagMap = hashtagRepository.findByTagNameIn(afterTags).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
@@ -82,8 +81,8 @@ public class HashtagService {
     }
     @Transactional
     public void editHashTagOnPost(Post post, String beforeContent){
-        final Set<String> afterNames = filteringHashtag(post.getContent());
-        final Set<String> beforeNames = filteringHashtag(beforeContent);
+        final Set<String> afterNames = stringExtractUtil.filteringHashtag(post.getContent());
+        final Set<String> beforeNames = stringExtractUtil.filteringHashtag(beforeContent);
         final Map<String, Hashtag> afterhashtagMap = hashtagRepository.findByTagNameIn(afterNames).stream()
                 .collect(Collectors.toMap(Hashtag::getTagName, hashtag -> hashtag));
         final Map<String, Hashtag> beforeHashtagMap = hashtagRepository.findByTagNameIn(beforeNames).stream()
@@ -154,17 +153,5 @@ public class HashtagService {
             tempHashtag.updatecount(-1);
             commentHashtagRepository.delete(commentHashtag);
         }
-    }
-
-    public Set<String> filteringHashtag(String content){
-        Set<String> hashtags = new HashSet<>();
-        final String regex = "#[0-9a-zA-Z가-힣ㄱ-ㅎ_]+";
-        final Pattern pattern = Pattern.compile(regex);
-        final Matcher matching = pattern.matcher(content);
-
-        while(matching.find()){
-            hashtags.add(matching.group().substring(1));
-        }
-        return new HashSet<>(hashtags);
     }
 }
