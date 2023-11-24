@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.mention.service;
 
-
 import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.comment.entity.Comment;
@@ -10,7 +9,6 @@ import com.project.Instagram.global.util.StringExtractUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,7 +46,4 @@ public class MentionService {
                 .collect(Collectors.toList());
         alarmService.sendMentionCommentAlarm(AlarmType.MENTION_COMMENT, agent, deletedAfterMentions, post, comment);
     }
-
-
-
 }
