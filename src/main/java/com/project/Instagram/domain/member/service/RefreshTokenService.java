@@ -20,13 +20,11 @@ public class RefreshTokenService {
     @Transactional
     public void deleteRefreshTokenByValue(Long memberId) {
             List<RefreshToken> refreshTokens = refreshTokenRedisRepository.findAllByMemberId(memberId);
-            if(!refreshTokens.isEmpty()){
-                for (RefreshToken refreshToken : refreshTokens)
-                    refreshTokenRedisRepository.delete(refreshToken);
-            }
-            else {
+            if(refreshTokens.size()==0){
                 throw new BusinessException(ErrorCode.MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST);
             }
+            for (RefreshToken refreshToken : refreshTokens)
+                refreshTokenRedisRepository.delete(refreshToken);
     }
 
     @SneakyThrows
