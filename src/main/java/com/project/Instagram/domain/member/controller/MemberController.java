@@ -66,7 +66,7 @@ public class MemberController {
         return ResponseEntity.ok(ResultResponse.of(RESET_PASSWORD_SUCCESS));
     }
 
-    @DeleteMapping("/logout")
+    @DeleteMapping("/token/delete")
     public ResponseEntity<ResultResponse> logout() {
         memberService.logout();
         return ResponseEntity.ok(ResultResponse.of(LOGOUT_SUCCESS));

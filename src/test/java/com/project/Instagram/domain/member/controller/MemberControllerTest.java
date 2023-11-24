@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.member.controller;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.Instagram.domain.member.dto.ResetPasswordRequest;
 import com.project.Instagram.domain.member.dto.SignUpRequest;
@@ -42,10 +41,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MemberControllerTest {
     @Autowired
     ObjectMapper jsonMapper;
-
     @Autowired
     MockMvc mvc;
-
     @MockBean
     MemberService memberService;
 

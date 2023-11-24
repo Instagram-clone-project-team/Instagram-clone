@@ -9,7 +9,6 @@ import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
-import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
@@ -42,24 +41,22 @@ class MemberServiceTest {
 
     @InjectMocks
     MemberService memberService;
-
     @Mock
     CustomAuthorityUtils customAuthorityUtils;
-
     @Mock
     SecurityUtil securityUtil;
     @Mock
     RefreshTokenService refreshTokenService;
-
     @Mock
     MemberRepository memberRepository;
     @Mock
     BCryptPasswordEncoder bCryptPasswordEncoder;
     @Mock
     EmailAuthService emailAuthService;
-    private final String DELETE_MEMBER_USERNAME = "--deleted--";
     @Mock
     JwtTokenProvider jwtTokenProvider;
+
+    private final String DELETE_MEMBER_USERNAME = "--deleted--";
 
     @Nested
     class SendEmailConfirmation {
@@ -229,9 +226,6 @@ class MemberServiceTest {
         String email = "yunide073@gmail.com";
         String code = "QLl6xq";
         SignUpRequest request = new SignUpRequest(username, name, password, email, code);
-        //Set<MemberRole> roles= Collections.singleton(MemberRole.USER);
-        //given(customAuthorityUtils.createRole(Mockito.anyString())).willReturn(roles);
-        //given(memberRepository.save(Mockito.any())).willReturn(null);
 
         //when
         boolean result = memberService.signUp(request);
@@ -255,9 +249,6 @@ class MemberServiceTest {
         String email = "yunide073@gmail.com";
         String code = "QLl6xq";
         SignUpRequest request = new SignUpRequest(username, name, password, email, code);
-        //Set<MemberRole> roles= Collections.singleton(MemberRole.USER);
-        //given(customAuthorityUtils.createRole(Mockito.anyString())).willReturn(roles);
-        //given(memberRepository.save(Mockito.any())).willReturn(null);
 
         //when
         boolean result = memberService.signUp(request);
@@ -283,9 +274,6 @@ class MemberServiceTest {
         String email = "yunide073@gmail.com";
         String code = "QLl6xq";
         SignUpRequest request = new SignUpRequest(username, name, password, email, code);
-        //Set<MemberRole> roles= Collections.singleton(MemberRole.USER);
-        //given(customAuthorityUtils.createRole(Mockito.anyString())).willReturn(roles);
-        //given(memberRepository.save(Mockito.any())).willReturn(null);
 
         //when
         Throwable exception = assertThrows(BusinessException.class, () -> {
@@ -293,7 +281,7 @@ class MemberServiceTest {
         });
 
         //then
-        assertEquals(exception.getMessage(), ErrorCode.USERNAME_ALREADY_EXIST.getMessage());
+        assertEquals(exception.getMessage(), USERNAME_ALREADY_EXIST.getMessage());
         verify(memberRepository, times(1)).findByUsername(Mockito.anyString());
         verify(emailAuthService, times(1)).checkSignUpCode(Mockito.anyString(), Mockito.anyString());
 
@@ -350,7 +338,7 @@ class MemberServiceTest {
         });
 
         //then
-        assertEquals(exception.getMessage(), ErrorCode.USERNAME_ALREADY_EXIST.getMessage());
+        assertEquals(exception.getMessage(), USERNAME_ALREADY_EXIST.getMessage());
         assertEquals(loginMember.getUsername(), "luee");
         assertEquals(loginMember.getPhone(), "010-1111-2222");
     }
@@ -397,7 +385,6 @@ class MemberServiceTest {
         assertEquals(page, response.getPageInfo().getPage() - 1);
         verify(memberRepository, times(1)).findAllByDeletedAtIsNull(pageRequest);
     }
-
 }
 
 
