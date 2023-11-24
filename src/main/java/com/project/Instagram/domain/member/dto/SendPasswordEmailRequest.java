@@ -1,9 +1,6 @@
 package com.project.Instagram.domain.member.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
@@ -11,8 +8,9 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class SendPasswordEmailRequest {
 
     @NotBlank(message = "사용자 이름을 입력해주세요.")

@@ -165,6 +165,6 @@ public class HashtagService {
         while(matching.find()){
             hashtags.add(matching.group().substring(1));
         }
-        return new HashSet<>(hashtags);
+        return hashtags;
     }
 }
