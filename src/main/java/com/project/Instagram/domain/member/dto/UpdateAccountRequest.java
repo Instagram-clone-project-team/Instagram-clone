@@ -1,15 +1,16 @@
 package com.project.Instagram.domain.member.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
-
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+@Data
 @Getter
 @AllArgsConstructor
 public class UpdateAccountRequest {
@@ -33,5 +34,6 @@ public class UpdateAccountRequest {
     @Pattern(regexp = "^MALE|FEMALE|PRIVATE$", message = "올바르지 않는 성별입니다")
     @NotBlank(message = "성별을 입력해주세요")
     private String gender;
+
 
 }
