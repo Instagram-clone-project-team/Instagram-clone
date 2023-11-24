@@ -1,12 +1,17 @@
 package com.project.Instagram.domain.member.service;
 
 import com.project.Instagram.domain.member.dto.ResetPasswordRequest;
+import com.project.Instagram.domain.member.dto.SignUpRequest;
 import com.project.Instagram.domain.member.dto.UpdateAccountRequest;
 import com.project.Instagram.domain.member.dto.UpdatePasswordRequest;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
+import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.jwt.CustomAuthorityUtils;
+import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
@@ -16,30 +21,45 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.project.Instagram.global.error.ErrorCode.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
 
     @InjectMocks
-    private MemberService memberService;
+    MemberService memberService;
+
     @Mock
-    private EmailAuthService emailAuthService;
+    CustomAuthorityUtils customAuthorityUtils;
+
     @Mock
-    private MemberRepository memberRepository;
+    SecurityUtil securityUtil;
     @Mock
-    private SecurityUtil securityUtil;
+    RefreshTokenService refreshTokenService;
+
     @Mock
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    MemberRepository memberRepository;
     @Mock
-    private CustomAuthorityUtils customAuthorityUtils;
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Mock
+    EmailAuthService emailAuthService;
+    private final String DELETE_MEMBER_USERNAME = "--deleted--";
+    @Mock
+    JwtTokenProvider jwtTokenProvider;
 
     @Nested
     class SendEmailConfirmation {
@@ -191,6 +211,191 @@ class MemberServiceTest {
 
             verify(memberRepository, never()).save(any(Member.class));
         }
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("[member] sign up new member:success")
+    void test_sign_up_not_existing_member_success() {
+        //given
+        Optional<Member> member = Optional.empty();
+        assertEquals(false, member.isPresent());
+        given(memberRepository.findByUsername(Mockito.anyString())).willReturn(member);
+        given(emailAuthService.checkSignUpCode(Mockito.anyString(), Mockito.anyString())).willReturn(true);
+        given(memberRepository.findByUsernameOrEmail(Mockito.anyString(), Mockito.anyString())).willReturn(null);
+        String username = "luee1004";
+        String name = "haneul";
+        String password = "lueepwd2023";
+        String email = "yunide073@gmail.com";
+        String code = "QLl6xq";
+        SignUpRequest request = new SignUpRequest(username, name, password, email, code);
+        //Set<MemberRole> roles= Collections.singleton(MemberRole.USER);
+        //given(customAuthorityUtils.createRole(Mockito.anyString())).willReturn(roles);
+        //given(memberRepository.save(Mockito.any())).willReturn(null);
+
+        //when
+        boolean result = memberService.signUp(request);
+
+        //then
+        assertEquals(true, result);
+    }
+
+    @Test
+    @DisplayName("[member] sign up restore member:success")
+    void test_sign_up_existing_member_restore_success() {
+        //given
+        Optional<Member> member = Optional.empty();
+        given(memberRepository.findByUsername(Mockito.anyString())).willReturn(member);
+        given(emailAuthService.checkSignUpCode(Mockito.anyString(), Mockito.anyString())).willReturn(true);
+        Member existingMember = new Member();
+        given(memberRepository.findByUsernameOrEmail(Mockito.anyString(), Mockito.anyString())).willReturn(existingMember);
+        String username = "luee1004";
+        String name = "haneul";
+        String password = "lueepwd2023";
+        String email = "yunide073@gmail.com";
+        String code = "QLl6xq";
+        SignUpRequest request = new SignUpRequest(username, name, password, email, code);
+        //Set<MemberRole> roles= Collections.singleton(MemberRole.USER);
+        //given(customAuthorityUtils.createRole(Mockito.anyString())).willReturn(roles);
+        //given(memberRepository.save(Mockito.any())).willReturn(null);
+
+        //when
+        boolean result = memberService.signUp(request);
+
+        //then
+        assertEquals(result, true);
+        verify(memberRepository, times(1)).findByUsername(Mockito.anyString());
+        verify(emailAuthService, times(1)).checkSignUpCode(Mockito.anyString(), Mockito.anyString());
+        verify(memberRepository, times(1)).findByUsernameOrEmail(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    @DisplayName("[member] sign up existing username:fail")
+    void test_sign_up_existing_username_throw_exception() {
+        //given
+        Optional<Member> member = Optional.of(new Member());
+        assertEquals(member.isPresent(), true);
+        given(memberRepository.findByUsername(Mockito.anyString())).willReturn(member);
+        given(emailAuthService.checkSignUpCode(Mockito.anyString(), Mockito.anyString())).willReturn(true);
+        String username = "luee1004";
+        String name = "haneul";
+        String password = "lueepwd2023";
+        String email = "yunide073@gmail.com";
+        String code = "QLl6xq";
+        SignUpRequest request = new SignUpRequest(username, name, password, email, code);
+        //Set<MemberRole> roles= Collections.singleton(MemberRole.USER);
+        //given(customAuthorityUtils.createRole(Mockito.anyString())).willReturn(roles);
+        //given(memberRepository.save(Mockito.any())).willReturn(null);
+
+        //when
+        Throwable exception = assertThrows(BusinessException.class, () -> {
+            memberService.signUp(request);
+        });
+
+        //then
+        assertEquals(exception.getMessage(), ErrorCode.USERNAME_ALREADY_EXIST.getMessage());
+        verify(memberRepository, times(1)).findByUsername(Mockito.anyString());
+        verify(emailAuthService, times(1)).checkSignUpCode(Mockito.anyString(), Mockito.anyString());
+
+    }
+
+    @Test
+    @DisplayName("[member] update account:success")
+    void test_update_account_success() {
+        //given
+        Member loginMember = new Member();
+        loginMember.setUsername("notluee");
+        loginMember.setPhone("010-1111-2222");
+        given(securityUtil.getLoginMember()).willReturn(loginMember);
+        given(memberRepository.existsByUsername(Mockito.anyString())).willReturn(false);
+
+        String update_username = "luee";
+        String name = "haneul";
+        String link = "https://www.example.com";
+        String introduce = "introduce-luee";
+        String email = "luee@naver.com";
+        String update_phone = "010-3333-4444";
+        String gender = "MALE";
+        UpdateAccountRequest request = new UpdateAccountRequest(update_username, name, link, introduce, email, update_phone, gender);
+        //when
+        memberService.updateAccount(request);
+
+        //then
+        assertEquals(loginMember.getUsername(), update_username);
+        assertEquals(loginMember.getPhone(), update_phone);
+    }
+
+    @Test
+    @DisplayName("[member] update account:success")
+    void test_update_account_exist_username_throw_exception() {
+        //given
+        Member loginMember = new Member();
+        loginMember.setUsername("luee");
+        loginMember.setPhone("010-1111-2222");
+        given(securityUtil.getLoginMember()).willReturn(loginMember);
+        given(memberRepository.existsByUsername(Mockito.anyString())).willReturn(true);
+
+        String update_username = "notluee";
+        String name = "haneul";
+        String link = "https://www.example.com";
+        String introduce = "introduce-luee";
+        String email = "luee@naver.com";
+        String update_phone = "010-3333-4444";
+        String gender = "MALE";
+        UpdateAccountRequest request = new UpdateAccountRequest(update_username, name, link, introduce, email, update_phone, gender);
+
+        //when
+        Throwable exception = assertThrows(BusinessException.class, () -> {
+            memberService.updateAccount(request);
+        });
+
+        //then
+        assertEquals(exception.getMessage(), ErrorCode.USERNAME_ALREADY_EXIST.getMessage());
+        assertEquals(loginMember.getUsername(), "luee");
+        assertEquals(loginMember.getPhone(), "010-1111-2222");
+    }
+
+    @Test
+    @DisplayName("[member] delete:success")
+    void test_delete_success() {
+        //given
+        Member loginMember = new Member();
+        given(securityUtil.getLoginMember()).willReturn(loginMember);
+        //when
+        memberService.deleteMember();
+        //then
+        assertNotNull(loginMember.getDeletedAt());
+        assertEquals(loginMember.getUsername(), DELETE_MEMBER_USERNAME);
+    }
+
+    @Test
+    @DisplayName("[member] get profile page : success")
+    void test_get_profile_page_success() {
+        //given
+        int page = 0;
+        int size = 2;
+        PageRequest pageRequest = PageRequest.of(page, size);
+        List<Member> members = new ArrayList<>();
+        members.add(new Member());
+        members.add(new Member());
+        members.add(new Member());
+        members.add(new Member());
+        members.add(new Member());
+        members.add(new Member());
+        members.add(new Member());
+        Page<Member> memberPages = new PageImpl<>(members, pageRequest, members.size());
+        given(memberRepository.findAllByDeletedAtIsNull(pageRequest)).willReturn(memberPages);
+
+        //when
+        PageListResponse<Profile> response = memberService.getProfilePageList(page, size);
+
+        //then
+        assertNotNull(response);
+        assertEquals(size, response.getPageInfo().getSize());
+        assertEquals(members.size(), response.getPageInfo().getTotalElements());
+        assertEquals(members.get(0).getUsername(), response.getData().get(0).getUsername());
+        assertEquals(page, response.getPageInfo().getPage() - 1);
+        verify(memberRepository, times(1)).findAllByDeletedAtIsNull(pageRequest);
     }
 
 }
