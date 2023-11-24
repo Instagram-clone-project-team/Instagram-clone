@@ -9,18 +9,9 @@ import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.entity.PostLike;
-import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.global.error.BusinessException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import com.project.Instagram.domain.follow.repository.FollowRepository;
-import com.project.Instagram.domain.member.entity.Member;
-import com.project.Instagram.domain.member.repository.MemberRepository;
-import com.project.Instagram.domain.post.entity.Post;
-import com.project.Instagram.global.util.SecurityUtil;
-import com.project.Instagram.global.util.StringExtractUtil;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,13 +19,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static com.project.Instagram.domain.alarm.dto.AlarmType.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -158,6 +150,7 @@ class AlarmServiceTest {
                                 savedAlarm.getPost() == post &&
                                 savedAlarm.getComment() == comment));
             }
+
 
             @Test
             @DisplayName("댓글 알림 실패 테스트")
@@ -310,6 +303,7 @@ class AlarmServiceTest {
         alarmService.deleteAllPostAlarm(post);
         // then
         verify(alarmRepository).deleteAllInBatch(alarms);
+    }
 
     @Test
     @DisplayName("[alarm] send follow alarm:success")

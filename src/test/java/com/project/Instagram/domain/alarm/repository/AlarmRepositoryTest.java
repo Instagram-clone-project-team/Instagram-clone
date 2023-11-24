@@ -12,11 +12,6 @@ import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.entity.PostLike;
 import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.global.config.QuerydslConfig;
-import com.project.Instagram.domain.member.entity.Member;
-import com.project.Instagram.domain.member.repository.MemberRepository;
-import com.project.Instagram.domain.post.entity.Post;
-import com.project.Instagram.domain.post.repository.PostRepository;
-import com.project.Instagram.global.config.QuerydslConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.project.Instagram.domain.alarm.dto.AlarmType.*;
@@ -247,21 +241,75 @@ class AlarmRepositoryTest {
 
         Alarm savedFollowAlarm = Alarm.builder()
                 .type(FOLLOW)
-    @Autowired
-    private AlarmRepository alarmRepository;
+                .agent(agent)
+                .target(target)
+                .follow(follow)
+                .build();
+        alarmRepository.save(savedFollowAlarm);
 
-    @Autowired
-    private PostRepository postRepository;
+        // when
+        alarmRepository.deleteByTypeAndAgentAndTargetAndFollow(FOLLOW, agent, target, follow);
 
-    @Autowired
-    private MemberRepository memberRepository;
+        // then
+        List<Alarm> alarmsAfterDeletion = alarmRepository.findAll();
+        assertThat(alarmsAfterDeletion).isEmpty();
+    }
 
-    @Autowired
-    private CommentRepository commentRepository;
+    @Test
+    @DisplayName("게시물 알림 관련 모든 데이터 삭제")
+    void deleteAllPostAlarm() {
+        // given
+        Member agent = Member.builder()
+                .username("agentUsername")
+                .name("agentname")
+                .password("djkasdjasdj123")
+                .build();
+        Member target = Member.builder()
+                .username("targetUsername")
+                .name("targetname")
+                .password("djkasdjasdj123")
+                .build();
+        memberRepository.saveAll(List.of(agent, target));
 
-    @BeforeEach
-    void deleteAll(){
-        alarmRepository.deleteAll();
+        Post post = Post.builder()
+                .member(agent)
+                .image("postImage")
+                .content("postContent")
+                .build();
+        post.setId(1L);
+        postRepository.save(post);
+
+        Comment comment = Comment.builder()
+                .writer(agent)
+                .postId(post.getId())
+                .text("Comment text")
+                .build();
+        commentRepository.save(comment);
+
+        Alarm alarm1 = Alarm.builder()
+                .type(LIKE_POST)
+                .agent(agent)
+                .target(target)
+                .post(post)
+                .build();
+
+        Alarm alarm2 = Alarm.builder()
+                .type(COMMENT)
+                .agent(agent)
+                .target(target)
+                .post(post)
+                .comment(comment)
+                .build();
+
+        alarmRepository.saveAll(List.of(alarm1, alarm2));
+
+        // when
+        List<Alarm> alarmsToDelete = alarmRepository.findAllByPost(post);
+        alarmRepository.deleteAllInBatch(alarmsToDelete);
+
+        // then
+        List<Alarm> remainingAlarms = alarmRepository.findAllByPost(post);
+        assertThat(remainingAlarms).isEmpty();
     }
 
     @Test
@@ -443,23 +491,5 @@ class AlarmRepositoryTest {
         //then
         List<Alarm> foundAlarmsAfterDelete = alarmRepository.findAll();
         Assertions.assertEquals(0, foundAlarmsAfterDelete.size());
-
-        Alarm alarm2 = Alarm.builder()
-                .type(COMMENT)
-                .agent(agent)
-                .target(target)
-                .post(post)
-                .comment(comment)
-                .build();
-
-        alarmRepository.saveAll(List.of(alarm1, alarm2));
-
-        // when
-        List<Alarm> alarmsToDelete = alarmRepository.findAllByPost(post);
-        alarmRepository.deleteAllInBatch(alarmsToDelete);
-
-        // then
-        List<Alarm> remainingAlarms = alarmRepository.findAllByPost(post);
-        assertThat(remainingAlarms).isEmpty();
     }
 }
