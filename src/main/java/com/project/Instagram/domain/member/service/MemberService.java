@@ -15,6 +15,7 @@ import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +35,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService {
 
     private final CustomAuthorityUtils customAuthorityUtils;
@@ -59,7 +61,6 @@ public class MemberService {
         }
 
         Member existingMember = memberRepository.findByUsernameOrEmail(signUpRequest.getUsername(), signUpRequest.getEmail());
-
         if (existingMember != null && existingMember.getDeletedAt() != null) {
             restoreMembership(existingMember, signUpRequest);
         } else if (existingMember == null) {

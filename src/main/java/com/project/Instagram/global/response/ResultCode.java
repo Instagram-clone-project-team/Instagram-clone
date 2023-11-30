@@ -68,8 +68,10 @@ public enum ResultCode {
     HASHTAG_AUTO_COMPLETE(200,"해시태그 자동 완성 성공하였습니다."),
     DELETE_ALL_RECENT_SEARCH_SUCCESS(200, "최근 검색 기록 전체 삭제에 성공하였습니다."),
     SUCCESS_PROCESSING_AFTER_SEARCH_JOIN(200,"최근 검색 기록 업데이트 성공하였습니다."),
-    GET_TOP_15_RECENT_SEARCH_SUCCESS(200, "최근 검색 기록 15개 조회에 성공하였습니다.");
-
+    GET_TOP_15_RECENT_SEARCH_SUCCESS(200, "최근 검색 기록 15개 조회에 성공하였습니다."),
+    DELETE_RECENT_SEARCH_SUCCESS(200, "최근검색 삭제에 성공했습니다."),
+    GET_RECENTSEARCH_LIST_SUCCESS(200, "최근검색 목록 조회가 완료되었습니다."),
+    GET_RECOMMEND_MEMBER_LIST_SUCCESS(200, "팔로잉 추천 회원 조회가 완료되었습니다.");
 
 
     private final int status;

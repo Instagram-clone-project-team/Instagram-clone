@@ -3,6 +3,7 @@ package com.project.Instagram.domain.search.repository;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.search.entity.RecentSearch;
 import com.project.Instagram.domain.search.entity.Search;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +22,7 @@ public interface RecentSearchRepository extends JpaRepository<RecentSearch, Long
 
     Optional<RecentSearch> findByMemberAndSearch(Member member, Search search);
 
+    Page<RecentSearch> findAllByMember(Member member, Pageable pageable);
+
+    void deleteByMemberAndSearchId(Member member, long id);
 }

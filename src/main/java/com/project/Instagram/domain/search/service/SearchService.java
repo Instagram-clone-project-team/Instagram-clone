@@ -11,14 +11,18 @@ import com.project.Instagram.domain.search.dto.SearchHashtagDto;
 import com.project.Instagram.domain.search.dto.SearchMemberDto;
 import com.project.Instagram.domain.search.entity.RecentSearch;
 import com.project.Instagram.domain.search.entity.Search;
+import com.project.Instagram.domain.search.entity.SearchHashtag;
+import com.project.Instagram.domain.search.entity.SearchMember;
 import com.project.Instagram.domain.search.repository.RecentSearchRepository;
 import com.project.Instagram.domain.search.repository.SearchHashtagRepository;
 import com.project.Instagram.domain.search.repository.SearchMemberRepository;
 import com.project.Instagram.domain.search.repository.SearchRepository;
+import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +47,59 @@ public class SearchService {
     private final SearchHashtagRepository searchHashtagRepository;
     private final SearchMemberRepository searchMemberRepository;
     // mewluee
+    @Transactional
+    public void deleteRecentSearch(long id) {
+        Member loginMember = securityUtil.getLoginMember();
+        recentSearchRepository.deleteByMemberAndSearchId(loginMember, id);
+    }
 
+    @Transactional(readOnly = true)
+    public PageListResponse<SearchDto> getRecentSearchPageList(int page, int size) {
+        Member loginMember = securityUtil.getLoginMember();
+        Page<RecentSearch> pages = recentSearchRepository.findAllByMember(loginMember, PageRequest.of(page, size));
+        List<RecentSearch> searches = pages.getContent();
+        List<SearchDto> searchDtos = new ArrayList<>();
+
+        for (RecentSearch rs : searches) {
+            Search search_proxy = rs.getSearch();
+            Search search = (Search) ((HibernateProxy) search_proxy)
+                    .getHibernateLazyInitializer()
+                    .getImplementation();
+
+            switch (search_proxy.getDtype()) {
+                case "MEMBER":
+                    Member searchMember = ((SearchMember) search).getMember();
+                    boolean isFollowing = followRepository.existsByMemberIdAndFollowMemberId(loginMember.getId(), searchMember.getId());
+                    boolean isFollower = followRepository.existsByMemberIdAndFollowMemberId(searchMember.getId(), loginMember.getId());
+                    SearchMemberDto searchMemberDto = new SearchMemberDto("MEMBER", searchMember, isFollowing, isFollower);
+                    searchDtos.add(searchMemberDto);
+                    break;
+                case "HASHTAG":
+                    Hashtag searchHashtag = ((SearchHashtag) search).getHashtag();
+                    SearchHashtagDto searchHashtagDto = new SearchHashtagDto("HASHTAG", searchHashtag);
+                    searchDtos.add(searchHashtagDto);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return new PageListResponse(searchDtos, pages);
+    }
+
+    public List<Profile> getRecommendMembersToFollow() {
+        Member loginMember = securityUtil.getLoginMember();
+        List<Member> recommendMemberList = searchMemberRepository.findAllByOrderByCountDesc().stream()
+                .map(e -> e.getMember())
+                .collect(Collectors.toList());
+        List<Member> followMemberList = followRepository.findByMemberId(loginMember.getId()).stream()
+                .map(e -> e.getFollowMember())
+                .collect(Collectors.toList());
+        List<Profile> deletedProfileList = recommendMemberList.stream()
+                .filter(am -> followMemberList.stream().noneMatch(bm -> am == bm))
+                .map(e -> Profile.convertMemberToProfile(e))
+                .collect(Collectors.toList());
+        return deletedProfileList;
+    }
     // DongYeopMe
     @Transactional(readOnly = true)
     public List<Profile> getAutoMember(String text) {
@@ -112,7 +169,7 @@ public class SearchService {
         }
 
         final List<Long> searchIds = searches.stream()
-                .map(Search :: getId)
+                .map(Search::getId)
                 .collect(Collectors.toList());
 
         searchRepository.checkMatchingHashtag(keyword.substring(1), searches, searchIds);
