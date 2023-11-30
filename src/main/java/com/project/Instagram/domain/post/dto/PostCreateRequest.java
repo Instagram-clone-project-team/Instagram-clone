@@ -1,5 +1,6 @@
 package com.project.Instagram.domain.post.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,6 +10,7 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class PostCreateRequest {
 
     @NotBlank

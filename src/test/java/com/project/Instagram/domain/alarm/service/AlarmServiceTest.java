@@ -6,6 +6,7 @@ import com.project.Instagram.domain.alarm.entity.Alarm;
 import com.project.Instagram.domain.alarm.repository.AlarmRepository;
 import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.follow.entity.Follow;
+import com.project.Instagram.domain.follow.repository.FollowRepository;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.domain.post.entity.Post;
@@ -21,10 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +47,8 @@ class AlarmServiceTest {
     private SecurityUtil securityUtil;
     @Mock
     private StringExtractUtil stringExtractUtil;
+    @Mock
+    private FollowRepository followRepository;
 
     @Nested
     class SendPostLikeAlarm {
@@ -399,48 +399,63 @@ class AlarmServiceTest {
     @Nested
     class getArlamsOnLike{
         @Test
-        @DisplayName(" 게시글 좋아요 알람 가져오기 테스트")
-        void validGetArlamsOnPostLike(){
-            Member loginMember = Member.builder()
-                    .name("사사사")
-                    .username("exex22")
-                    .password("qwer1234").build();
-            loginMember.setId(1L);
-            Post post = Post.builder().build();
-            post.setId(1L);
-
-            Alarm alarm = Alarm.builder()
-                    .post(post)
-                    .agent(loginMember)
-                    .type(LIKE_POST).build();
-            List<Alarm> alarms = new ArrayList<>();
+        @DisplayName("알람 가져오기 테스트")
+        void validGetArlams(){
             int page = 0;
             int size = 6;
-            alarms.add(alarm);
+            Member loginMember = new Member();
+            loginMember.setId(1L);
+            loginMember.setUsername("exex44");
+            Member agentMember = new Member();
+            agentMember.setUsername("exex22");
+            agentMember.setId(2L);
+            Post post = new Post();
+            post.setId(1L);
+            Comment comment = Comment.builder().writer(agentMember).postId(post.getId()).text("@exex44 테스트").build();
+            Alarm alarm1 = Alarm.builder()
+                    .post(post)
+                    .agent(agentMember)
+                    .target(loginMember)
+                    .type(LIKE_POST).build();
+            Alarm alarm2 = Alarm.builder()
+                    .post(post)
+                    .agent(loginMember)
+                    .target(agentMember)
+                    .type(LIKE_POST).build();
+            List<Alarm> alarms = new ArrayList<>();
+            alarms.add(alarm1);
+            alarms.add(alarm2);
+            Follow follow1 = Follow.builder().member(loginMember).followMember(agentMember).build();
+            Follow follow2 = Follow.builder().member(agentMember).followMember(loginMember).build();
 
+            List<Follow> follows = new ArrayList<>();
+            follows.add(follow1);
+            follows.add(follow2);
+
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Page<Alarm> alarmPage = new PageImpl<>(alarms, pageable, alarms.size());
+            List<Long> agentIds = new ArrayList<>();
+
+
+
+            when(alarmRepository.findByTargetId(loginMember.getId(),pageable)).thenReturn(alarmPage);
             when(securityUtil.getLoginMember()).thenReturn(loginMember);
-            Pageable pageable = PageRequest.of(page, size);
-            Page<Alarm> response = new PageImpl<>(alarms);
-            when(alarmRepository.findByTargetId(loginMember.getId(),pageable)).thenReturn(response);
-
+            when(followRepository.findByMemberIdAndFollowMemberIdIn(loginMember.getId(), agentIds)).thenReturn(follows);
             //when
-            Page<AlarmDto> responseDto = alarmService.getAlarms(page,size);
+            Page<AlarmDto> responseDtos = alarmService.getAlarms(page,size);
 
             //then
-            List<AlarmDto> testDto =responseDto.getContent();
-            assertEquals(testDto,response);
+            List<AlarmDto> testDto =responseDtos.getContent();
+            assertNotNull(responseDtos);
+            assertEquals(size,responseDtos.getSize());
+            assertEquals(page,responseDtos.getTotalPages()-1);
+            assertEquals(alarms.get(0).getType().toString(),testDto.get(0).getType());
+            assertEquals(alarms.get(0).getAgent().getId(),agentMember.getId());
+            assertEquals(alarms.get(0).getTarget().getId(),loginMember.getId());
+            verify(alarmRepository, times(1)).findByTargetId(anyLong(), any(Pageable.class));
+            verify(followRepository, times(1)).findByMemberIdAndFollowMemberIdIn(anyLong(), anyList());
+
         }
-    }
-    @Nested
-    class getArlamsOnMention{
-
-    }
-    @Nested
-    class getArlamsOncComment{
-
-    }
-    @Nested
-    class getArlamsOnFollow{
 
     }
 }

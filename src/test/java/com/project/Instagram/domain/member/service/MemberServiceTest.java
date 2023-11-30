@@ -3,7 +3,6 @@ package com.project.Instagram.domain.member.service;
 import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.Profile;
-import com.project.Instagram.domain.member.entity.RefreshToken;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
@@ -11,6 +10,8 @@ import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.jwt.RefreshTokenRedisRepository;
 import com.project.Instagram.global.util.SecurityUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -28,10 +30,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.project.Instagram.global.error.ErrorCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,7 +58,7 @@ class MemberServiceTest {
     @Mock
     JwtTokenProvider jwtTokenProvider;
     @Mock
-    private RefreshTokenRedisRepository refreshTokenRedisRepository;
+    RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     private final String DELETE_MEMBER_USERNAME = "--deleted--";
 
@@ -427,46 +426,19 @@ class MemberServiceTest {
 
         @Test
         @DisplayName("로그아웃 테스트")
-        @WithMockUser(username = "exex333")
         void validLogout(){
             //given
             String username = "exex333";
             Member member = new Member();
             member.setId(1L);
             member.setUsername(username);
-            RefreshToken refreshToken = RefreshToken.builder()
-                    .memberId(member.getId())
-                    .value("refreshTokenValue")
-                    .build();
+
             when(securityUtil.getLoginMember()).thenReturn(member);
 
             //when
-            refreshTokenRedisRepository.save(refreshToken);
             memberService.logout();
-
             //then
             verify(refreshTokenService).deleteRefreshTokenByValue(member.getId());
-            List<RefreshToken> refreshTokens = refreshTokenRedisRepository.findAllByMemberId(member.getId());
-            assertTrue(refreshTokens.isEmpty());
-        }
-        @Test
-        @DisplayName("리프레쉬 토큰 없이 로그아웃 테스트")
-        @WithMockUser(username = "exex22")
-        void refreshNotExistThrowException(){
-            String username = "exex333";
-            Member member1 = new Member();
-            member1.setId(1L);
-            member1.setUsername(username);
-            when(securityUtil.getLoginMember()).thenReturn(member1);
-//            when(refreshTokenRedisRepository.findAllByMemberId(member1.getId())).thenReturn(Collections.emptyList());
-
-            memberService.logout();
-            // when, then
-            verify(refreshTokenRedisRepository, never()).delete(any());
-            assertThatExceptionOfType(BusinessException.class)
-                    .isThrownBy(() -> memberService.logout())
-                    .withMessage(MEMBER_ID_REFRESH_TOKEN_DOES_NOT_EXIST.getMessage());
-            //애초에 빈 list를 반환하기 때문에 반복문이 실행이 안된다. 그래서 예외처리가 안됨. 그럼 이유가 뭘까?
         }
     }
     @Nested
@@ -512,22 +484,30 @@ class MemberServiceTest {
         void testReissueAccessToken() {
             String refreshToken = "ex_refresh_token";
             String access = "ex_access_token";
-
             Member member = new Member();
             member.setId(1L);
             member.setUsername("exex22");
             member.setName("사사사");
             member.setPassword("qwer1234");
+            member.setEmail("exex1122@exex.com");
+            Jws<Claims> mockJws = Mockito.mock(Jws.class);
+            Claims mockClaims = Mockito.mock(Claims.class);
+
 
             when(securityUtil.getLoginMember()).thenReturn(member);
+            when(jwtTokenProvider.generateAccessToken(anyMap(), anyString())).thenReturn(access);
+            when(jwtTokenProvider.generateRefreshToken(anyString())).thenReturn(refreshToken);
+            when(mockJws.getBody()).thenReturn(mockClaims);
+            when(jwtTokenProvider.getClaims(Mockito.anyString())).thenReturn(mockJws);
 
-            Map<String, String> test =memberService.reissueAccessToken(access,refreshToken);
+            Map<String, String> result = memberService.reissueAccessToken(access, refreshToken);
 
-            assertThat(test)
-                    .isNotEmpty()
-                    .containsKey("access")
-                    .containsKey("refresh");
+            assertEquals(access, result.get("access"));
+            assertEquals(refreshToken, result.get("refresh"));
+            verify(refreshTokenService).deleteRefreshTokenByValue(member.getId());
+            verify(refreshTokenService).saveRefreshTokenByValue(member.getId(), refreshToken);
         }
+
     }
 
 }

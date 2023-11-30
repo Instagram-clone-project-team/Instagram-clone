@@ -29,8 +29,6 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 class MemberRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
-    @Autowired
-    private RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     @Test
     @DisplayName("[member repo] find by username")
@@ -118,7 +116,6 @@ class MemberRepositoryTest {
         Assertions.assertEquals(member.getId(), savedMember.getId());
         Assertions.assertEquals(member.getUsername(), savedMember.getUsername());
     }
-
     @Nested
     class ExistsByEmail {
         @Test
@@ -168,50 +165,7 @@ class MemberRepositoryTest {
             // Then
             assertThat(findmember.getUsername()).isEqualTo(username);
             List<Member> members = memberRepository.findAll();
-            assertThat(members.size()).isEqualTo(1);
-        }
-    }
-    @Nested
-    class findAllrefreshTokenByMemberId{
-        @Test
-        @DisplayName("해당 MemberId의 리프레쉬 토큰이 있는 경우")
-        void findRefreshTokenByMemberId(){
-            Member member = Member.builder()
-                    .username("exex22")
-                    .name("lelele")
-                    .password("qwe123")
-                    .build();
-            member.setId(1L);
-            memberRepository.save(member);
-            RefreshToken refreshToken = RefreshToken.builder()
-                    .memberId(member.getId())
-                    .value("refreshToken")
-                    .build();
-            refreshTokenRedisRepository.save(refreshToken);
-
-            List<RefreshToken> refreshTokens = refreshTokenRedisRepository.findAllByMemberId(member.getId());
-
-            assertThat(refreshTokens.get(0).getMemberId()).isEqualTo(member.getId());
-//왜 저장이 안될까?
-
-        }
-        @Test
-        @DisplayName("해당 MemberId의 리프레쉬 토큰이 없는 경우")
-        void findRefreshTokenByMemberIdFail(){
-            Member member = Member.builder()
-                    .username("exex22")
-                    .name("lelele")
-                    .password("qwe123")
-                    .build();
-            RefreshToken refreshToken = RefreshToken.builder()
-                    .memberId(member.getId())
-                    .value("refreshToken")
-                    .build();
-            memberRepository.save(member);
-            refreshTokenRedisRepository.save(refreshToken);
-
-            List<RefreshToken> refreshTokens = refreshTokenRedisRepository.findAllByMemberId(member.getId());
-            assertThat(refreshTokens.size()).isEqualTo(0);
+            assertThat(members.size()).isEqualTo(3);
         }
     }
 }

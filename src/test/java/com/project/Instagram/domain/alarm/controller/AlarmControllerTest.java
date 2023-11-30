@@ -1,6 +1,5 @@
-package com.project.Instagram.controller;
+package com.project.Instagram.domain.alarm.controller;
 
-import com.project.Instagram.domain.alarm.controller.AlarmController;
 import com.project.Instagram.domain.alarm.service.AlarmService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
