@@ -11,4 +11,10 @@ class CommentLikeServiceTest {
     @InjectMocks
     CommentLikeService commentLikeService;
 
+    // 윤영
+
+    // 동엽
+
+    // 하늘
+
 }
