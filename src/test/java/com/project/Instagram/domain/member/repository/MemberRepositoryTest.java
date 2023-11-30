@@ -1,7 +1,11 @@
 package com.project.Instagram.domain.member.repository;
 
+import com.project.Instagram.config.TestConfig;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.member.entity.RefreshToken;
 import com.project.Instagram.global.config.QuerydslConfig;
+import com.project.Instagram.global.error.BusinessException;
+import com.project.Instagram.global.jwt.RefreshTokenRedisRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -12,13 +16,15 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
+import java.util.List;
 import java.util.Optional;
 
+import static com.project.Instagram.global.error.ErrorCode.MEMBER_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 
 @DataJpaTest
-@Import(QuerydslConfig.class)
+@Import({QuerydslConfig.class, TestConfig.class})
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 class MemberRepositoryTest {
     @Autowired
@@ -110,7 +116,6 @@ class MemberRepositoryTest {
         Assertions.assertEquals(member.getId(), savedMember.getId());
         Assertions.assertEquals(member.getUsername(), savedMember.getUsername());
     }
-
     @Nested
     class ExistsByEmail {
         @Test
@@ -138,6 +143,29 @@ class MemberRepositoryTest {
 
             // then
             assertThat(notExistEmail).isFalse();
+        }
+    }
+    @Nested
+    class findByUsername{
+        @Test
+        @DisplayName("username이 존재 하는 경우 member 반환 테스트")
+        void findByUsernameReturnTrue(){
+            //given
+            String username = "exex22";
+            Member member = Member.builder()
+                    .username(username)
+                    .name("서서서")
+                    .password("qwe123")
+                    .build();
+
+            Member member1 =memberRepository.save(member);
+            // When
+            Member findmember = memberRepository.findByUsername(username).orElseThrow(() -> new BusinessException(MEMBER_NOT_FOUND));
+
+            // Then
+            assertThat(findmember.getUsername()).isEqualTo(username);
+            List<Member> members = memberRepository.findAll();
+            assertThat(members.size()).isEqualTo(3);
         }
     }
 }

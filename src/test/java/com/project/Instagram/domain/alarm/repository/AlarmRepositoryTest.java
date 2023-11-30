@@ -492,4 +492,5 @@ class AlarmRepositoryTest {
         List<Alarm> foundAlarmsAfterDelete = alarmRepository.findAll();
         Assertions.assertEquals(0, foundAlarmsAfterDelete.size());
     }
+
 }

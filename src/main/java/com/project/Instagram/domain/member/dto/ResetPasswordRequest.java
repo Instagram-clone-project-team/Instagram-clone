@@ -11,7 +11,6 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
 @EqualsAndHashCode
 public class ResetPasswordRequest {
 

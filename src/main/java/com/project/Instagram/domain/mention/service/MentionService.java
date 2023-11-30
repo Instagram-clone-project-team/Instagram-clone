@@ -37,6 +37,7 @@ public class MentionService {
         alarmService.sendMentionCommentAlarm(AlarmType.MENTION_COMMENT, agent, stringExtractUtil.filteringMentions(text), post, comment);
     }
 
+
     public void checkUpdateMentionsFromComment(Member agent, String beforeText, String afterText, Post post, Comment comment) {
         List<String> beforeMentions = stringExtractUtil.filteringMentions(beforeText);
         List<String> afterMentions = stringExtractUtil.filteringMentions(afterText);

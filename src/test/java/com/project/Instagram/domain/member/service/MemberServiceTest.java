@@ -1,9 +1,6 @@
 package com.project.Instagram.domain.member.service;
 
-import com.project.Instagram.domain.member.dto.ResetPasswordRequest;
-import com.project.Instagram.domain.member.dto.SignUpRequest;
-import com.project.Instagram.domain.member.dto.UpdateAccountRequest;
-import com.project.Instagram.domain.member.dto.UpdatePasswordRequest;
+import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
@@ -11,7 +8,10 @@ import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.jwt.JwtTokenProvider;
+import com.project.Instagram.global.jwt.RefreshTokenRedisRepository;
 import com.project.Instagram.global.util.SecurityUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -22,17 +22,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.project.Instagram.global.error.ErrorCode.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
@@ -55,6 +57,8 @@ class MemberServiceTest {
     EmailAuthService emailAuthService;
     @Mock
     JwtTokenProvider jwtTokenProvider;
+    @Mock
+    RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     private final String DELETE_MEMBER_USERNAME = "--deleted--";
 
@@ -385,6 +389,127 @@ class MemberServiceTest {
         assertEquals(page, response.getPageInfo().getPage() - 1);
         verify(memberRepository, times(1)).findAllByDeletedAtIsNull(pageRequest);
     }
+    @Nested
+    class sendCodeByEmail {
+        @Test
+        @DisplayName("이메일 인증 코드 동작 테스트")
+        void validSendEamil(){
+            //given
+            String exUsername = "exex22";
+            SendPasswordEmailRequest sendPasswordEmailRequest = new SendPasswordEmailRequest(exUsername);
+            Member member = new Member();
+            member.setUsername(exUsername);
+            member.setEmail("test@example.com");
+
+            //when
+            when(memberRepository.findByUsername(exUsername)).thenReturn(Optional.of(member));
+            memberService.sendPasswordCodeEmail(sendPasswordEmailRequest);
+            //then
+            then(emailAuthService).should().sendResetPasswordCode(exUsername,"test@example.com");
+
+        }
+        @Test
+        @DisplayName("Username 존재 여부 예외 처리 테스트")
+        void usernameNotExistThrowException(){
+            String username = "exex11";
+            SendPasswordEmailRequest sendPasswordEmailRequest = new SendPasswordEmailRequest(username);
+            //when then
+            when(memberRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+            assertThatExceptionOfType(BusinessException.class)
+                    .isThrownBy(() -> memberService.sendPasswordCodeEmail(sendPasswordEmailRequest))
+                    .withMessage(MEMBER_NOT_FOUND.getMessage());
+        }
+    }
+    @Nested
+    class logout {
+
+        @Test
+        @DisplayName("로그아웃 테스트")
+        void validLogout(){
+            //given
+            String username = "exex333";
+            Member member = new Member();
+            member.setId(1L);
+            member.setUsername(username);
+
+            when(securityUtil.getLoginMember()).thenReturn(member);
+
+            //when
+            memberService.logout();
+            //then
+            verify(refreshTokenService).deleteRefreshTokenByValue(member.getId());
+        }
+    }
+    @Nested
+    class getProfile {
+
+        @Test
+        @DisplayName("getProfile 동작 테스트")
+        void validGetProfile(){
+            String username = "exex22";
+            Member member = new Member();
+            member.setUsername(username);
+            member.setImage("testImage");
+            member.setIntroduce("test,test1212");
+            when(memberRepository.findByUsername(username)).thenReturn(Optional.of(member));
+            //when
+            Profile profile = memberService.getProfile(username);
+            //then
+            assertEquals(member.getUsername(),profile.getUsername());
+            assertEquals(member.getImage(),profile.getImage());
+            assertEquals(member.getIntroduce(),profile.getIntroduce());
+            verify(memberRepository).findByUsername(username);
+        }
+
+        @Test
+        @DisplayName("Username 존재 여부 예외 처리 테스트")
+        void usernameNotExistThrowException(){
+            String username = "exex11";
+
+            when(memberRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+            // when, then
+            assertThatExceptionOfType(BusinessException.class)
+                    .isThrownBy(() -> memberService.getProfile(username))
+                    .withMessage(MEMBER_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    class reissueAccessToken {
+        @Test
+        @DisplayName("토큰 재발급 정상 처리 테스트")
+        @WithMockUser(username = "exex22")
+        void testReissueAccessToken() {
+            String refreshToken = "ex_refresh_token";
+            String access = "ex_access_token";
+            Member member = new Member();
+            member.setId(1L);
+            member.setUsername("exex22");
+            member.setName("사사사");
+            member.setPassword("qwer1234");
+            member.setEmail("exex1122@exex.com");
+            Jws<Claims> mockJws = Mockito.mock(Jws.class);
+            Claims mockClaims = Mockito.mock(Claims.class);
+
+
+            when(securityUtil.getLoginMember()).thenReturn(member);
+            when(jwtTokenProvider.generateAccessToken(anyMap(), anyString())).thenReturn(access);
+            when(jwtTokenProvider.generateRefreshToken(anyString())).thenReturn(refreshToken);
+            when(mockJws.getBody()).thenReturn(mockClaims);
+            when(jwtTokenProvider.getClaims(Mockito.anyString())).thenReturn(mockJws);
+
+            Map<String, String> result = memberService.reissueAccessToken(access, refreshToken);
+
+            assertEquals(access, result.get("access"));
+            assertEquals(refreshToken, result.get("refresh"));
+            verify(refreshTokenService).deleteRefreshTokenByValue(member.getId());
+            verify(refreshTokenService).saveRefreshTokenByValue(member.getId(), refreshToken);
+        }
+
+    }
+
 }
 
 

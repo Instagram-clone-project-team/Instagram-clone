@@ -29,6 +29,7 @@ public class HashtagService {
     private final CommentHashtagRepository commentHashtagRepository;
     private final SearchHashtagRepository searchHashtagRepository;
 
+
     @Transactional
     public void registerHashTagOnComment(Comment comment, String content ){
         final Set<String> tagsOnText = stringExtractUtil.filteringHashtag(content);
