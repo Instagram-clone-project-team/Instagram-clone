@@ -7,7 +7,6 @@ import com.project.Instagram.domain.member.dto.LikesMemberResponseDto;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.comment.entity.CommentLike;
 import com.project.Instagram.domain.post.entity.Post;
-import com.project.Instagram.domain.post.entity.PostLike;
 import com.project.Instagram.domain.comment.repository.CommentLikeRepository;
 import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.global.entity.PageListResponse;

@@ -4,6 +4,7 @@ import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.domain.search.repository.SearchMemberRepository;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.jwt.CustomAuthorityUtils;
@@ -13,7 +14,6 @@ import com.project.Instagram.global.util.SecurityUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,8 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 import static com.project.Instagram.global.error.ErrorCode.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
@@ -57,6 +55,8 @@ class MemberServiceTest {
     EmailAuthService emailAuthService;
     @Mock
     JwtTokenProvider jwtTokenProvider;
+    @Mock
+    SearchMemberRepository searchMemberRepository;
     @Mock
     RefreshTokenRedisRepository refreshTokenRedisRepository;
 
@@ -85,7 +85,7 @@ class MemberServiceTest {
             given(memberRepository.existsByEmail(email)).willReturn(true);
 
             // when, then
-            Assertions.assertThatExceptionOfType(BusinessException.class)
+            assertThatExceptionOfType(BusinessException.class)
                     .isThrownBy(() -> memberService.sendAuthEmail(email))
                     .withMessage(EMAIL_ALREADY_EXIST.getMessage());
 
@@ -124,7 +124,7 @@ class MemberServiceTest {
             when(bCryptPasswordEncoder.matches(request.getOldPassword(), member.getPassword())).thenReturn(false);
 
             // when, then
-            Assertions.assertThatExceptionOfType(BusinessException.class)
+            assertThatExceptionOfType(BusinessException.class)
                     .isThrownBy(() -> memberService.updatePassword(request))
                     .withMessage(PASSWORD_MISMATCH.getMessage());
 
@@ -143,7 +143,7 @@ class MemberServiceTest {
             when(bCryptPasswordEncoder.matches(request.getOldPassword(), member.getPassword())).thenReturn(true);
 
             // when, then
-            Assertions.assertThatExceptionOfType(BusinessException.class)
+            assertThatExceptionOfType(BusinessException.class)
                     .isThrownBy(() -> memberService.updatePassword(request))
                     .withMessage(PASSWORD_SAME.getMessage());
 
@@ -185,7 +185,7 @@ class MemberServiceTest {
             when(emailAuthService.checkResetPasswordCode(request.getUsername(), request.getCode())).thenReturn(false);
 
             // when, then
-            Assertions.assertThatExceptionOfType(BusinessException.class)
+            assertThatExceptionOfType(BusinessException.class)
                     .isThrownBy(() -> memberService.resetPasswordByEmailCode(request))
                     .withMessage(PASSWORD_RESET_FAIL.getMessage());
 
@@ -206,7 +206,7 @@ class MemberServiceTest {
             when(bCryptPasswordEncoder.matches(request.getNewPassword(), member.getPassword())).thenReturn(true);
 
             // when, then
-            Assertions.assertThatExceptionOfType(BusinessException.class)
+            assertThatExceptionOfType(BusinessException.class)
                     .isThrownBy(() -> memberService.resetPasswordByEmailCode(request))
                     .withMessage(PASSWORD_SAME.getMessage());
 

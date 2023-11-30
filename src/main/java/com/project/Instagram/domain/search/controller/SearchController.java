@@ -22,7 +22,6 @@ import static com.project.Instagram.global.response.ResultCode.*;
 public class SearchController {
     private final SearchService searchService;
 
-    // mewluee
     @DeleteMapping("/{search-id}")
     public ResponseEntity<ResultResponse> deleteRecentSearch(@PathVariable("search-id") long id) {
         searchService.deleteRecentSearch(id);
@@ -41,7 +40,7 @@ public class SearchController {
         List<Profile> response = searchService.getRecommendMembersToFollow();
         return ResponseEntity.ok(ResultResponse.of(GET_RECOMMEND_MEMBER_LIST_SUCCESS, response));
     }
-    // DongYeopMe
+
     @GetMapping("/auto/member")
     public ResponseEntity<ResultResponse> getAutoMember(@RequestParam String text){
         final List<Profile> memberResponse = searchService.getAutoMember(text);
@@ -61,7 +60,6 @@ public class SearchController {
         return ResponseEntity.ok(ResultResponse.of(SUCCESS_PROCESSING_AFTER_SEARCH_JOIN));
     }
 
-    // Heo-y-y
     @GetMapping
     public ResponseEntity<ResultResponse> search(@RequestParam String text) {
         final List<SearchDto> searchDtos = searchService.searchByText(text);

@@ -2,10 +2,8 @@ package com.project.Instagram.domain.member.repository;
 
 import com.project.Instagram.config.TestConfig;
 import com.project.Instagram.domain.member.entity.Member;
-import com.project.Instagram.domain.member.entity.RefreshToken;
 import com.project.Instagram.global.config.QuerydslConfig;
 import com.project.Instagram.global.error.BusinessException;
-import com.project.Instagram.global.jwt.RefreshTokenRedisRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;

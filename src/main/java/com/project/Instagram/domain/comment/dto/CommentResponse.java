@@ -1,10 +1,7 @@
 package com.project.Instagram.domain.comment.dto;
 
-import com.project.Instagram.domain.comment.entity.Comment;
-import com.project.Instagram.domain.member.entity.Member;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
