@@ -26,4 +26,10 @@ public class Search {
     public void setDtype() {
         this.dtype = getClass().getAnnotation(DiscriminatorValue.class).value();
     }
+
+    protected Search() {
+        this.count = 0L;
+    }
+
+    public void upCount(){this.count = count+1;}
 }

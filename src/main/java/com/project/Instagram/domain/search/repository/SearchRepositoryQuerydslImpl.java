@@ -1,5 +1,7 @@
 package com.project.Instagram.domain.search.repository;
 
+import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.post.entity.Hashtag;
 import com.project.Instagram.domain.search.dto.QSearchHashtagDto;
 import com.project.Instagram.domain.search.dto.QSearchMemberDto;
 import com.project.Instagram.domain.search.dto.SearchHashtagDto;
@@ -20,7 +22,7 @@ import static com.project.Instagram.domain.search.entity.QSearchMember.searchMem
 
 @RequiredArgsConstructor
 public class SearchRepositoryQuerydslImpl implements SearchRepositoryQuerydsl {
-
+    private final int SEARCH_SIZE = 15;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -43,6 +45,29 @@ public class SearchRepositoryQuerydslImpl implements SearchRepositoryQuerydsl {
                                         .where(searchHashtag.hashtag.tagName.like(keyword)))))
                 .orderBy(search.count.desc())
                 .limit(50)
+                .fetch();
+    }
+
+    @Override
+    public List<Member> findMembersByText(String text) {
+        return jpaQueryFactory
+                .select(searchMember.member)
+                .from(searchMember)
+                .where(searchMember.member.username.contains(text))
+                .orderBy(searchMember.count.desc())
+                .limit(SEARCH_SIZE)
+                .fetch();
+    }
+
+    @Override
+    public List<Hashtag> findHashTagsByText(String text) {
+        final String keyword = text + '%';
+        return jpaQueryFactory
+                .select(searchHashtag.hashtag)
+                .from(searchHashtag)
+                .where(searchHashtag.hashtag.tagName.like(keyword))
+                .orderBy(searchHashtag.count.desc())
+                .limit(SEARCH_SIZE)
                 .fetch();
     }
 

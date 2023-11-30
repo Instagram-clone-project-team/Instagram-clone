@@ -49,10 +49,13 @@ public enum ErrorCode {
     //댓글
     COMMENT_NOT_FOUND(500, "해당 댓글이 존재하지 않습니다."),
     COMMENT_WRITER_FAIL(500, "해당 댓글의 작성자가 아닙니다."),
-
+    //해시태그
+    HASHTAG_MISMATCH(500,"해시태그는 #으로 시작 해야합니다."),
+    HASHTAG_NOT_FOUND(500,"해당 해시태그를 찾을 수 없습니다."),
     // 알람
     MISMATCHED_ALARM_TYPE(400, "알람 타입이 올바르지 않습니다."),
     //공통
+    ENTITY_TYPE_INVALID(500,"올바르지 않은 엔티티 타입입니다."),
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
 
 
