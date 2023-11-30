@@ -11,7 +11,6 @@ import com.project.Instagram.domain.mention.service.MentionService;
 import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.domain.post.service.HashtagService;
-import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.util.SecurityUtil;

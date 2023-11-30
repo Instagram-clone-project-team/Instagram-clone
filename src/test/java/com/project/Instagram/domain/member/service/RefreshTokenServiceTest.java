@@ -4,7 +4,6 @@ import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.RefreshToken;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.jwt.RefreshTokenRedisRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

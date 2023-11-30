@@ -1,16 +1,15 @@
 package com.project.Instagram.domain.member.service;
 
 import com.project.Instagram.domain.member.dto.*;
+import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.entity.Gender;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.MemberRole;
-import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.domain.search.entity.SearchMember;
 import com.project.Instagram.domain.search.repository.SearchMemberRepository;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
-import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.jwt.CustomAuthorityUtils;
 import com.project.Instagram.global.jwt.JwtTokenProvider;
 import com.project.Instagram.global.util.SecurityUtil;
@@ -32,6 +31,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.*;
+
+import static com.project.Instagram.global.error.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +58,7 @@ public class MemberService {
         }
 
         if (existingUsername.isPresent()) {
-            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+            throw new BusinessException(USERNAME_ALREADY_EXIST);
         }
 
         Member existingMember = memberRepository.findByUsernameOrEmail(signUpRequest.getUsername(), signUpRequest.getEmail());
@@ -74,10 +75,10 @@ public class MemberService {
         Member member = securityUtil.getLoginMember();
 
         if(!bCryptPasswordEncoder.matches(updatePasswordRequest.getOldPassword(),member.getPassword())){
-            throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
+            throw new BusinessException(PASSWORD_MISMATCH);
         }
         if(updatePasswordRequest.getNewPassword().equals(updatePasswordRequest.getOldPassword())){
-            throw new BusinessException(ErrorCode.PASSWORD_SAME);
+            throw new BusinessException(PASSWORD_SAME);
         }
         final String password = bCryptPasswordEncoder.encode(updatePasswordRequest.getNewPassword());
         member.setEncryptedPassword(password);
@@ -105,7 +106,7 @@ public class MemberService {
     }
 
     public void sendAuthEmail (String email){
-        if (memberRepository.existsByEmail(email)) throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXIST);
+        if (memberRepository.existsByEmail(email)) throw new BusinessException(EMAIL_ALREADY_EXIST);
         emailAuthService.sendSignUpCode(email);
     }
 
@@ -125,7 +126,7 @@ public class MemberService {
 
         if(memberRepository.existsByUsername(updateAccountRequest.getUsername())
                 && !member.getUsername().equals(updateAccountRequest.getUsername())){
-            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+            throw new BusinessException(USERNAME_ALREADY_EXIST);
         }
 
         updateMemberAccount(member,updateAccountRequest);
@@ -135,20 +136,20 @@ public class MemberService {
     public void sendPasswordCodeEmail(SendPasswordEmailRequest sendPasswordEmailRequest) {
         final String username = sendPasswordEmailRequest.getUsername();
         final Member member = memberRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(MEMBER_NOT_FOUND));
         String email = member.getEmail();
         emailAuthService.sendResetPasswordCode(username,email);
     }
 
     public void resetPasswordByEmailCode(ResetPasswordRequest resetPasswordRequest) {
         final Member member =memberRepository.findByUsername(resetPasswordRequest.getUsername())
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(MEMBER_NOT_FOUND));
 
         if(!emailAuthService.checkResetPasswordCode(member.getUsername(),resetPasswordRequest.getCode())){//이메일 인증 코드 비교
-            throw new BusinessException(ErrorCode.PASSWORD_RESET_FAIL);
+            throw new BusinessException(PASSWORD_RESET_FAIL);
         }
         if(bCryptPasswordEncoder.matches(resetPasswordRequest.getNewPassword(), member.getPassword())){//현재 비밀번호, 새로운 비밀번호 비교
-            throw new BusinessException(ErrorCode.PASSWORD_SAME);
+            throw new BusinessException(PASSWORD_SAME);
         }
 
         final String newPassword = bCryptPasswordEncoder.encode(resetPasswordRequest.getNewPassword());
@@ -172,7 +173,7 @@ public class MemberService {
     }
 
     public Profile getProfile(String username){
-        Member member=memberRepository.findByUsername(username).orElseThrow(()-> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member=memberRepository.findByUsername(username).orElseThrow(()-> new BusinessException(MEMBER_NOT_FOUND));
         return Profile.convertMemberToProfile(member);
     }
 
@@ -194,7 +195,7 @@ public class MemberService {
 
     public Map<String, String> reissueAccessToken(String access, String refresh){
         if(refresh.isEmpty()){
-            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXIST);
+            throw new BusinessException(USERNAME_ALREADY_EXIST);
         }
         Member member=securityUtil.getLoginMember();
 

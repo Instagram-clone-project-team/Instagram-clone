@@ -275,7 +275,7 @@ class AlarmServiceTest {
     }
 
     @Test
-    @DisplayName("팔오우 알림 삭제 테스트")
+    @DisplayName("팔로우 알림 삭제 테스트")
     void deleteFollowAlarm() {
         // given
         Member agent = Member.builder()
@@ -436,8 +436,6 @@ class AlarmServiceTest {
             Page<Alarm> alarmPage = new PageImpl<>(alarms, pageable, alarms.size());
             List<Long> agentIds = new ArrayList<>();
 
-
-
             when(alarmRepository.findByTargetId(loginMember.getId(),pageable)).thenReturn(alarmPage);
             when(securityUtil.getLoginMember()).thenReturn(loginMember);
             when(followRepository.findByMemberIdAndFollowMemberIdIn(loginMember.getId(), agentIds)).thenReturn(follows);
@@ -456,6 +454,5 @@ class AlarmServiceTest {
             verify(followRepository, times(1)).findByMemberIdAndFollowMemberIdIn(anyLong(), anyList());
 
         }
-
     }
 }

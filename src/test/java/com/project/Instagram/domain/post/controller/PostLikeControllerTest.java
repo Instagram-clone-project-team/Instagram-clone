@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.project.Instagram.global.response.ResultCode.POST_CREATE_SUCCESS;
 import static com.project.Instagram.global.response.ResultCode.POST_LIKE_SUCCESS;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

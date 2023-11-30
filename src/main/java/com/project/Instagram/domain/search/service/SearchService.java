@@ -46,7 +46,7 @@ public class SearchService {
     private final RecentSearchRepository recentSearchRepository;
     private final SearchHashtagRepository searchHashtagRepository;
     private final SearchMemberRepository searchMemberRepository;
-    // mewluee
+
     @Transactional
     public void deleteRecentSearch(long id) {
         Member loginMember = securityUtil.getLoginMember();
@@ -100,7 +100,6 @@ public class SearchService {
                 .collect(Collectors.toList());
         return deletedProfileList;
     }
-    // DongYeopMe
     @Transactional(readOnly = true)
     public List<Profile> getAutoMember(String text) {
         final List<Member> members = searchRepository.findMembersByText(text);
@@ -109,6 +108,7 @@ public class SearchService {
                 .map(Profile::convertMemberToProfile)
                 .collect(Collectors.toList());
     }
+
     @Transactional(readOnly = true)
     public List<HashTagResponseDto> getAutoHashtag(String text) {
         if(!text.startsWith("#")){
@@ -152,7 +152,6 @@ public class SearchService {
         recentSearchRepository.save(recentSearch);
     }
 
-    // Heo-y-y
     @Transactional(readOnly = true)
     public List<SearchDto> searchByText(String text) {
         String keyword = text.trim();
@@ -199,7 +198,6 @@ public class SearchService {
         final Long loginId = securityUtil.getLoginMember().getId();
         recentSearchRepository.deleteAllByMemberId(loginId);
     }
-
 
     private List<SearchDto> setSearchContent(Long loginId, List<Search> searches, List<Long> searchIds) {
         final Map<Long, SearchMemberDto> memberMap = searchRepository.findAllSearchMemberDtoByIdIn(loginId, searchIds);
