@@ -36,7 +36,4 @@ public class CommentLikeController {
         PageListResponse<LikesMemberResponseDto> response = commentLikeService.getCommentLikeUsers(commentId, page-1,size);
         return ResponseEntity.ok(ResultResponse.of(GET_POSTLIKE_USERS_SUCCESS,response));
     }
-
-
-
 }

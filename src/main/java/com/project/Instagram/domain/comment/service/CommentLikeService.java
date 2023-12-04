@@ -33,6 +33,7 @@ public class CommentLikeService {
     private final CommentLikeRepository commentLikeRepository;
     private final PostRepository postRepository;
     private final AlarmService alarmService;
+
     @Transactional
     public void createCommentLike(Long commentId){
         final Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new BusinessException(ErrorCode.COMMENTLIKE_NOT_FOUND));
@@ -45,6 +46,7 @@ public class CommentLikeService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(comment.getPostId()).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         alarmService.sendCommentAlarm(LIKE_COMMENT,member,comment.getWriter(),post,comment);
     }
+
     @Transactional
     public void DeleteCommentLike(Long commentId){
         final Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new BusinessException(ErrorCode.COMMENTLIKE_NOT_FOUND));
@@ -55,6 +57,7 @@ public class CommentLikeService {
         commentLikeRepository.delete(commentlike);
         alarmService.deleteCommentLikeAlarm(LIKE_COMMENT,member,comment.getWriter(),comment);
     }
+
     @Transactional(readOnly = true)
     public PageListResponse<LikesMemberResponseDto> getCommentLikeUsers(Long commentId, int page, int size) {
         final Pageable pageable = PageRequest.of(page,size);
