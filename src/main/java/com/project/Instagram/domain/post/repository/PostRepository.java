@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
-    @Query("select p from Post p join fetch p.member where p.id = :postId")
-    Optional<Post> findWithMemberById(@Param("postId") Long postId);
 
     @Query("SELECT p FROM Post p WHERE p.deletedAt IS NULL")
     Page<Post> findAllPostPage(Pageable pageable);

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Positive;
 
+import static com.project.Instagram.global.response.ResultCode.*;
 import static com.project.Instagram.global.response.ResultCode.POST_LIKE_SUCCESS;
 import static com.project.Instagram.global.response.ResultCode.POST_UNLIKE_SUCCESS;
 
@@ -30,10 +31,10 @@ public class PostLikeController {
         return ResponseEntity.ok(ResultResponse.of(POST_UNLIKE_SUCCESS));
     }
     @GetMapping("{postId}") // 윤영
-    public ResponseEntity<ResultResponse> GetThePostPostLikeUserPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
+    public ResponseEntity<ResultResponse> getThePostPostLikeUserPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                                     @Positive @RequestParam(value = "size", defaultValue = "5") int size,
                                                                     @PathVariable("postId") Long postId){
         PageListResponse<LikesMemberResponseDto> response = postLikeService.getPostLikeUsers(postId, page-1,size);
-        return ResponseEntity.ok(ResultResponse.of(ResultCode.GET_POSTLIKE_USERS_SUCCESS,response));
+        return ResponseEntity.ok(ResultResponse.of(GET_POSTLIKE_USERS_SUCCESS,response));
     }
 }

@@ -5,7 +5,6 @@ import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.domain.post.dto.PostCreateRequest;
 import com.project.Instagram.domain.post.dto.EditPostRequest;
-import com.project.Instagram.global.response.ResultCode;
 import com.project.Instagram.global.response.ResultResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,11 +40,13 @@ public class PostController {
         PageListResponse<PostResponse> response = postService.getPostPageList(page - 1, size);
         return ResponseEntity.ok(ResultResponse.of(GET_POST_PAGE_SUCCESS,response));
     }
+
     @GetMapping("/{postId}") // 윤영
     public ResponseEntity<ResultResponse> getPost(@PathVariable("postId") Long postId){
         final PostResponse postResponse =postService.getPostResponse(postId);
         return ResponseEntity.ok(ResultResponse.of(GET_POST_SUCCESS,postResponse));
     }
+
     @GetMapping("/page/{memberId}") // 윤영
     public ResponseEntity<ResultResponse> userGetAllPostPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                           @Positive @RequestParam(value = "size", defaultValue = "5") int size,
@@ -65,6 +66,7 @@ public class PostController {
         postService.updatePost(updatePostRequest, postId);
         return ResponseEntity.ok(ResultResponse.of(UPDATE_POST_SUCCESS));
     }
+
     @DeleteMapping("{post_id}") // 하늘
     public ResponseEntity<ResultResponse> deletePost(@PathVariable("post_id") Long postId) {
         postService.delete(postId);
