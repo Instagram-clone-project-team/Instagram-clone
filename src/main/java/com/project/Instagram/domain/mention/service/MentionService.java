@@ -30,7 +30,7 @@ public class MentionService {
         List<String> deletedAfterMentions = afterMentions.stream()
                 .filter(am -> beforeMentions.stream().noneMatch(bm -> am.equals(bm)))
                 .collect(Collectors.toList());
-        alarmService.sendMentionPostAlarm(AlarmType.MENTION_COMMENT, agent, deletedAfterMentions, post);
+        alarmService.sendMentionPostAlarm(AlarmType.MENTION_POST, agent, deletedAfterMentions, post);
     }
 
     public void checkMentionsFromComment(Member agent, String text, Post post, Comment comment) {

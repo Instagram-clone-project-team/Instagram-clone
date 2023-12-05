@@ -20,6 +20,7 @@ import static com.project.Instagram.domain.search.entity.QSearch.search;
 import static com.project.Instagram.domain.search.entity.QSearchHashtag.searchHashtag;
 import static com.project.Instagram.domain.search.entity.QSearchMember.searchMember;
 
+
 @RequiredArgsConstructor
 public class SearchRepositoryQuerydslImpl implements SearchRepositoryQuerydsl {
     private final int SEARCH_SIZE = 15;

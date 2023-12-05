@@ -10,9 +10,9 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "comments")
-@Setter
 @NoArgsConstructor
 public class Comment extends BaseTimeEntity {
 

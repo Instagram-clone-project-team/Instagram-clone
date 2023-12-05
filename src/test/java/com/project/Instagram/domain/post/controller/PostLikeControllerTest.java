@@ -1,22 +1,26 @@
 package com.project.Instagram.domain.post.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.Instagram.domain.member.dto.LikesMemberResponseDto;
+import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.service.PostLikeService;
+import com.project.Instagram.global.entity.PageListResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.project.Instagram.global.response.ResultCode.POST_LIKE_SUCCESS;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static com.project.Instagram.global.response.ResultCode.*;
+import static java.util.Collections.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,6 +35,43 @@ class PostLikeControllerTest {
     private PostLikeService postLikeService;
 
     // 윤영
+    @Test
+    @WithMockUser
+    @DisplayName("getThePostPostLikeUserPage() 테스트")
+    void getThePostPostLikeUserPage() throws Exception {
+        // given
+        Long postId = 1L;
+        int page = 1;
+        int size = 5;
+
+        Member member = new Member();
+        member.setUsername("testUsername");
+        member.setImage("testImage");
+        member.setIntroduce("testIntroduce");
+
+        LikesMemberResponseDto likesMemberResponseDto = new LikesMemberResponseDto(member);
+        PageListResponse<LikesMemberResponseDto> pageListResponse = new PageListResponse<>(singletonList(likesMemberResponseDto), new PageImpl<>(emptyList()));
+
+        when(postLikeService.getPostLikeUsers(postId, page - 1, size)).thenReturn(pageListResponse);
+
+        // when, then
+        mvc.perform(get("/postlike/{postId}", postId)
+                        .param("page", String.valueOf(page))
+                        .param("size", String.valueOf(size))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                        .content(jsonMapper.writeValueAsString(postId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(GET_POSTLIKE_USERS_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(GET_POSTLIKE_USERS_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.data[0].profile.username").value("testUsername"))
+                .andExpect(jsonPath("$.data.data[0].profile.image").value("testImage"))
+                .andExpect(jsonPath("$.data.data[0].profile.introduce").value("testIntroduce"));
+
+        verify(postLikeService, times(1)).getPostLikeUsers(postId, page - 1, size);
+
+    }
 
     // 동엽
     @Test
@@ -39,9 +80,9 @@ class PostLikeControllerTest {
     void postLike() throws Exception {
         Long postId = 1L;
         mvc.perform(post("/postlike")
-                .param("postId", String.valueOf(postId))
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                        .param("postId", String.valueOf(postId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(POST_LIKE_SUCCESS.getStatus()))
                 .andExpect(jsonPath("$.message").value(POST_LIKE_SUCCESS.getMessage()));
