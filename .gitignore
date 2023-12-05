@@ -39,6 +39,9 @@ VS Code
 .DS_store
 gradle/wrapper/gradle-wrapper.jar
 
-yml
+#yml
 *.yml
 application.properties
+
+#SQL files
+*.sql

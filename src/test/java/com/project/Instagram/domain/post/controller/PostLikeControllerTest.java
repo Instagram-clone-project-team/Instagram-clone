@@ -7,6 +7,7 @@ import com.project.Instagram.domain.post.service.PostLikeService;
 import com.project.Instagram.global.entity.PageListResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -15,12 +16,15 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static com.project.Instagram.global.response.ResultCode.*;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,7 +38,6 @@ class PostLikeControllerTest {
     @MockBean
     private PostLikeService postLikeService;
 
-    // 윤영
     @Test
     @WithMockUser
     @DisplayName("getThePostPostLikeUserPage() 테스트")
@@ -70,10 +73,8 @@ class PostLikeControllerTest {
                 .andExpect(jsonPath("$.data.data[0].profile.introduce").value("testIntroduce"));
 
         verify(postLikeService, times(1)).getPostLikeUsers(postId, page - 1, size);
-
     }
 
-    // 동엽
     @Test
     @WithMockUser
     @DisplayName("좋아요 생성")
@@ -89,6 +90,22 @@ class PostLikeControllerTest {
 
         verify(postLikeService, times(1)).postlike(postId);
     }
-    // 하늘
 
+    @Test
+    @WithMockUser
+    @DisplayName("post unlike:success")
+    void test_post_unlike() throws Exception {
+        //when, then
+        mvc.perform(delete("/postlike")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("postId", "1")
+                        .with(csrf())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.status").value(POST_UNLIKE_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(POST_UNLIKE_SUCCESS.getMessage()))
+                .andDo(print());
+
+        verify(postLikeService).postunlike(Mockito.anyLong());
+    }
 }

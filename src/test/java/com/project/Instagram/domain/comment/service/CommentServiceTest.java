@@ -1,10 +1,12 @@
 package com.project.Instagram.domain.comment.service;
 
+import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.comment.dto.CommentResponse;
 import com.project.Instagram.domain.comment.entity.Comment;
 import com.project.Instagram.domain.comment.repository.CommentRepository;
 import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.member.entity.MemberRole;
 import com.project.Instagram.domain.mention.service.MentionService;
 import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.repository.PostRepository;
@@ -17,17 +19,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.project.Instagram.global.error.ErrorCode.*;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,16 +47,14 @@ class CommentServiceTest {
     CommentRepository commentRepository;
     @Mock
     SecurityUtil securityUtil;
-
     @Mock
     AlarmService alarmService;
     @Mock
     MentionService mentionService;
     @Mock
     HashtagService hashtagService;
-
     private final String DELETE_COMMENT = "삭제된 댓글입니다.";
-    // 윤영
+
     @Nested
     class GetCommentsByPostId {
         @Test
@@ -125,7 +130,7 @@ class CommentServiceTest {
     // 동엽
     @Test
     @DisplayName("대댓글 작성 성공")
-    void createReplyCommentTestSuccess(){
+    void createReplyCommentTestSuccess() {
         Member member = new Member();
         Member targetmember = new Member();
         Post post = new Post();
@@ -140,13 +145,14 @@ class CommentServiceTest {
         when(postRepository.findByIdAndDeletedAtIsNull(post.getId())).thenReturn(Optional.of(post));
         when(postRepository.existsByIdAndDeletedAtIsNull(post.getId())).thenReturn(true);
         when(commentRepository.existsByIdAndDeletedAtIsNull(post.getId())).thenReturn(true);
-        commentService.createReplyComment(text,post.getId(), comment.getId());
+        commentService.createReplyComment(text, post.getId(), comment.getId());
 
         verify(commentRepository).save(any(Comment.class));
     }
+
     @Test
     @DisplayName("대댓글 작성 실패(게시글 삭제)")
-    void createReplyCommentTestFail(){
+    void createReplyCommentTestFail() {
         Member member = new Member();
         Post post = new Post();
         post.setId(1L);
@@ -160,12 +166,13 @@ class CommentServiceTest {
         when(postRepository.findByIdAndDeletedAtIsNull(post.getId())).thenReturn(Optional.of(post));
         when(postRepository.existsByIdAndDeletedAtIsNull(post.getId())).thenReturn(false);
         assertThatExceptionOfType(BusinessException.class)
-                .isThrownBy(() ->commentService.createReplyComment(text,post.getId(), comment.getId()))
+                .isThrownBy(() -> commentService.createReplyComment(text, post.getId(), comment.getId()))
                 .withMessage(POST_NOT_FOUND.getMessage());
     }
+
     @Test
     @DisplayName("대댓글 작성 실패(댓글 삭제)")
-    void createReplyComment(){
+    void createReplyComment() {
         Member member = new Member();
         Post post = new Post();
         post.setId(1L);
@@ -181,12 +188,13 @@ class CommentServiceTest {
         when(commentRepository.existsByIdAndDeletedAtIsNull(post.getId())).thenReturn(false);
 
         assertThatExceptionOfType(BusinessException.class)
-                .isThrownBy(() ->commentService.createReplyComment(text,post.getId(), comment.getId()))
+                .isThrownBy(() -> commentService.createReplyComment(text, post.getId(), comment.getId()))
                 .withMessage(COMMENT_NOT_FOUND.getMessage());
     }
+
     @Test
     @DisplayName("댓글 수정 성공")
-    void updateCommenttestSuccess(){
+    void updateCommenttestSuccess() {
         Member member = new Member();
         member.setId(3L);
         Post post = new Post();
@@ -203,14 +211,15 @@ class CommentServiceTest {
         when(securityUtil.getLoginMember()).thenReturn(member);
         when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
         when(postRepository.findByIdAndDeletedAtIsNull(comment.getPostId())).thenReturn(Optional.of(post));
-        commentService.updateComment(comment.getId(),aftertext);
+        commentService.updateComment(comment.getId(), aftertext);
 
-        verify(hashtagService).editHashTagOnComment(comment,beforetx);
-        verify(mentionService).checkUpdateMentionsFromComment(member,beforetx,aftertext,post,comment);
+        verify(hashtagService).editHashTagOnComment(comment, beforetx);
+        verify(mentionService).checkUpdateMentionsFromComment(member, beforetx, aftertext, post, comment);
     }
+
     @Test
     @DisplayName("댓글 수정 실패(댓글 작성자 매치 실패)")
-    void updateCommenttest(){
+    void updateCommenttest() {
         Member member = new Member();
         member.setId(3L);
         Member failmember = new Member();
@@ -230,13 +239,13 @@ class CommentServiceTest {
         when(postRepository.findByIdAndDeletedAtIsNull(comment.getPostId())).thenReturn(Optional.of(post));
 
         assertThatExceptionOfType(BusinessException.class)
-                .isThrownBy(() ->commentService.updateComment(comment.getId(),aftertext))
+                .isThrownBy(() -> commentService.updateComment(comment.getId(), aftertext))
                 .withMessage(COMMENT_WRITER_FAIL.getMessage());
     }
 
     @Test
     @DisplayName("댓글 삭제 성공")
-    void deleteCommentTestSuccess(){
+    void deleteCommentTestSuccess() {
         Member member = new Member();
         member.setId(3L);
         Post post = new Post();
@@ -254,11 +263,12 @@ class CommentServiceTest {
         commentService.deleteComment(comment.getId());
 
         assertNotNull(comment.getDeletedAt());
-        assertEquals(comment.getText(),DELETE_COMMENT);
+        assertEquals(comment.getText(), DELETE_COMMENT);
     }
+
     @Test
     @DisplayName("댓글 삭제 실패 (댓글 작성자 매치 실패)")
-    void deleteCommentTestFail(){
+    void deleteCommentTestFail() {
         Member member = new Member();
         member.setId(3L);
         Member failmember = new Member();
@@ -277,10 +287,50 @@ class CommentServiceTest {
         when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
 
         assertThatExceptionOfType(BusinessException.class)
-                .isThrownBy(() ->commentService.deleteComment(comment.getId()))
+                .isThrownBy(() -> commentService.deleteComment(comment.getId()))
                 .withMessage(COMMENT_WRITER_FAIL.getMessage());
     }
 
-    // 하늘
+    @Test
+    @DisplayName("test create comment:success")
+    void test_create_comment() {
+        //given
+        Set<MemberRole> roles = new HashSet<>();
+        roles.add(MemberRole.USER);
+        Member loginMember = Member.builder()
+                .username("luee")
+                .name("haneul")
+                .email("haha@gmail.com")
+                .password("pwd12345678")
+                .roles(roles)
+                .build();
+        loginMember.setId(1L);
+        Member writer = Member.builder()
+                .username("luee2")
+                .name("haneul2")
+                .email("haha2@gmail.com")
+                .password("pwd123456789")
+                .roles(roles)
+                .build();
+        writer.setId(2L);
+        Post post = Post.builder()
+                .member(writer)
+                .image("image")
+                .content("content")
+                .build();
+        post.setId(2L);
 
+        given(securityUtil.getLoginMember()).willReturn(loginMember);
+        given(postRepository.findByIdAndDeletedAtIsNull(post.getId())).willReturn(Optional.of(post));
+        String text = "comment";
+        long postId = post.getId();
+        //when
+        commentService.createComment(text, postId);
+
+        //then
+        verify(commentRepository).save(Mockito.any());
+        verify(hashtagService).registerHashTagOnComment(Mockito.any(), Mockito.anyString());
+        verify(alarmService).sendCommentAlarm(eq(AlarmType.COMMENT), eq(loginMember), eq(writer), eq(post), Mockito.any());
+        verify(mentionService).checkMentionsFromComment(eq(loginMember), eq(text), eq(post), Mockito.any());
+    }
 }

@@ -15,6 +15,7 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,8 @@ import static com.project.Instagram.global.response.ResultCode.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CommentLikeController.class)
@@ -38,7 +40,6 @@ class CommentLikeControllerTest {
     @MockBean
     MemberService memberService;
 
-    // 윤영
     @Test
     @WithMockUser
     @DisplayName("commentUnLike() 테스트")
@@ -85,8 +86,25 @@ class CommentLikeControllerTest {
 
         verify(commentLikeService, times(1)).getCommentLikeUsers(commentId, page - 1, size);
     }
-    // 동엽
 
-    // 하늘
+    @Test
+    @DisplayName("create comment like :success")
+    @WithMockUser
+    void test_create_comment_like() throws Exception {
+        //given
+        Long commentId = 1L;
 
+        //when, then
+        mvc.perform(post("/commentlike")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("commentId", String.valueOf(commentId))
+                        .with(csrf())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.status").value(COMMENT_LIKE_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(COMMENT_LIKE_SUCCESS.getMessage()))
+                .andDo(print());
+
+        verify(commentLikeService).createCommentLike(commentId);
+    }
 }

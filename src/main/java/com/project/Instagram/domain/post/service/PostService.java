@@ -125,7 +125,6 @@ public class PostService {
         alarmService.deleteAllPostAlarm(post);
     }
 
-      
     @Transactional(readOnly = true)
     public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {
         final Long loginMemberId = securityUtil.getLoginMember().getId();

@@ -20,17 +20,17 @@ import static com.project.Instagram.global.response.ResultCode.POST_UNLIKE_SUCCE
 @RequestMapping("/postlike")
 public class PostLikeController {
     private final PostLikeService postLikeService;
-    @PostMapping // 동엽
+    @PostMapping
     public ResponseEntity<ResultResponse> postLike(@RequestParam Long postId) {
         postLikeService.postlike(postId);
         return ResponseEntity.ok(ResultResponse.of(POST_LIKE_SUCCESS));
     }
-    @DeleteMapping // 하늘
+    @DeleteMapping
     public ResponseEntity<ResultResponse> postUnlike(@RequestParam Long postId){
         postLikeService.postunlike(postId);
         return ResponseEntity.ok(ResultResponse.of(POST_UNLIKE_SUCCESS));
     }
-    @GetMapping("{postId}") // 윤영
+    @GetMapping("{postId}")
     public ResponseEntity<ResultResponse> getThePostPostLikeUserPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                                     @Positive @RequestParam(value = "size", defaultValue = "5") int size,
                                                                     @PathVariable("postId") Long postId){
