@@ -30,7 +30,7 @@ public class CommentLikeController {
         return ResponseEntity.ok(ResultResponse.of(COMMENT_UNLIKE_SUCCESS));
     }
     @GetMapping("{commentId}")
-    public ResponseEntity<ResultResponse> GetCommentLikeUserPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
+    public ResponseEntity<ResultResponse> getCommentLikeUserPage(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
                                                                      @Positive @RequestParam(value = "size", defaultValue = "5") int size,
                                                                      @PathVariable("commentId") Long commentId){
         PageListResponse<LikesMemberResponseDto> response = commentLikeService.getCommentLikeUsers(commentId, page-1,size);

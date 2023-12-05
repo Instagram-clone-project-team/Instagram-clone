@@ -200,7 +200,7 @@ class PostServiceTest {
         MultipartFile image= new MockMultipartFile(fileName, fileName, contentType, content);
         EditPostRequest editPostRequest = new EditPostRequest(text,image);
 
-        when(postRepository.findWithMemberById(post.getId())).thenReturn(Optional.of(post));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(securityUtil.getLoginMember()).thenReturn(member);
         postService.updatePost(editPostRequest, post.getId());
 
@@ -227,7 +227,7 @@ class PostServiceTest {
         MultipartFile image= new MockMultipartFile(fileName, fileName, contentType, content);
         EditPostRequest editPostRequest = new EditPostRequest(text,image);
 
-        when(postRepository.findWithMemberById(post.getId())).thenReturn(Optional.of(post));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(securityUtil.getLoginMember()).thenReturn(member2);
 
         assertThatExceptionOfType(BusinessException.class)

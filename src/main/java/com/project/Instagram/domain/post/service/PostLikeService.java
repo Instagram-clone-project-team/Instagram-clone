@@ -34,7 +34,7 @@ public class PostLikeService {
 
     @Transactional
     public void postlike(Long postId) {
-        final Post post = postRepository.findWithMemberById(postId)
+        final Post post = postRepository.findById(postId)
                 .orElseThrow(()-> new BusinessException(ErrorCode.POST_NOT_FOUND));
         final Member member = securityUtil.getLoginMember();
 
@@ -51,7 +51,7 @@ public class PostLikeService {
 
     @Transactional
     public void postunlike(Long postId) {
-        final Post post = postRepository.findWithMemberById(postId)
+        final Post post = postRepository.findById(postId)
                 .orElseThrow(()-> new BusinessException(ErrorCode.POST_NOT_FOUND));
         final Member member = securityUtil.getLoginMember();
 

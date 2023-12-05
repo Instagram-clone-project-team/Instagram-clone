@@ -101,7 +101,7 @@ class PostLikeServiceTest {
         post.setLikeCount(0);
 
         when(securityUtil.getLoginMember()).thenReturn(member);
-        when(postRepository.findWithMemberById(post.getId())).thenReturn(Optional.of(post));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
 
         postLikeService.postlike(post.getId());
 
@@ -120,7 +120,7 @@ class PostLikeServiceTest {
         post.setLikeCount(0);
         PostLike postLike=new PostLike(member,post);
         when(securityUtil.getLoginMember()).thenReturn(member);
-        when(postRepository.findWithMemberById(post.getId())).thenReturn(Optional.of(post));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(postLikeRepository.findByMemberAndPost(member,post)).thenReturn(Optional.of(postLike));
 
         assertThatExceptionOfType(BusinessException.class)
