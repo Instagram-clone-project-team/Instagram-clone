@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.project.Instagram.global.error.ErrorCode.COMMENTLIKE_NOT_FOUND;
+import static com.project.Instagram.global.error.ErrorCode.COMMENT_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -78,7 +79,7 @@ class CommentLikeServiceTest {
             // when, then
             assertThatExceptionOfType(BusinessException.class)
                     .isThrownBy(() -> commentLikeService.DeleteCommentLike(commentId))
-                    .withMessage(COMMENTLIKE_NOT_FOUND.getMessage());
+                    .withMessage(COMMENT_NOT_FOUND.getMessage());
 
             verify(commentLikeRepository, never()).delete(any());
             verify(alarmService, never()).deleteCommentLikeAlarm(any(), any(), any(), any());

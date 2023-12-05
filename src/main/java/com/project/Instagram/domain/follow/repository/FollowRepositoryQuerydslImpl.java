@@ -1,8 +1,5 @@
 package com.project.Instagram.domain.follow.repository;
 
-import static com.project.Instagram.domain.member.entity.QMember.*;
-import static com.project.Instagram.domain.follow.entity.QFollow.*;
-
 import com.project.Instagram.domain.follow.dto.FollowDto;
 import com.project.Instagram.domain.follow.dto.FollowerDto;
 import com.project.Instagram.domain.follow.dto.QFollowDto;
@@ -18,6 +15,9 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.project.Instagram.domain.follow.entity.QFollow.follow;
+import static com.project.Instagram.domain.member.entity.QMember.member;
 
 @RequiredArgsConstructor
 public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
