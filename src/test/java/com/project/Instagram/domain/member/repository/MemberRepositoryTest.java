@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -98,13 +100,13 @@ class MemberRepositoryTest {
     void test_member_save() {
         //given
         Member member = new Member();
-        member.setId(1L);
         member.setUsername("luee");
         member.setName("haneul");
         member.setPassword("lueepwd1234");
 
         //when
         Member savedMember = memberRepository.save(member);
+        List<Member> list=memberRepository.findAll();
 
         //when
         Assertions.assertEquals(member.getId(), savedMember.getId());
