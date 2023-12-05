@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RecentSearchRepository extends JpaRepository<RecentSearch, Long>, RecentSearchRepositoryQuerydsl {
     @Query("SELECT rs.search FROM RecentSearch rs WHERE rs.member.id = :loginId")
@@ -18,6 +19,8 @@ public interface RecentSearchRepository extends JpaRepository<RecentSearch, Long
     Long countAllByMemberId(Long loginId);
 
     void deleteAllByMemberId(Long memberId);
+
+    Optional<RecentSearch> findByMemberAndSearch(Member member, Search search);
 
     Page<RecentSearch> findAllByMember(Member member, Pageable pageable);
 

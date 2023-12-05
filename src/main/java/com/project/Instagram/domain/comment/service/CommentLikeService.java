@@ -7,7 +7,6 @@ import com.project.Instagram.domain.member.dto.LikesMemberResponseDto;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.comment.entity.CommentLike;
 import com.project.Instagram.domain.post.entity.Post;
-import com.project.Instagram.domain.post.entity.PostLike;
 import com.project.Instagram.domain.comment.repository.CommentLikeRepository;
 import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.global.entity.PageListResponse;
@@ -36,9 +35,10 @@ public class CommentLikeService {
     private final AlarmService alarmService;
     @Transactional
     public void createCommentLike(Long commentId){
+        //exception 부적절, 아니면 다른 의미가 있는지?
         final Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new BusinessException(ErrorCode.COMMENTLIKE_NOT_FOUND));
         final Member member = securityUtil.getLoginMember();
-
+        //실제값을 쓰지않고 존재유무만 체크할꺼면 exists가 좋을것같다.
         if(commentLikeRepository.findByCommentAndMember(comment,member).isPresent()){
             throw new BusinessException(ErrorCode.COMMENTLIKE_ALREADY_EXIST);
         }

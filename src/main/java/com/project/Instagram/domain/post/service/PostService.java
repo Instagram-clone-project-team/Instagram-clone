@@ -1,6 +1,5 @@
 package com.project.Instagram.domain.post.service;
 
-import com.project.Instagram.domain.alarm.dto.AlarmType;
 import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
@@ -12,7 +11,6 @@ import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.repository.PostRepository;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
-import com.project.Instagram.global.error.ErrorCode;
 import com.project.Instagram.global.util.S3Uploader;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.project.Instagram.global.error.ErrorCode.*;
 
 @Slf4j
 @Service
@@ -67,7 +67,7 @@ public class PostService {
     public PostResponse getPostResponse(Long postId) {
         securityUtil.checkLoginMember();
         final Post post = postRepository.findById(postId)
-                .orElseThrow(() ->new BusinessException(ErrorCode.POST_NOT_FOUND));
+                .orElseThrow(() ->new BusinessException(POST_NOT_FOUND));
         PostResponse postResponse = new PostResponse(post.getMember().getUsername(),post.getContent(),post.getImage());
 
         return postResponse;
@@ -79,6 +79,7 @@ public class PostService {
         PageListResponse<PostResponse> response = getPostResponseListToPostResponsePage(postPage);
         return response;
     }
+
     public PageListResponse<PostResponse> getMyPostPage(int page,int size){
         final Member member = securityUtil.getLoginMember();
         final Pageable pageable = PageRequest.of(page,size);
@@ -101,10 +102,10 @@ public class PostService {
     public void updatePost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
         final Post post = postRepository.findWithMemberById(postId).orElseThrow
-                (() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+                (() -> new BusinessException(POST_NOT_FOUND));
         String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
-        if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_EDIT_FAILED);
+        if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(POST_EDIT_FAILED);
         String oldContent = post.getContent();
         post.updatePost(editPostRequest.getContent(), image);
         hashtagService.editHashTagOnPost(post,oldContent);
@@ -115,10 +116,10 @@ public class PostService {
     public void delete(Long postId) {
         final Member loginMember = securityUtil.getLoginMember();
         final Post post = postRepository.findWithMemberById(postId).orElseThrow
-                (() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+                (() -> new BusinessException(POST_NOT_FOUND));
 
-        if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(ErrorCode.POST_DELETE_FAILED);
-        if (post.getDeletedAt() != null) throw new BusinessException(ErrorCode.POST_ALREADY_DELETED);
+        if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(POST_DELETE_FAILED);
+        if (post.getDeletedAt() != null) throw new BusinessException(POST_ALREADY_DELETED);
 
         post.setDeletedAt(LocalDateTime.now());
         alarmService.deleteAllPostAlarm(post);

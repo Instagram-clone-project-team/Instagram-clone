@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.search.controller;
 
 import com.project.Instagram.domain.member.entity.Profile;
+import com.project.Instagram.domain.search.dto.HashTagResponseDto;
 import com.project.Instagram.domain.search.dto.SearchDto;
 import com.project.Instagram.domain.search.service.SearchService;
 import com.project.Instagram.global.entity.PageListResponse;
@@ -21,7 +22,6 @@ import static com.project.Instagram.global.response.ResultCode.*;
 public class SearchController {
     private final SearchService searchService;
 
-    // mewluee
     @DeleteMapping("/{search-id}")
     public ResponseEntity<ResultResponse> deleteRecentSearch(@PathVariable("search-id") long id) {
         searchService.deleteRecentSearch(id);
@@ -40,9 +40,26 @@ public class SearchController {
         List<Profile> response = searchService.getRecommendMembersToFollow();
         return ResponseEntity.ok(ResultResponse.of(GET_RECOMMEND_MEMBER_LIST_SUCCESS, response));
     }
-    // DongYeopMe
 
-    // Heo-y-y
+    @GetMapping("/auto/member")
+    public ResponseEntity<ResultResponse> getAutoMember(@RequestParam String text){
+        final List<Profile> memberResponse = searchService.getAutoMember(text);
+
+        return ResponseEntity.ok(ResultResponse.of(MEMBER_AUTO_COMPLETE,memberResponse));
+    }
+    @GetMapping("/auto/hashtag")
+    public ResponseEntity<ResultResponse> getAutoHashTag(@RequestParam String text){
+        final List<HashTagResponseDto> hashTagResponseDtos = searchService.getAutoHashtag(text);
+
+        return ResponseEntity.ok(ResultResponse.of(HASHTAG_AUTO_COMPLETE,hashTagResponseDtos));
+    }
+    @PostMapping("/recent/add")
+    public ResponseEntity<ResultResponse> addRecentSearchAndUpCount(@RequestParam String type,@RequestParam String name){
+        searchService.addRecentSearchAndUpCount(type,name);
+
+        return ResponseEntity.ok(ResultResponse.of(SUCCESS_PROCESSING_AFTER_SEARCH_JOIN));
+    }
+
     @GetMapping
     public ResponseEntity<ResultResponse> search(@RequestParam String text) {
         final List<SearchDto> searchDtos = searchService.searchByText(text);

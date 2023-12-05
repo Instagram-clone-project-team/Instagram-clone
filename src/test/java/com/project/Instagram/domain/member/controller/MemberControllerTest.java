@@ -1,10 +1,7 @@
 package com.project.Instagram.domain.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.Instagram.domain.member.dto.ResetPasswordRequest;
-import com.project.Instagram.domain.member.dto.SignUpRequest;
-import com.project.Instagram.domain.member.dto.UpdateAccountRequest;
-import com.project.Instagram.domain.member.dto.UpdatePasswordRequest;
+import com.project.Instagram.domain.member.dto.*;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.domain.member.service.MemberService;
@@ -232,5 +229,68 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.message").value(RESET_PASSWORD_SUCCESS.getMessage()));
 
         verify(memberService, times(1)).resetPasswordByEmailCode(request);
+    }
+    @Test
+    @DisplayName("비밀번호인증코드 이메일 보내기 테스트")
+    @WithMockUser
+    public void sendPasswordCodeByEmailTest() throws Exception{
+        SendPasswordEmailRequest sendPasswordEmailRequest = new SendPasswordEmailRequest("exex22");
+
+        mvc.perform(
+                        post("/password/reset/email")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .with(csrf())
+                                .content(jsonMapper.writeValueAsString(sendPasswordEmailRequest)))
+                .andExpect(status().isOk());
+
+        verify(memberService).sendPasswordCodeEmail(sendPasswordEmailRequest);
+    }
+    @Test
+    @DisplayName("로그아웃 테스트")
+    @WithMockUser
+    public void logoutTest() throws Exception{
+        mvc.perform(
+                        delete("/token/delete")
+                                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(LOGOUT_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(LOGOUT_SUCCESS.getMessage()));
+        verify(memberService).logout();
+    }
+    @Test
+    @DisplayName("프로필 가져오기 테스트")
+    @WithMockUser
+    public void getProfileTest() throws Exception{
+        String username = "exex22";
+
+        mvc.perform(
+                        get("/member/{username}",username)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .with(csrf())
+                                .content(jsonMapper.writeValueAsString(username)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(GET_PROFILE_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(GET_PROFILE_SUCCESS.getMessage()));
+
+
+        verify(memberService).getProfile(username);
+    }
+    @Test
+    @DisplayName("토큰 재발급 테스트")
+    @WithMockUser
+    public void reissueRefreshTokenTest() throws Exception {
+        String refreshToken = "ex_refresh_token";
+        String Authorization = "ex_access_token";
+
+        mvc.perform(
+                        post("/token/reissue")
+                                .with(csrf())
+                                .header("refresh", refreshToken)
+                                .header("Authorization", Authorization))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(REISSUE_JWT_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(REISSUE_JWT_SUCCESS.getMessage()));
+
+        verify(memberService).reissueAccessToken(Authorization,refreshToken);
     }
 }

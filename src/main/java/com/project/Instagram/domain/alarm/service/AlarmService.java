@@ -47,7 +47,7 @@ public class AlarmService {
         final List<Long> agentIds = alarms.stream()
                 .filter(a -> a.getType().equals(FOLLOW))
                 .map(a -> a.getAgent().getId())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());//상대방 : agent, 나 : target
 
         final List<Follow> follows = followRepository.findByMemberIdAndFollowMemberIdIn(loginMemberId, agentIds);
         final Map<Long, Follow> followMap = follows.stream()

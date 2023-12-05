@@ -106,12 +106,4 @@ class PostRepositoryTest {
         Assertions.assertEquals(count2, posts.getTotalElements());
     }
 
-    @Test
-    @DisplayName("find with member by post id:success")
-    void test_find_with_member_by_post_id() {
-        //의문점.
-        //왜 쿼리문으로 표현해야했는지.왜....???
-        //jpa가 자연조인해서 가져올텐데..?
-    }
-
 }

@@ -17,4 +17,8 @@ public class SearchHashtag extends Search {
     @JoinColumn(name = "hashtag_id")
     private Hashtag hashtag;
 
+    public SearchHashtag(Hashtag hashtag) {
+        super();
+        this.hashtag = hashtag;
+    }
 }

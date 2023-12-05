@@ -8,8 +8,9 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class SendPasswordEmailRequest {
 
     @NotBlank(message = "사용자 이름을 입력해주세요.")

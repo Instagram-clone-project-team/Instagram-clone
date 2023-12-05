@@ -3,6 +3,7 @@ package com.project.Instagram.domain.member.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
 
@@ -13,6 +14,7 @@ import javax.validation.constraints.Pattern;
 @Data
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class UpdateAccountRequest {
     @NotBlank(message = "사용자 이름을 입력해주세요.")
     @Length(min = 4, max = 12, message = "사용자 이름은 4문자 이상 12문자 이하여야 합니다.")

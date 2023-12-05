@@ -8,6 +8,8 @@ import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.domain.post.entity.PostHashtag;
 import com.project.Instagram.domain.post.repository.HashtagRepository;
 import com.project.Instagram.domain.post.repository.PostHashtagRepository;
+import com.project.Instagram.domain.search.entity.SearchHashtag;
+import com.project.Instagram.domain.search.repository.SearchHashtagRepository;
 import com.project.Instagram.global.util.StringExtractUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,8 @@ public class HashtagService {
     private final PostHashtagRepository postHashtagRepository;
     private final StringExtractUtil stringExtractUtil;
     private final CommentHashtagRepository commentHashtagRepository;
+    private final SearchHashtagRepository searchHashtagRepository;
+
 
     @Transactional
     public void registerHashTagOnComment(Comment comment, String content ){
@@ -39,6 +43,7 @@ public class HashtagService {
             }
             else {
                 tempHashtag = hashtagRepository.save(new Hashtag(tagName));
+                searchHashtagRepository.save(new SearchHashtag(tempHashtag));
             }
             commentHashtagRepository.save(new CommentHashtag(tempHashtag, comment));
         });
@@ -57,6 +62,7 @@ public class HashtagService {
             }
             else{
                 tempHashtag = hashtagRepository.save(new Hashtag(tagName));
+                searchHashtagRepository.save(new SearchHashtag(tempHashtag));
             }
 
             postHashtagRepository.save(new PostHashtag(tempHashtag,post));
@@ -106,6 +112,7 @@ public class HashtagService {
         }
         else{
             tempHashtag = hashtagRepository.save(new Hashtag(tagName));
+            searchHashtagRepository.save(new SearchHashtag(tempHashtag));
         }
         postHashtagRepository.save(new PostHashtag(tempHashtag, post));
     }
@@ -121,6 +128,7 @@ public class HashtagService {
         }
         else{
             tempHashtag = hashtagRepository.save(new Hashtag(tagName));
+            searchHashtagRepository.save(new SearchHashtag(tempHashtag));
         }
         commentHashtagRepository.save(new CommentHashtag(tempHashtag, comment));
     }
@@ -133,6 +141,7 @@ public class HashtagService {
         PostHashtag postHashtag = postHashtagRepository.findByPostAndHashtag(tempHashtag,post);
         if (tempHashtag.getCount() == 1) {
             postHashtagRepository.delete(postHashtag);
+            searchHashtagRepository.deleteByHashtag(tempHashtag);
             hashtagRepository.delete(tempHashtag);
         } else {
             tempHashtag.updatecount(-1);
@@ -148,6 +157,7 @@ public class HashtagService {
         CommentHashtag commentHashtag = commentHashtagRepository.findByHashtagAndComment(tempHashtag,comment);
         if (tempHashtag.getCount() == 1) {
             commentHashtagRepository.delete(commentHashtag);
+            searchHashtagRepository.deleteByHashtag(tempHashtag);
             hashtagRepository.delete(tempHashtag);
         } else {
             tempHashtag.updatecount(-1);
