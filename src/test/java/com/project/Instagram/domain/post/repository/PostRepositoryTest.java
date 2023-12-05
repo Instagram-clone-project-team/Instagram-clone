@@ -15,9 +15,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
+
 @DataJpaTest
 @Import(QuerydslConfig.class)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 class PostRepositoryTest {
 
     @Autowired
@@ -25,11 +29,26 @@ class PostRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
 
-    // 윤영
+    @Test
+    @DisplayName("findMemberAllPostPage() 성공")
+    void findMemberAllPostPageTrue() {
+        // given
+        Member member = new Member();
+        member.setId(1L);
+        member.setUsername("testMember");
 
-    // 동엽
+        int page = 0;
+        int size = 5;
+        PageRequest pageRequest = PageRequest.of(page, size);
 
-    // 하늘
+        // when
+        Page<Post> resultPage = postRepository.findMemberAllPostPage(2L, pageRequest);
+
+        // then
+        assertTrue(resultPage.getTotalElements() > 0);
+        assertEquals(1, resultPage.getTotalElements());
+    }
+
     @Test
     @DisplayName("find all post page:success")
     void test_find_all_post_page() {

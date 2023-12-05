@@ -30,13 +30,12 @@ public class MentionService {
         List<String> deletedAfterMentions = afterMentions.stream()
                 .filter(am -> beforeMentions.stream().noneMatch(bm -> am.equals(bm)))
                 .collect(Collectors.toList());
-        alarmService.sendMentionPostAlarm(AlarmType.MENTION_COMMENT, agent, deletedAfterMentions, post);
+        alarmService.sendMentionPostAlarm(AlarmType.MENTION_POST, agent, deletedAfterMentions, post);
     }
 
     public void checkMentionsFromComment(Member agent, String text, Post post, Comment comment) {
         alarmService.sendMentionCommentAlarm(AlarmType.MENTION_COMMENT, agent, stringExtractUtil.filteringMentions(text), post, comment);
     }
-
 
     public void checkUpdateMentionsFromComment(Member agent, String beforeText, String afterText, Post post, Comment comment) {
         List<String> beforeMentions = stringExtractUtil.filteringMentions(beforeText);

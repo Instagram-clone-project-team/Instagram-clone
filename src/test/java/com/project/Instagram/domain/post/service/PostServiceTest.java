@@ -4,6 +4,7 @@ import com.project.Instagram.domain.alarm.service.AlarmService;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.MemberRole;
+import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.domain.mention.service.MentionService;
 import com.project.Instagram.domain.post.dto.EditPostRequest;
 import com.project.Instagram.domain.post.dto.PostCreateRequest;
@@ -15,6 +16,7 @@ import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.util.S3Uploader;
 import com.project.Instagram.global.util.SecurityUtil;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,16 +47,113 @@ class PostServiceTest {
     @Mock
     SecurityUtil securityUtil;
     @Mock
+    MemberRepository memberRepository;
+    @Mock
+    FollowService followService;
+    @Mock
     S3Uploader s3Uploader;
     @Mock
     HashtagService hashtagService;
     @Mock
     MentionService mentionService;
     @Mock
-    FollowService followService;
-    @Mock
     AlarmService alarmService;
-    // 윤영
+
+    @Nested
+    class GetPostResponse {
+        @Test
+        @DisplayName("getPostResponse() 성공 테스트")
+        void getPostResponseSuccess() {
+            // given
+            Member member = new Member();
+            member.setUsername("TestUser");
+
+            Post post = new Post(member, "TestImage", "TestContent");
+            post.setId(1L);
+
+            doNothing().when(securityUtil).checkLoginMember();
+            when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+
+            // when
+            PostResponse postResponse = postService.getPostResponse(post.getId());
+
+            // given
+            assertNotNull(postResponse);
+            assertEquals("TestUser", postResponse.getUsername());
+            assertEquals("TestContent", postResponse.getContent());
+            assertEquals("TestImage", postResponse.getImage());
+        }
+
+        @Test
+        @DisplayName("getPostResponse() 예외 테스트")
+        void getPostResponsePostNotFound() {
+            // given
+            Long nonExistPostId = 111L;
+            when(postRepository.findById(nonExistPostId)).thenReturn(Optional.empty());
+
+            doNothing().when(securityUtil).checkLoginMember();
+
+            // when, then
+            assertThatExceptionOfType(BusinessException.class)
+                    .isThrownBy(() -> postService.getPostResponse(nonExistPostId))
+                    .withMessage(POST_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    class GetUserPostPage {
+        @Test
+        @DisplayName("getUserPostPage() 성공")
+        void getUserPostPageSuccess() {
+            // given
+            Member member = new Member();
+            member.setId(1L);
+            member.setUsername("TestName");
+            int page = 0;
+            int size = 10;
+            List<Post> postList = new ArrayList<>();
+
+            for (int i = 0; i < size; i++) {
+                Post post = new Post();
+                post.setId((long) (i + 1));
+                post.setMember(member);
+                postList.add(post);
+            }
+            Page<Post> postPage = new PageImpl<>(postList);
+
+            when(postRepository.findMemberAllPostPage(eq(member.getId()), any(Pageable.class))).thenReturn(postPage);
+
+            // when
+            PageListResponse<PostResponse> result = postService.getUserPostPage(member.getId(), page, size);
+
+            // then
+            assertEquals(size, result.getData().size());
+            assertEquals(postList.get(0).getMember().getUsername(), result.getData().get(0).getUsername());
+            verify(postRepository, times(1)).findMemberAllPostPage(eq(member.getId()), any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("getUserPostPage() 페이지가 없는 경우")
+        void getUserPostPageFail() {
+            // given
+            Member member = new Member();
+            member.setId(1L);
+            member.setUsername("TestName");
+            int page = 0;
+            int size = 10;
+            List<Post> postList = new ArrayList<>();
+            Page<Post> postPage = new PageImpl<>(postList);
+
+            when(postRepository.findMemberAllPostPage(eq(member.getId()), any(Pageable.class))).thenReturn(postPage);
+
+            // when
+            PageListResponse<PostResponse> result = postService.getUserPostPage(member.getId(), page, size);
+
+            // then
+            assertEquals(0, result.getData().size());
+            verify(postRepository, times(1)).findMemberAllPostPage(eq(member.getId()), any(Pageable.class));
+        }
+    }
 
     // 동엽
     @Test
@@ -71,7 +170,6 @@ class PostServiceTest {
         PostCreateRequest postCreateRequest = new PostCreateRequest(text, image);
 
         when(securityUtil.getLoginMember()).thenReturn(member);
-
 
         postService.create(postCreateRequest);
 
@@ -97,7 +195,7 @@ class PostServiceTest {
         MultipartFile image = new MockMultipartFile(fileName, fileName, contentType, content);
         EditPostRequest editPostRequest = new EditPostRequest(text, image);
 
-        when(postRepository.findWithMemberById(post.getId())).thenReturn(Optional.of(post));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(securityUtil.getLoginMember()).thenReturn(member);
         postService.updatePost(editPostRequest, post.getId());
 
@@ -125,7 +223,7 @@ class PostServiceTest {
         MultipartFile image = new MockMultipartFile(fileName, fileName, contentType, content);
         EditPostRequest editPostRequest = new EditPostRequest(text, image);
 
-        when(postRepository.findWithMemberById(post.getId())).thenReturn(Optional.of(post));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(securityUtil.getLoginMember()).thenReturn(member2);
 
         assertThatExceptionOfType(BusinessException.class)
@@ -176,7 +274,6 @@ class PostServiceTest {
         verify(postRepository).findByMemberIds(followedMemberIds, pageable);
     }
 
-    // 하늘
     @Test
     @DisplayName("get post page list:success")
     void test_get_post_page_list() {
@@ -283,7 +380,7 @@ class PostServiceTest {
                 .build();
         post.setId(2L);
         given(securityUtil.getLoginMember()).willReturn(member);
-        given(postRepository.findWithMemberById(post.getId())).willReturn(Optional.of(post));
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
         //when
         postService.delete(post.getId());
         //then
@@ -313,7 +410,7 @@ class PostServiceTest {
         post.setId(2L);
         post.setDeletedAt(LocalDateTime.now());
         given(securityUtil.getLoginMember()).willReturn(member);
-        given(postRepository.findWithMemberById(post.getId())).willReturn(Optional.of(post));
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
         //when
         Throwable exception = assertThrows(BusinessException.class, () -> {
             postService.delete(post.getId());
@@ -353,7 +450,7 @@ class PostServiceTest {
         post.setId(2L);
         post.setDeletedAt(LocalDateTime.now());
         given(securityUtil.getLoginMember()).willReturn(member);
-        given(postRepository.findWithMemberById(post.getId())).willReturn(Optional.of(post));
+        given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
         //when
         Throwable exception = assertThrows(BusinessException.class, () -> {
             postService.delete(post.getId());

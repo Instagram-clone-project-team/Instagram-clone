@@ -101,7 +101,7 @@ public class PostService {
     @Transactional
     public void updatePost(EditPostRequest editPostRequest, Long postId) throws IOException {
         final Member loginMember = securityUtil.getLoginMember();
-        final Post post = postRepository.findWithMemberById(postId).orElseThrow
+        final Post post = postRepository.findById(postId).orElseThrow
                 (() -> new BusinessException(POST_NOT_FOUND));
         String image =s3Uploader.upload(editPostRequest.getImage(), DIR_NAME);
 
@@ -115,7 +115,7 @@ public class PostService {
     @Transactional
     public void delete(Long postId) {
         final Member loginMember = securityUtil.getLoginMember();
-        final Post post = postRepository.findWithMemberById(postId).orElseThrow
+        final Post post = postRepository.findById(postId).orElseThrow
                 (() -> new BusinessException(POST_NOT_FOUND));
 
         if (!post.getMember().getId().equals(loginMember.getId())) throw new BusinessException(POST_DELETE_FAILED);
@@ -125,7 +125,6 @@ public class PostService {
         alarmService.deleteAllPostAlarm(post);
     }
 
-      
     @Transactional(readOnly = true)
     public PageListResponse<PostResponse> getPostsByFollowedMembersPage(int page, int size) {
         final Long loginMemberId = securityUtil.getLoginMember().getId();
