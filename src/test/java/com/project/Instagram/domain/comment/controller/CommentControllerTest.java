@@ -44,7 +44,6 @@ class CommentControllerTest {
     @MockBean
     CommentService commentService;
 
-    // 윤영
     @Test
     @WithMockUser
     @DisplayName("getComments() 테스트")
@@ -90,7 +89,6 @@ class CommentControllerTest {
         verify(commentService, times(1)).getCommentsByPostId(postId);
     }
 
-    // 동엽
     @DisplayName("replyComment test")
     @Test
     @WithMockUser
@@ -151,7 +149,6 @@ class CommentControllerTest {
         verify(commentService).deleteComment(anyLong());
     }
 
-    // 하늘
     @Test
     @DisplayName("create comment :success")
     @WithMockUser

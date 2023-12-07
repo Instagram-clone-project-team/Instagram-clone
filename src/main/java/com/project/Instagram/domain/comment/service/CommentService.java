@@ -49,12 +49,10 @@ public class CommentService {
         commentRepository.save(newComment);
         hashtagService.registerHashTagOnComment(newComment, newComment.getText());
 
-        //hashtag
         if(member!=post.getMember()) alarmService.sendCommentAlarm(AlarmType.COMMENT, member, post.getMember(), post, newComment);
         mentionService.checkMentionsFromComment(member, text, post, newComment);
     }
 
-    // 해시태그 추가해야 함, 댓글 알람 추가해야 함
     public void createReplyComment(String text, long postId, long parentsCommentId) {
         Member member = securityUtil.getLoginMember();
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
@@ -74,13 +72,11 @@ public class CommentService {
                 .build();
 
         commentRepository.save(newreplyComment);
-        //hashtag
         if(member!=post.getMember()) alarmService.sendCommentAlarm(AlarmType.COMMENT, member, post.getMember(), post, newreplyComment);
         mentionService.checkMentionsFromComment(member, text, post, newreplyComment);
 
     }
 
-    // 이 부분도 해시태그, 알람 고려
     @Transactional
     public void updateComment(long commentId, String afterText) {
         Member member = securityUtil.getLoginMember();
@@ -91,12 +87,10 @@ public class CommentService {
         String beforeText = comment.getText();
         comment.updateText(afterText);
         hashtagService.editHashTagOnComment(comment,beforeText);
-        //hashtag
         mentionService.checkUpdateMentionsFromComment(member, beforeText, afterText, post, comment);
 
     }
 
-    // 알림 삭제도 추가해야 함
     @Transactional
     public void deleteComment(long commentId) {
         Member member = securityUtil.getLoginMember();
