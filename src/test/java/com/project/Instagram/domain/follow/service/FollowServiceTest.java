@@ -46,7 +46,6 @@ class FollowServiceTest {
     @Mock
     SecurityUtil securityUtil;
 
-    // 윤영
     @Nested
     class Unfollow {
         @Test
@@ -200,8 +199,6 @@ class FollowServiceTest {
         }
     }
 
-
-    // 동엽
     @Test
     @DisplayName("follow 로직성공")
     void followSuccess() {
@@ -240,7 +237,6 @@ class FollowServiceTest {
         loginmember.setFollowingCount(0);
     }
 
-    // 하늘
     @Test
     @DisplayName("get followers:success")
     void test_get_followers() {
