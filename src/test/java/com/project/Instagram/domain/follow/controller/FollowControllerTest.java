@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.Instagram.domain.follow.dto.FollowerDto;
 import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
-import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.global.entity.PageListResponse;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -19,22 +17,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.web.util.NestedServletException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static com.project.Instagram.global.response.ResultCode.FOLLOWERS_LIST_SUCCESS;
-import static com.project.Instagram.global.response.ResultCode.FOLLOWER_COUNT_SUCCESS;
-import static org.mockito.BDDMockito.given;
+import static com.project.Instagram.global.response.ResultCode.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(FollowController.class)
 @MockBean(JpaMetamodelMappingContext.class)
@@ -47,6 +43,70 @@ class FollowControllerTest {
     FollowService followService;
 
     // 윤영
+    @Test
+    @WithMockUser
+    @DisplayName("unfollow() 테스트")
+    void unfollow() throws Exception {
+        // given
+        String followMemberUsername = "HeoCoding";
+
+        // when
+        when(followService.unfollow(followMemberUsername)).thenReturn(true);
+
+        // then
+        mvc.perform(delete("/follow/{followMemberUsername}", followMemberUsername)
+                        .contentType(APPLICATION_JSON)
+                        .with(csrf())
+                        .accept(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(UNFOLLOW_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(UNFOLLOW_SUCCESS.getMessage()));
+
+        verify(followService).unfollow(followMemberUsername);
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("getFollowingsPage() 테스트")
+    void getFollowingsPage() throws Exception {
+        // given
+        String memberUsername = "HeoCoding";
+        int page = 1;
+        int size = 5;
+
+        Member member = Member.builder()
+                .username("HeoCoding")
+                .build();
+
+        FollowerDto followerDto = new FollowerDto(member, true, false, false);
+        List<FollowerDto> followerDtos = Arrays.asList(followerDto);
+        PageListResponse<FollowerDto> pageListResponse = new PageListResponse<>(followerDtos, new PageImpl<>(followerDtos, PageRequest.of(page - 1, size), followerDtos.size()));
+
+        // when
+        when(followService.getFollowings(memberUsername, page - 1, size)).thenReturn(pageListResponse);
+
+        // then
+        mvc.perform(get("/follow/following/{memberUsername}", memberUsername)
+                        .param("page", String.valueOf(page))
+                        .param("size", String.valueOf(size))
+                        .contentType(APPLICATION_JSON)
+                        .with(csrf())
+                        .accept(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(FOLLOWINGS_LIST_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(FOLLOWINGS_LIST_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.data.data").isArray())
+                .andExpect(jsonPath("$.data.pageInfo.page").value(page))
+                .andExpect(jsonPath("$.data.pageInfo.size").value(size))
+                .andExpect(jsonPath("$.data.pageInfo.totalElements").value(followerDtos.size()))
+                .andExpect(jsonPath("$.data.pageInfo.totalPages").value(1))
+                .andExpect(jsonPath("$.data.data[0].member.username").value(member.getUsername()))
+                .andExpect(jsonPath("$.data.data[0].following").value(true))
+                .andExpect(jsonPath("$.data.data[0].follower").value(false))
+                .andExpect(jsonPath("$.data.data[0].me").value(false));
+
+        verify(followService).getFollowings(memberUsername, page - 1, size);
+    }
 
     // 동엽
 
@@ -54,7 +114,7 @@ class FollowControllerTest {
     @Test
     @WithMockUser
     @DisplayName("get followers page:success")
-    void test_get_followers_page() throws Exception{
+    void test_get_followers_page() throws Exception {
         String memberUsername = "luee";
 
         Member member1 = new Member();
@@ -75,8 +135,7 @@ class FollowControllerTest {
                 .andExpect(jsonPath("$.message").value(FOLLOWERS_LIST_SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.data.pageInfo.page").value("1"))
                 .andExpect(jsonPath("$.data.pageInfo.size").value("2"))
-                .andExpect(jsonPath("$.data.pageInfo.totalElements").value("3"))
-                .andDo(print());
+                .andExpect(jsonPath("$.data.pageInfo.totalElements").value("3"));
 
         verify(followService, atLeastOnce()).getFollowers(eq(memberUsername), Mockito.anyInt(), Mockito.anyInt());
     }
@@ -89,12 +148,11 @@ class FollowControllerTest {
         int count = 10;
         when(followService.getFollowerCount(memberUsername)).thenReturn(count);
         mvc.perform(get("/follow/follower-count/{memberUsername}", memberUsername)
-                .with(csrf()))
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(FOLLOWER_COUNT_SUCCESS.getStatus()))
                 .andExpect(jsonPath("$.message").value(FOLLOWER_COUNT_SUCCESS.getMessage()))
-                .andExpect(jsonPath("$.data").value(count))
-                .andDo(print());
+                .andExpect(jsonPath("$.data").value(count));
 
         verify(followService, atLeastOnce()).getFollowerCount(memberUsername);
     }
@@ -103,22 +161,13 @@ class FollowControllerTest {
     @WithMockUser
     @DisplayName("get follower count:fail")
     void test_get_follower_count_throw_exception() throws Exception {
-        //생각대로 오류문구가 출력이 안됨. " "이걸 입력하면 서비스 로직 에러가 뜨고, ""입력하면 405가 뜸.
-        //사용자 이름이 필요합니다.가 뜨는 조건을 모르겠음.
-        //" " vs ""
+
         String memberUsername = " ";
         int count = 10;
-        //when(followService.getFollowingCount(memberUsername)).thenReturn(count);
-        given(followService.getFollowerCount(memberUsername)).willReturn(count);
-//        mvc.perform(get("/follow/follower-count/{memberUsername}", memberUsername)
-//                        .with(csrf()))
-//                //.andExpect(model().errorCount(1))
-//                .andExpect(status().isInternalServerError());
+        when(followService.getFollowingCount(memberUsername)).thenReturn(count);
 
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> mvc.perform(get("/follow/follower-count/{memberUsername}", memberUsername)
                 .with(csrf())).andExpect(status().isOk())).hasCause(new ConstraintViolationException("getFollowerCount.memberUsername: 사용자 이름이 필요합니다.", null));
-        //String message = result.exce
-        //Assertions.assertThat(message).contains("사용자 이름이 필요합니다.");
-       // verify(followService, atLeastOnce()).getFollowerCount(memberUsername);
+
     }
 }
