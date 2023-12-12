@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @Import({QuerydslConfig.class, TestConfig.class})
@@ -23,10 +24,11 @@ class FollowRepositoryTest {
     private FollowRepository followRepository;
     @Autowired
     MemberRepository memberRepository;
+
     @Test
     @DisplayName("countActiveFollowsByMemberUsername 테스트")
     @Transactional
-    void countActiveFollowsByMemberUsername(){
+    void countActiveFollowsByMemberUsername() {
         String username = "exex4455";
         Member loginmember = Member.builder()
                 .username("exex22")
@@ -43,13 +45,40 @@ class FollowRepositoryTest {
         memberRepository.save(loginmember);
         memberRepository.save(followmember);
 
-        Follow follow = new Follow(loginmember,followmember);
+        Follow follow = new Follow(loginmember, followmember);
         loginmember.increaseFollowerCount();
         followRepository.save(follow);
         int result = followRepository.countActiveFollowsByMemberUsername("exex22");
-
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(1);
 
+    }
+
+    @Test
+    @DisplayName("count active followers by member username")
+    void test_count_active_Followers_By_Member_Username() {
+        //given
+        int count = 5;
+        Member member = Member.builder()
+                .username("luee")
+                .name("name")
+                .email("email@gmail.com")
+                .password("lueepassword")
+                .build();
+        memberRepository.save(member);
+        for (int i = 0; i < count; i++) {
+            Member follower = Member.builder()
+                    .username("luee" + i)
+                    .name("name" + i)
+                    .email("email" + i + "@gmail.com")
+                    .password("lueepassword" + i)
+                    .build();
+            memberRepository.save(follower);
+            followRepository.save(new Follow(follower, member));
+        }
+        //when
+        int response = followRepository.countActiveFollowersByMemberUsername(member.getUsername());
+        //then
+        assertEquals(response, count);
     }
 }
