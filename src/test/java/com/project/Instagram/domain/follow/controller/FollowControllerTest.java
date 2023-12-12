@@ -211,12 +211,11 @@ class FollowControllerTest {
     @DisplayName("get follower count:fail")
     void test_get_follower_count_throw_exception() throws Exception {
 
-        String memberUsername = " ";
+        String memberUsername = "";
         int count = 10;
         when(followService.getFollowingCount(memberUsername)).thenReturn(count);
 
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> mvc.perform(get("/follow/follower-count/{memberUsername}", memberUsername)
                 .with(csrf())).andExpect(status().isOk())).hasCause(new ConstraintViolationException("getFollowerCount.memberUsername: 사용자 이름이 필요합니다.", null));
-
     }
 }
