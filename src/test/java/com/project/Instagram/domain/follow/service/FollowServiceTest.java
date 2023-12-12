@@ -30,6 +30,7 @@ import static com.project.Instagram.global.error.ErrorCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -201,6 +202,43 @@ class FollowServiceTest {
 
 
     // 동엽
+    @Test
+    @DisplayName("follow 로직성공")
+    void followSuccess() {
+        String username = "exex4455";
+        Member loginmember = Member.builder()
+                .username("exex22")
+                .build();
+        loginmember.setId(1L);
+        loginmember.setFollowingCount(0);
+        Member followmember = Member.builder()
+                .username(username).build();
+        followmember.setId(2L);
+        followmember.setFollowerCount(0);
+
+        when(securityUtil.getLoginMember()).thenReturn(loginmember);
+        when(memberRepository.findById(loginmember.getId())).thenReturn(Optional.of(loginmember));
+        when(memberRepository.findByUsername(followmember.getUsername())).thenReturn(Optional.of(followmember));
+
+        followService.follow(username);
+
+        verify(followRepository).save(any(Follow.class));
+        verify(memberRepository).findById(loginmember.getId());
+        verify(memberRepository).findByUsername(followmember.getUsername());
+        verify(followRepository).existsByMemberIdAndFollowMemberId(loginmember.getId(), followmember.getId());
+        verify(alarmService).sendFollowAlarm(any(Member.class), any(Member.class), any(Follow.class));
+    }
+
+    @Test
+    @DisplayName("follow 로직 실패(자기자신 팔로우)")
+    void followFail() {
+        String username = "exex4455";
+        Member loginmember = Member.builder()
+                .username(username)
+                .build();
+        loginmember.setId(1L);
+        loginmember.setFollowingCount(0);
+    }
 
     // 하늘
     @Test
@@ -220,8 +258,6 @@ class FollowServiceTest {
         data.add(new FollowerDto(member2, true, true, false));
         data.add(new FollowerDto(member3, true, true, false));
         Page<FollowerDto> pageInfo = new PageImpl<>(data, PageRequest.of(page, size), data.size());
-        //when(securityUtil.getLoginMember()).thenReturn(member);
-        //when(member.getId()).thenReturn(memberId);
         when(securityUtil.getLoginMember().getId()).thenReturn(memberId);
         when(memberRepository.findByUsername(username)).thenReturn(Optional.of(member));
         when(followRepository.findFollowers(memberId, member.getId(), PageRequest.of(page, size))).thenReturn(pageInfo);
