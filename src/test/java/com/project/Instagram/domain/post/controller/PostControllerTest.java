@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -123,15 +124,16 @@ class PostControllerTest {
     void createPsot() throws Exception {
         String text = "랄라라라라라라";
         String fileName = "test.txt";
-        String contentType = "text/type";
-        byte[] content = "Hello, exex test file.".getBytes();
+        String contentType = "text/png";
+        byte[] filePath = "Hello, exex test file.".getBytes();
 
-        MultipartFile image= new MockMultipartFile(fileName, fileName, contentType, content);
-        PostCreateRequest postCreateRequest = new PostCreateRequest(text,image);
+        MockMultipartFile image= new MockMultipartFile(fileName, fileName, contentType, filePath);
 
-        mvc.perform(post("/post")
-                .contentType(APPLICATION_JSON)
-                .with(csrf()).accept(APPLICATION_JSON))
+        mvc.perform(multipart("/post")
+                        .file(image)
+                        .param("content",text)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(POST_CREATE_SUCCESS.getStatus()))
                 .andExpect(jsonPath("$.message").value(POST_CREATE_SUCCESS.getMessage()));
@@ -143,18 +145,21 @@ class PostControllerTest {
     void updatePost() throws Exception {
         String text = "수정수정 임수정";
         String fileName = "filetext.txt";
-        String contentType = "text/type";
-        byte[] content = "Hello, exex test file.".getBytes();
+        String contentType = "text/png";
+        byte[] filePath = "Hello, exex test file.".getBytes();
         Long postId = 1L;
-        MultipartFile image= new MockMultipartFile(fileName, fileName, contentType, content);
+        MockMultipartFile image= new MockMultipartFile(fileName, fileName, contentType, filePath);
         EditPostRequest editPostRequest = new EditPostRequest(text,image);
 
-        mvc.perform(patch("/post/{post_id}",postId)
-                        .contentType(APPLICATION_JSON)
-                        .with(csrf()).accept(APPLICATION_JSON))
+        mvc.perform(multipart(HttpMethod.PATCH,"/post/{post_id}",postId)
+                        .file(image)
+                        .param("content",text)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(UPDATE_POST_SUCCESS.getStatus()))
                 .andExpect(jsonPath("$.message").value(UPDATE_POST_SUCCESS.getMessage()));
+
         verify(postService).updatePost(any(),anyLong());
     }
     @Test
@@ -228,8 +233,8 @@ class PostControllerTest {
                         .with(csrf())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(jsonPath("$.status").value(GET_POST_PAGE_SUCCESS.getStatus()))
-                .andExpect(jsonPath("$.message").value(GET_POST_PAGE_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.status").value(GET_POST_USER_PAGE_SUCCESS.getStatus()))
+                .andExpect(jsonPath("$.message").value(GET_POST_USER_PAGE_SUCCESS.getMessage()))
                 .andExpect(jsonPath("$.data.pageInfo.page").value("1"))
                 .andExpect(jsonPath("$.data.pageInfo.size").value("2"))
                 .andExpect(jsonPath("$.data.pageInfo.totalElements").value("3"))

@@ -21,16 +21,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import static com.project.Instagram.global.error.ErrorCode.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.*;
-
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static com.project.Instagram.global.error.ErrorCode.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FollowServiceTest {
@@ -103,7 +102,7 @@ class FollowServiceTest {
 
         @Test
         @DisplayName("unfollow 자기 자신 팔로우 예외")
-        void unfollowMyselfFail(){
+        void unfollowMyselfFail() {
             // given
             Member loginMember = new Member();
             loginMember.setId(1L);
@@ -119,7 +118,7 @@ class FollowServiceTest {
 
         @Test
         @DisplayName("unfollow UnFollowFail 예외")
-        void unfollowFail(){
+        void unfollowFail() {
             // given
             Member loginMember = new Member();
             loginMember.setId(1L);
@@ -201,6 +200,43 @@ class FollowServiceTest {
 
 
     // 동엽
+    @Test
+    @DisplayName("follow 로직성공")
+    void followSuccess() {
+        String username = "exex4455";
+        Member loginmember = Member.builder()
+                .username("exex22")
+                .build();
+        loginmember.setId(1L);
+        loginmember.setFollowingCount(0);
+        Member followmember = Member.builder()
+                .username(username).build();
+        followmember.setId(2L);
+        followmember.setFollowerCount(0);
 
-    // 하늘
+        when(securityUtil.getLoginMember()).thenReturn(loginmember);
+        when(memberRepository.findById(loginmember.getId())).thenReturn(Optional.of(loginmember));
+        when(memberRepository.findByUsername(followmember.getUsername())).thenReturn(Optional.of(followmember));
+
+        followService.follow(username);
+
+        verify(followRepository).save(any(Follow.class));
+        verify(memberRepository).findById(loginmember.getId());
+        verify(memberRepository).findByUsername(followmember.getUsername());
+        verify(followRepository).existsByMemberIdAndFollowMemberId(loginmember.getId(), followmember.getId());
+        verify(alarmService).sendFollowAlarm(any(Member.class), any(Member.class), any(Follow.class));
+    }
+
+    @Test
+    @DisplayName("follow 로직 실패(자기자신 팔로우)")
+    void followFail() {
+        String username = "exex4455";
+        Member loginmember = Member.builder()
+                .username(username)
+                .build();
+        loginmember.setId(1L);
+        loginmember.setFollowingCount(0);
+
+        // 하늘
+    }
 }
