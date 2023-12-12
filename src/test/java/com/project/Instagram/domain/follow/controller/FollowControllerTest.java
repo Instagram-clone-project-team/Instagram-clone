@@ -6,6 +6,7 @@ import com.project.Instagram.domain.follow.service.FollowService;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.entity.Profile;
 import com.project.Instagram.global.entity.PageListResponse;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,7 +19,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.util.NestedServletException;
 
+import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +34,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(FollowController.class)
 @MockBean(JpaMetamodelMappingContext.class)
@@ -101,18 +105,20 @@ class FollowControllerTest {
     void test_get_follower_count_throw_exception() throws Exception {
         //생각대로 오류문구가 출력이 안됨. " "이걸 입력하면 서비스 로직 에러가 뜨고, ""입력하면 405가 뜸.
         //사용자 이름이 필요합니다.가 뜨는 조건을 모르겠음.
-        String memberUsername = "";
+        //" " vs ""
+        String memberUsername = " ";
         int count = 10;
         //when(followService.getFollowingCount(memberUsername)).thenReturn(count);
         given(followService.getFollowerCount(memberUsername)).willReturn(count);
-        mvc.perform(get("/follow/follower-count/{memberUsername}", memberUsername)
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(FOLLOWER_COUNT_SUCCESS.getStatus()))
-                .andExpect(jsonPath("$.message").value(FOLLOWER_COUNT_SUCCESS.getMessage()))
-                .andExpect(jsonPath("$.data").value(count))
-                .andDo(print());
+//        mvc.perform(get("/follow/follower-count/{memberUsername}", memberUsername)
+//                        .with(csrf()))
+//                //.andExpect(model().errorCount(1))
+//                .andExpect(status().isInternalServerError());
 
-        verify(followService, atLeastOnce()).getFollowerCount(memberUsername);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> mvc.perform(get("/follow/follower-count/{memberUsername}", memberUsername)
+                .with(csrf())).andExpect(status().isOk())).hasCause(new ConstraintViolationException("getFollowerCount.memberUsername: 사용자 이름이 필요합니다.", null));
+        //String message = result.exce
+        //Assertions.assertThat(message).contains("사용자 이름이 필요합니다.");
+       // verify(followService, atLeastOnce()).getFollowerCount(memberUsername);
     }
 }
