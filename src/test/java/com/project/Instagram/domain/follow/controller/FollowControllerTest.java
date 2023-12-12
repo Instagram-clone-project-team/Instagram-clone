@@ -42,7 +42,6 @@ class FollowControllerTest {
     @MockBean
     FollowService followService;
 
-    // 윤영
     @Test
     @WithMockUser
     @DisplayName("unfollow() 테스트")
@@ -108,8 +107,6 @@ class FollowControllerTest {
         verify(followService).getFollowings(memberUsername, page - 1, size);
     }
 
-    // 동엽
-    //follow. getFollowingCount
     @Test
     @DisplayName("follow() 성공")
     @WithMockUser
@@ -163,7 +160,6 @@ class FollowControllerTest {
         verify(followService).getFollowingCount(memberUsername);
     }
 
-    // 하늘
     @Test
     @WithMockUser
     @DisplayName("get followers page:success")

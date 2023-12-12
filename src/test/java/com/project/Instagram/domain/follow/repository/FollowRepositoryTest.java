@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class FollowRepositoryTest {
     @Autowired
-    private FollowRepository followRepository;
+    FollowRepository followRepository;
     @Autowired
     MemberRepository memberRepository;
 
