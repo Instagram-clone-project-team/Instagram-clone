@@ -84,7 +84,7 @@ public class FollowRepositoryQuerydslImpl implements FollowRepositoryQuerydsl {
         return JPAExpressions
                 .select(follow.member.id)
                 .from(follow)
-                .where(follow.followMember.id.eq(memberId)
+                .where(follow.member.id.eq(memberId)
                         .and(follow.followMember.deletedAt.isNull()));
     }
 }

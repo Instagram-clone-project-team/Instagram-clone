@@ -2,6 +2,9 @@ package com.project.Instagram.domain.follow.repository;
 
 import com.project.Instagram.config.TestConfig;
 import com.project.Instagram.domain.follow.dto.FollowerDto;
+import com.project.Instagram.domain.follow.entity.Follow;
+import com.project.Instagram.domain.member.entity.Member;
+import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.config.QuerydslConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -260,4 +260,5 @@ class PostControllerTest {
 
         verify(postService).delete(Mockito.anyLong());
     }
+
 }
