@@ -2,6 +2,7 @@ package com.project.Instagram.global.error;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -41,4 +42,13 @@ public class GlobalExceptionHandler {
                 "Params의 값을 입력 해주세요.");
         return new ResponseEntity<>(validationResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler({HttpRequestMethodNotSupportedException.class})
+    protected ResponseEntity<ValidationResponse> handleMissingParams(HttpRequestMethodNotSupportedException e) {
+        ValidationResponse validationResponse = new ValidationResponse(false,
+                "PathVariable의 값을 입력 해주세요.");
+        return new ResponseEntity<>(validationResponse, HttpStatus.BAD_REQUEST);
+    }
+
+
 }
