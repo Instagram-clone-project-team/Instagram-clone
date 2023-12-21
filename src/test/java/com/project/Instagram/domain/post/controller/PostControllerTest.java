@@ -2,7 +2,6 @@ package com.project.Instagram.domain.post.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.Instagram.domain.post.dto.EditPostRequest;
-import com.project.Instagram.domain.post.dto.PostCreateRequest;
 import com.project.Instagram.domain.post.dto.PostResponse;
 import com.project.Instagram.domain.post.service.PostService;
 import com.project.Instagram.global.entity.PageListResponse;
@@ -22,7 +21,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
