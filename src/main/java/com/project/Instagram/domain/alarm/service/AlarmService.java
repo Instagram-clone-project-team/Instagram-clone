@@ -17,6 +17,7 @@ import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.util.SecurityUtil;
 import com.project.Instagram.global.util.StringExtractUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
 import static com.project.Instagram.domain.alarm.dto.AlarmType.*;
 import static com.project.Instagram.global.error.ErrorCode.MISMATCHED_ALARM_TYPE;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlarmService {
@@ -36,6 +37,7 @@ public class AlarmService {
     private final FollowRepository followRepository;
     private final SecurityUtil securityUtil;
     private final StringExtractUtil stringExtractUtil;
+    private final NotificationService notificationService;
 
     @Transactional
     public Page<AlarmDto> getAlarms(int page, int size) {
@@ -47,7 +49,7 @@ public class AlarmService {
         final List<Long> agentIds = alarms.stream()
                 .filter(a -> a.getType().equals(FOLLOW))
                 .map(a -> a.getAgent().getId())
-                .collect(Collectors.toList());//상대방 : agent, 나 : target
+                .collect(Collectors.toList()); //상대방 : agent, 나 : target
 
         final List<Follow> follows = followRepository.findByMemberIdAndFollowMemberIdIn(loginMemberId, agentIds);
         final Map<Long, Follow> followMap = follows.stream()
@@ -68,6 +70,8 @@ public class AlarmService {
                 .build();
 
         alarmRepository.save(alarm);
+
+        notificationService.sendNotification(target.getId(), FOLLOW.getMessageTemplate());
     }
 
     @Transactional
@@ -80,7 +84,8 @@ public class AlarmService {
                 .post(post.getPost())
                 .build();
 
-        alarmRepository.save(alarm);
+        String message = alarmRepository.save(alarm).getType().getMessageTemplate();
+        notificationService.sendNotification(target.getId(), message);
     }
 
     @Transactional
@@ -97,7 +102,24 @@ public class AlarmService {
                 .comment(comment)
                 .build();
 
+        String messageTemplate;
+        switch (type) {
+            case COMMENT:
+                messageTemplate = COMMENT.getMessageTemplate();
+                break;
+            case LIKE_COMMENT:
+                messageTemplate = LIKE_COMMENT.getMessageTemplate();
+                break;
+            case MENTION_COMMENT:
+                messageTemplate = MENTION_COMMENT.getMessageTemplate();
+                break;
+            default:
+                log.warn("Unexpected AlarmType: {}", type);
+                throw new UnsupportedOperationException("Unhandled AlarmType: " + type);
+        }
+
         alarmRepository.save(alarm);
+        notificationService.sendNotification(target.getId(), messageTemplate);
     }
 
     @Transactional
@@ -112,6 +134,7 @@ public class AlarmService {
                     .post(post)
                     .build();
             alarmRepository.save(alarm);
+            notificationService.sendNotification(targetMember.getId(), MENTION_POST.getMessageTemplate());
         }
     }
 
@@ -128,6 +151,7 @@ public class AlarmService {
                     .comment(comment)
                     .build();
             alarmRepository.save(alarm);
+            notificationService.sendNotification(targetMember.getId(), MENTION_COMMENT.getMessageTemplate());
         }
     }
 

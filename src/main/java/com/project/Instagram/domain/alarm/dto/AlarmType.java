@@ -32,3 +32,6 @@ public enum AlarmType {
         return message;
     }
 }
+
+// 조회
+

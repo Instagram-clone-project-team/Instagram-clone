@@ -18,6 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -42,7 +43,8 @@ class AlarmServiceTest {
     private AlarmRepository alarmRepository;
     @Mock
     private MemberRepository memberRepository;
-
+    @Mock
+    private NotificationService notificationService;
     @Mock
     private SecurityUtil securityUtil;
     @Mock
@@ -57,7 +59,7 @@ class AlarmServiceTest {
         void sendPostLikeAlarmSuccess() {
             // given
             Member agent = Member.builder()
-                    .username("agentUsername")
+                    .username("Heo")
                     .build();
 
             Member target = Member.builder()
@@ -75,17 +77,37 @@ class AlarmServiceTest {
                     .post(post)
                     .build();
 
+            Alarm alarm = Alarm.builder()
+                    .type(LIKE_POST)
+                    .agent(agent)
+                    .target(target)
+                    .post(post)
+                    .build();
+
             // when
+            when(alarmRepository.save(any())).thenReturn(alarm);
             alarmService.sendPostLikeAlarm(LIKE_POST, agent, target, postLike);
 
             // then
             verify(alarmRepository, times(1)).save(any(Alarm.class));
+            ArgumentCaptor<String> messageTemplateCaptor = ArgumentCaptor.forClass(String.class);
+            verify(notificationService).sendNotification(eq(target.getId()), messageTemplateCaptor.capture());
+
+            String capturedMessageTemplate = messageTemplateCaptor.getValue();
+            String expectedMessage = LIKE_POST.getMessageTemplate()
+                    .replace("{agent.username}", agent.getUsername())
+                    .replace("{post.content}", post.getContent());
+
+            assertEquals(expectedMessage, capturedMessageTemplate);
 
             verify(alarmRepository).save(argThat(savedAlarm ->
                     savedAlarm.getType() == LIKE_POST &&
-                    savedAlarm.getAgent() == agent &&
-                    savedAlarm.getTarget() == target &&
-                    savedAlarm.getPost() == post));
+                            savedAlarm.getAgent() == agent &&
+                            savedAlarm.getTarget() == target &&
+                            savedAlarm.getPost() == post));
+
+            // 울리는 건 ?? 직 화면테스트??  하고 싶은 테스트
+
         }
 
         @Test
