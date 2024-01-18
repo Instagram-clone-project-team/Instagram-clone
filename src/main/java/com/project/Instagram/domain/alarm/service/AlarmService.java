@@ -21,13 +21,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.project.Instagram.domain.alarm.dto.AlarmType.*;
-import static com.project.Instagram.global.error.ErrorCode.MISMATCHED_ALARM_TYPE;
+import static com.project.Instagram.global.error.ErrorCode.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,7 +42,7 @@ public class AlarmService {
     private final FollowRepository followRepository;
     private final SecurityUtil securityUtil;
     private final StringExtractUtil stringExtractUtil;
-    private final NotificationService notificationService;
+    private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
     @Transactional
     public Page<AlarmDto> getAlarms(int page, int size) {
@@ -49,7 +54,7 @@ public class AlarmService {
         final List<Long> agentIds = alarms.stream()
                 .filter(a -> a.getType().equals(FOLLOW))
                 .map(a -> a.getAgent().getId())
-                .collect(Collectors.toList()); //상대방 : agent, 나 : target
+                .collect(Collectors.toList());
 
         final List<Follow> follows = followRepository.findByMemberIdAndFollowMemberIdIn(loginMemberId, agentIds);
         final Map<Long, Follow> followMap = follows.stream()
@@ -71,7 +76,7 @@ public class AlarmService {
 
         alarmRepository.save(alarm);
 
-        notificationService.sendNotification(target.getUsername(), alarm.getType().createAlarmMessage(alarm));
+        sendNotification(target.getUsername(), alarm.getType().createAlarmMessage(alarm));
     }
 
     @Transactional
@@ -85,7 +90,7 @@ public class AlarmService {
                 .build();
 
         alarmRepository.save(alarm);
-        notificationService.sendNotification(target.getUsername(), alarm.getType().createAlarmMessage(alarm));
+        sendNotification(target.getUsername(), alarm.getType().createAlarmMessage(alarm));
     }
 
     @Transactional
@@ -119,8 +124,7 @@ public class AlarmService {
                 log.warn("Unexpected AlarmType: {}", type);
                 throw new UnsupportedOperationException("Unhandled AlarmType: " + type);
         }
-
-        notificationService.sendNotification(target.getUsername(), messageTemplate);
+        sendNotification(target.getUsername(), messageTemplate);
     }
 
     @Transactional
@@ -135,7 +139,7 @@ public class AlarmService {
                     .post(post)
                     .build();
             alarmRepository.save(alarm);
-            notificationService.sendNotification(targetMember.getUsername(), alarm.getType().createAlarmMessage(alarm));
+            sendNotification(targetMember.getUsername(), alarm.getType().createAlarmMessage(alarm));
         }
     }
 
@@ -152,7 +156,7 @@ public class AlarmService {
                     .comment(comment)
                     .build();
             alarmRepository.save(alarm);
-            notificationService.sendNotification(targetMember.getUsername(), alarm.getType().createAlarmMessage(alarm));
+            sendNotification(targetMember.getUsername(), alarm.getType().createAlarmMessage(alarm));
         }
     }
 
@@ -210,7 +214,31 @@ public class AlarmService {
         dto.setMentionsOfContent(existentUsernames);
         final Set<String> hashtags = stringExtractUtil.filteringHashtag(content);
         dto.setHashtagsOfContent(hashtags);
-
     }
 
+    @Transactional
+    public SseEmitter connectSubscribe(String username) {
+        securityUtil.checkLoginMember();
+        memberRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(MEMBER_NOT_FOUND));
+        SseEmitter emitter = new SseEmitter();
+        emitters.put(username, emitter);
+        emitter.onTimeout(() -> emitters.remove(username));
+        emitter.onCompletion(() -> emitters.remove(username));
+        sendNotification(username, username + "님의 통신 연결이 완료되었습니다.");
+        return emitter;
+    }
+
+    public void sendNotification(String username, String message) {
+        SseEmitter emitter = emitters.get(username);
+        if (emitter != null) {
+            try {
+                emitter.send(SseEmitter.event().name("notification").data(message));
+            } catch (IOException e) {
+                emitter.complete();
+                emitters.remove(username);
+                throw new BusinessException(NOTIFICATION_CONNECTION_ERROR);
+            }
+        }
+    }
 }
