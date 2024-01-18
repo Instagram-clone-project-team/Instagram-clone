@@ -18,9 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
@@ -28,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.project.Instagram.domain.alarm.dto.AlarmType.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,7 +41,6 @@ class AlarmServiceTest {
     private AlarmRepository alarmRepository;
     @Mock
     private MemberRepository memberRepository;
-
     @Mock
     private SecurityUtil securityUtil;
     @Mock
@@ -57,7 +55,7 @@ class AlarmServiceTest {
         void sendPostLikeAlarmSuccess() {
             // given
             Member agent = Member.builder()
-                    .username("agentUsername")
+                    .username("testUsername")
                     .build();
 
             Member target = Member.builder()
@@ -75,17 +73,32 @@ class AlarmServiceTest {
                     .post(post)
                     .build();
 
+            Alarm alarm = Alarm.builder()
+                    .type(LIKE_POST)
+                    .agent(agent)
+                    .target(target)
+                    .post(post)
+                    .build();
+
             // when
+            when(alarmRepository.save(any())).thenReturn(alarm);
             alarmService.sendPostLikeAlarm(LIKE_POST, agent, target, postLike);
 
             // then
             verify(alarmRepository, times(1)).save(any(Alarm.class));
-
             verify(alarmRepository).save(argThat(savedAlarm ->
                     savedAlarm.getType() == LIKE_POST &&
-                    savedAlarm.getAgent() == agent &&
-                    savedAlarm.getTarget() == target &&
-                    savedAlarm.getPost() == post));
+                            savedAlarm.getAgent() == agent &&
+                            savedAlarm.getTarget() == target &&
+                            savedAlarm.getPost() == post));
+
+            String message = alarm.getType().createAlarmMessage(alarm);
+
+            String expectedMessage = LIKE_POST.getMessageTemplate()
+                    .replace("{agent.username}", agent.getUsername())
+                    .replace("{post.content}", post.getContent());
+
+            assertEquals(expectedMessage, message);
         }
 
         @Test
@@ -126,8 +139,6 @@ class AlarmServiceTest {
             @DisplayName("댓글 알림 성공 테스트")
             void sendCommentAlarmSuccess() throws NoSuchFieldException, IllegalAccessException {
                 // given
-                AlarmType type = COMMENT;
-
                 Member agent = Member.builder()
                         .username("agentUsername")
                         .build();
@@ -149,21 +160,31 @@ class AlarmServiceTest {
                         .text("Comment text")
                         .build();
 
+                Alarm alarm = Alarm.builder()
+                        .type(COMMENT)
+                        .agent(agent)
+                        .target(target)
+                        .post(post)
+                        .comment(comment)
+                        .build();
+
                 // when
-                alarmService.sendCommentAlarm(type, agent, target, post, comment);
+                alarmService.sendCommentAlarm(alarm.getType(), agent, target, post, comment);
 
                 // then
                 verify(alarmRepository, times(1)).save(any(Alarm.class));
-
                 verify(alarmRepository).save(argThat(savedAlarm ->
-                        savedAlarm.getType() == type &&
+                        savedAlarm.getType() == COMMENT &&
                                 savedAlarm.getAgent() == agent &&
                                 savedAlarm.getTarget() == target &&
-                                savedAlarm.getPost() == post &&
-                                savedAlarm.getComment() == comment));
+                                savedAlarm.getPost() == post));
+
+                String expectedMessage = COMMENT.getMessageTemplate()
+                        .replace("{agent.username}", agent.getUsername())
+                        .replace("{comment.text}", comment.getText());
+
+                assertEquals(expectedMessage, alarm.getType().createAlarmMessage(alarm));
             }
-
-
             @Test
             @DisplayName("댓글 알림 실패 테스트")
             void sendCommentAlarmFail() {
@@ -208,17 +229,14 @@ class AlarmServiceTest {
         @DisplayName("댓글 언급 알림 성공 테스트")
         void sendMentionCommentAlarmSuccess() {
             // given
-            AlarmType type = MENTION_COMMENT;
-
             Member agent = Member.builder()
                     .username("agentUsername")
                     .build();
 
-            List<String> targets = Arrays.asList("targetUsername1", "targetUsername2");
-            Member targetMember1 = Member.builder().username("targetUsername1").build();
-            Member targetMember2 = Member.builder().username("targetUsername2").build();
-
-            when(memberRepository.findAllByUsernameIn(targets)).thenReturn(Arrays.asList(targetMember1, targetMember2));
+            List<String> targetUsernames = Arrays.asList("targetUser1", "targetUser2", "targetUser3");
+            List<Member> targetMembers = targetUsernames.stream()
+                    .map(username -> Member.builder().username(username).build())
+                    .collect(Collectors.toList());
 
             Post post = Post.builder()
                     .member(agent)
@@ -233,11 +251,33 @@ class AlarmServiceTest {
                     .text("Comment text")
                     .build();
 
-            // when
-            alarmService.sendMentionCommentAlarm(type, agent, targets, post, comment);
+            Alarm alarm = Alarm.builder()
+                    .type(MENTION_COMMENT)
+                    .agent(agent)
+                    .post(post)
+                    .comment(comment)
+                    .build();
 
+            // when
+            when(memberRepository.findAllByUsernameIn(targetUsernames)).thenReturn(targetMembers);
+
+            alarmService.sendMentionCommentAlarm(MENTION_COMMENT, agent, targetUsernames, post, comment);
             // then
-            verify(alarmRepository, times(2)).save(any(Alarm.class));
+            verify(alarmRepository, times(targetMembers.size())).save(any(Alarm.class));
+
+            for (Member targetMember : targetMembers) {
+                verify(alarmRepository).save(argThat(savedAlarm ->
+                        savedAlarm.getType() == MENTION_COMMENT &&
+                                savedAlarm.getAgent() == agent &&
+                                savedAlarm.getTarget() == targetMember &&
+                                savedAlarm.getPost() == post));
+            }
+
+            String expectedMessage = MENTION_COMMENT.getMessageTemplate()
+                    .replace("{agent.username}", agent.getUsername())
+                    .replace("{comment.text}", comment.getText());
+
+            assertEquals(expectedMessage, alarm.getType().createAlarmMessage(alarm));
         }
 
         @Test
@@ -321,33 +361,83 @@ class AlarmServiceTest {
     @DisplayName("[alarm] send follow alarm:success")
     void test_send_follow_alarm_success() {
         //given
-        Member agent = new Member();
-        Member target = new Member();
-        Follow follow = new Follow();
+        Member agent = Member.builder()
+                .username("agentUsername")
+                .build();
+
+        Member target = Member.builder()
+                .username("targetUsername")
+                .build();
+
+        Follow follow = Follow.builder()
+                .member(agent)
+                .followMember(target)
+                .build();
+
+        Alarm alarm = Alarm.builder()
+                .type(FOLLOW)
+                .agent(agent)
+                .target(target)
+                .follow(follow)
+                .build();
         //when
         alarmService.sendFollowAlarm(agent, target, follow);
+
         //then
         verify(alarmRepository).save(Mockito.any());
+
+        String expectedMessage = FOLLOW.getMessageTemplate()
+                .replace("{agent.username}", agent.getUsername());
+
+        assertEquals(expectedMessage, alarm.getType().createAlarmMessage(alarm));
+
     }
 
     @Test
     @DisplayName("[alarm] send mention post alarm:success")
     void test_send_mention_post_alarm_success() {
         //given
-        Member agent = new Member();
-        Post post = new Post();
-        List<Member> foundMemberList = new ArrayList<>();
-        foundMemberList.add(new Member());
-        foundMemberList.add(new Member());
-        foundMemberList.add(new Member());
-        foundMemberList.add(new Member());
-        given(memberRepository.findAllByUsernameIn(Mockito.any())).willReturn(foundMemberList);
+        Member agent = Member.builder()
+                .username("agentUsername")
+                .build();
 
-        //when
-        alarmService.sendMentionPostAlarm(AlarmType.MENTION_POST, agent, Mockito.any(), post);
+        Post post = Post.builder()
+                .member(agent)
+                .image("postImage")
+                .content("postContent")
+                .build();
 
-        //then
-        verify(alarmRepository, times(foundMemberList.size())).save(Mockito.any());
+        List<String> targetUsernames = Arrays.asList("targetUser1", "targetUser2", "targetUser3");
+        List<Member> targetMembers = targetUsernames.stream()
+                .map(username -> Member.builder().username(username).build())
+                .collect(Collectors.toList());
+
+        Alarm alarm = Alarm.builder()
+                .type(MENTION_POST)
+                .agent(agent)
+                .post(post)
+                .build();
+
+        // when
+        when(memberRepository.findAllByUsernameIn(targetUsernames)).thenReturn(targetMembers);
+        alarmService.sendMentionPostAlarm(MENTION_POST, agent, targetUsernames, post);
+
+        // then
+        verify(alarmRepository, times(targetMembers.size())).save(any(Alarm.class));
+
+        for (Member targetMember : targetMembers) {
+            verify(alarmRepository).save(argThat(savedAlarm ->
+                    savedAlarm.getType() == MENTION_POST &&
+                            savedAlarm.getAgent() == agent &&
+                            savedAlarm.getTarget() == targetMember &&
+                            savedAlarm.getPost() == post));
+        }
+
+        String expectedMessage = MENTION_POST.getMessageTemplate()
+                .replace("{agent.username}", agent.getUsername())
+                .replace("{post.content}", post.getContent());
+
+        assertEquals(expectedMessage, alarm.getType().createAlarmMessage(alarm));
     }
 
     @Test

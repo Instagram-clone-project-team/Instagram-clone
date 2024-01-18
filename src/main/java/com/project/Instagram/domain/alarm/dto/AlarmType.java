@@ -32,3 +32,4 @@ public enum AlarmType {
         return message;
     }
 }
+
