@@ -33,5 +33,3 @@ public enum AlarmType {
     }
 }
 
-// 조회
-

@@ -71,7 +71,7 @@ public class AlarmService {
 
         alarmRepository.save(alarm);
 
-        notificationService.sendNotification(target.getId(), FOLLOW.getMessageTemplate());
+        notificationService.sendNotification(target.getUsername(), alarm.getType().createAlarmMessage(alarm));
     }
 
     @Transactional
@@ -84,8 +84,8 @@ public class AlarmService {
                 .post(post.getPost())
                 .build();
 
-        String message = alarmRepository.save(alarm).getType().getMessageTemplate();
-        notificationService.sendNotification(target.getId(), message);
+        alarmRepository.save(alarm);
+        notificationService.sendNotification(target.getUsername(), alarm.getType().createAlarmMessage(alarm));
     }
 
     @Transactional
@@ -102,24 +102,25 @@ public class AlarmService {
                 .comment(comment)
                 .build();
 
+        alarmRepository.save(alarm);
+
         String messageTemplate;
         switch (type) {
             case COMMENT:
-                messageTemplate = COMMENT.getMessageTemplate();
+                messageTemplate = COMMENT.createAlarmMessage(alarm);
                 break;
             case LIKE_COMMENT:
-                messageTemplate = LIKE_COMMENT.getMessageTemplate();
+                messageTemplate = LIKE_COMMENT.createAlarmMessage(alarm);
                 break;
             case MENTION_COMMENT:
-                messageTemplate = MENTION_COMMENT.getMessageTemplate();
+                messageTemplate = MENTION_COMMENT.createAlarmMessage(alarm);
                 break;
             default:
                 log.warn("Unexpected AlarmType: {}", type);
                 throw new UnsupportedOperationException("Unhandled AlarmType: " + type);
         }
 
-        alarmRepository.save(alarm);
-        notificationService.sendNotification(target.getId(), messageTemplate);
+        notificationService.sendNotification(target.getUsername(), messageTemplate);
     }
 
     @Transactional
@@ -134,7 +135,7 @@ public class AlarmService {
                     .post(post)
                     .build();
             alarmRepository.save(alarm);
-            notificationService.sendNotification(targetMember.getId(), MENTION_POST.getMessageTemplate());
+            notificationService.sendNotification(targetMember.getUsername(), alarm.getType().createAlarmMessage(alarm));
         }
     }
 
@@ -151,7 +152,7 @@ public class AlarmService {
                     .comment(comment)
                     .build();
             alarmRepository.save(alarm);
-            notificationService.sendNotification(targetMember.getId(), MENTION_COMMENT.getMessageTemplate());
+            notificationService.sendNotification(targetMember.getUsername(), alarm.getType().createAlarmMessage(alarm));
         }
     }
 

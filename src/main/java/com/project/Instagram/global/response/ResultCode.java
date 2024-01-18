@@ -61,6 +61,7 @@ public enum ResultCode {
     GET_COMMENTLIKE_USERS_SUCCESS(200,"해당 댓글에 좋아요한 유저 조회가 완료되었습니다."),
     // 알람
     GET_ALARMS_SUCCESS(200, "알림 조회에 성공하였습니다."),
+    ALARMS_CONNECT_SUCCESS(200, "알림 연결에 성공하였습니다."),
 
     // 검색
     SEARCH_SUCCESS(200, "검색에 성공하였습니다."),

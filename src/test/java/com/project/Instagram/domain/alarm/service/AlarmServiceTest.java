@@ -59,7 +59,7 @@ class AlarmServiceTest {
         void sendPostLikeAlarmSuccess() {
             // given
             Member agent = Member.builder()
-                    .username("Heo")
+                    .username("testUsername")
                     .build();
 
             Member target = Member.builder()
@@ -91,7 +91,7 @@ class AlarmServiceTest {
             // then
             verify(alarmRepository, times(1)).save(any(Alarm.class));
             ArgumentCaptor<String> messageTemplateCaptor = ArgumentCaptor.forClass(String.class);
-            verify(notificationService).sendNotification(eq(target.getId()), messageTemplateCaptor.capture());
+            verify(notificationService).sendNotification(eq(target.getUsername()), messageTemplateCaptor.capture());
 
             String capturedMessageTemplate = messageTemplateCaptor.getValue();
             String expectedMessage = LIKE_POST.getMessageTemplate()
@@ -105,8 +105,6 @@ class AlarmServiceTest {
                             savedAlarm.getAgent() == agent &&
                             savedAlarm.getTarget() == target &&
                             savedAlarm.getPost() == post));
-
-            // 울리는 건 ?? 직 화면테스트??  하고 싶은 테스트
 
         }
 
@@ -348,6 +346,7 @@ class AlarmServiceTest {
         Follow follow = new Follow();
         //when
         alarmService.sendFollowAlarm(agent, target, follow);
+
         //then
         verify(alarmRepository).save(Mockito.any());
     }
