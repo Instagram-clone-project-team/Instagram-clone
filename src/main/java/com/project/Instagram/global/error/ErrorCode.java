@@ -56,7 +56,8 @@ public enum ErrorCode {
     MISMATCHED_ALARM_TYPE(400, "알람 타입이 올바르지 않습니다."),
     //공통
     ENTITY_TYPE_INVALID(500,"올바르지 않은 엔티티 타입입니다."),
-    FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");
+    FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다."),
+    NOTIFICATION_CONNECTION_ERROR(500,"SSE 연결 실패했습니다.");
 
 
     private final int status;

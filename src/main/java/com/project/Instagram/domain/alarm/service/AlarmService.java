@@ -36,6 +36,7 @@ public class AlarmService {
     private final FollowRepository followRepository;
     private final SecurityUtil securityUtil;
     private final StringExtractUtil stringExtractUtil;
+    private final SseService sseService;
 
     @Transactional
     public Page<AlarmDto> getAlarms(int page, int size) {
@@ -68,6 +69,8 @@ public class AlarmService {
                 .build();
 
         alarmRepository.save(alarm);
+        sseService.sendToClient(target.getUsername(),alarm.getType().getMessageTemplate());
+
     }
 
     @Transactional
@@ -81,6 +84,8 @@ public class AlarmService {
                 .build();
 
         alarmRepository.save(alarm);
+        sseService.sendToClient(target.getUsername(),alarm.getType().getMessageTemplate());
+
     }
 
     @Transactional
@@ -98,6 +103,7 @@ public class AlarmService {
                 .build();
 
         alarmRepository.save(alarm);
+        sseService.sendToClient(target.getUsername(),alarm.getType().getMessageTemplate());
     }
 
     @Transactional
@@ -112,6 +118,7 @@ public class AlarmService {
                     .post(post)
                     .build();
             alarmRepository.save(alarm);
+            sseService.sendToClient(targetMember.getUsername(),alarm.getType().getMessageTemplate());
         }
     }
 
@@ -128,6 +135,7 @@ public class AlarmService {
                     .comment(comment)
                     .build();
             alarmRepository.save(alarm);
+            sseService.sendToClient(targetMember.getUsername(),alarm.getType().getMessageTemplate());
         }
     }
 
