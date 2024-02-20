@@ -55,6 +55,9 @@ public enum ErrorCode {
     // 알람
     MISMATCHED_ALARM_TYPE(400, "알람 타입이 올바르지 않습니다."),
     NOTIFICATION_CONNECTION_ERROR(500,"알림 서비스 연결이 실패하였습니다."),
+
+    // 채팅
+    CHATROOM_NOT_FOUND(400, "채팅방을 찾지 못했습니다."),
     //공통
     ENTITY_TYPE_INVALID(500,"올바르지 않은 엔티티 타입입니다."),
     FILE_CONVERT_FAIL(500, "변환할 수 없는 파일입니다.");

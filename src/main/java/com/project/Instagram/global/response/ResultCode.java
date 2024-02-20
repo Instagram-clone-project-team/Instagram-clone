@@ -20,9 +20,6 @@ public enum ResultCode {
     REISSUE_JWT_SUCCESS(200, "토큰 재발급이 완료되었습니다."),
     GET_PROFILE_SUCCESS(200, "프로필 조회에 성공하였습니다."),
 
-
-  
-
     // 게시글
     GET_POST_PAGE_SUCCESS(200,"게시물 목록 조회가 완료되었습니다."),
     GET_POST_SUCCESS(200,"게시물 상세 조회가 완료되었습니다."),
@@ -32,7 +29,6 @@ public enum ResultCode {
     UPDATE_POST_SUCCESS(200, "게시물 수정이 완료되었습니다."),
     GET_FOLLOWED_POSTS_SUCCESS(200, "팔로우한 유저들의 게시물 조회가 완료되었습니다."),
 
-
     //댓글
     COMMENT_CREATE_SUCCESS(200, "댓글 생성에 성공하였습니다."),
     COMMENT_REPLY_SUCCESS(200, "답글 생성에 성공하였습니다."),
@@ -40,8 +36,6 @@ public enum ResultCode {
     COMMENT_DELETE_SUCCESS(200, "댓글 삭제에 성공하였습니다."),
     COMMENT_GET_SUCCESS(200, "댓글 조회에 성공하였습니다."),
 
-    
-  
     // 팔로우
     FOLLOW_FAIL(400, "팔로우에 실패했습니다."),
     FOLLOW_SUCCESS(200, "팔로우에 성공했습니다."),
@@ -50,8 +44,7 @@ public enum ResultCode {
     FOLLOWERS_LIST_SUCCESS(200, "팔로워 목록 조회가 성공했습니다."),
     FOLLOWING_COUNT_SUCCESS(200, "팔로잉 수 조회가 성공했습니다."),
     FOLLOWER_COUNT_SUCCESS(200, "팔로워 수 조회가 성공했습니다."),
-   
-  
+
     // 좋아요
     POST_LIKE_SUCCESS(200,"좋아요 성공하였습니다."),
     POST_UNLIKE_SUCCESS(200,"좋아요 취소하였습니다."),
@@ -59,9 +52,15 @@ public enum ResultCode {
     COMMENT_LIKE_SUCCESS(200, "댓글 좋아요 성공하였습니다."),
     COMMENT_UNLIKE_SUCCESS(200, "댓글 좋아요 취소하였습니다."),
     GET_COMMENTLIKE_USERS_SUCCESS(200,"해당 댓글에 좋아요한 유저 조회가 완료되었습니다."),
+
     // 알람
     GET_ALARMS_SUCCESS(200, "알림 조회에 성공하였습니다."),
     ALARMS_CONNECT_SUCCESS(200, "알림 연결에 성공하였습니다."),
+
+    // 채팅
+    DISCONNECT_CHAT_SUCCESS(200, "채팅방을 나갔습니다."),
+    CREATE_CHATROOM_SUCCESS(200, "채팅방을 만들었습니다."),
+    CREATE_CHATROOM_FAIL(400, "채팅방을 생성하지 못했습니다."),
 
     // 검색
     SEARCH_SUCCESS(200, "검색에 성공하였습니다."),

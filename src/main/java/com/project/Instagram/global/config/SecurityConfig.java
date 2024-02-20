@@ -58,6 +58,7 @@ public class SecurityConfig {
                 .exceptionHandling()
                 .and()
                 .authorizeRequests(authorize -> authorize
+//                        .antMatchers("/*").permitAll()
                         .antMatchers("/**/sign-up").permitAll()
                         .antMatchers("/**/email").permitAll()
                         .antMatchers("/**/reset").permitAll()

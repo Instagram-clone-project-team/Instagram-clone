@@ -221,7 +221,7 @@ public class AlarmService {
         securityUtil.checkLoginMember();
         memberRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException(MEMBER_NOT_FOUND));
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(3600000L);
         emitters.put(username, emitter);
         emitter.onTimeout(() -> emitters.remove(username));
         emitter.onCompletion(() -> emitters.remove(username));
