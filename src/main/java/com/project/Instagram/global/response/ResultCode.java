@@ -72,7 +72,9 @@ public enum ResultCode {
     GET_TOP_15_RECENT_SEARCH_SUCCESS(200, "최근 검색 기록 15개 조회에 성공하였습니다."),
     DELETE_RECENT_SEARCH_SUCCESS(200, "최근검색 삭제에 성공했습니다."),
     GET_RECENTSEARCH_LIST_SUCCESS(200, "최근검색 목록 조회가 완료되었습니다."),
-    GET_RECOMMEND_MEMBER_LIST_SUCCESS(200, "팔로잉 추천 회원 조회가 완료되었습니다.");
+    GET_RECOMMEND_MEMBER_LIST_SUCCESS(200, "팔로잉 추천 회원 조회가 완료되었습니다."),
+
+    CREATE_CHAT_ROOM_SUCCESS(200,  "채팅방 생성에 성공하였습니다.");
 
 
     private final int status;
