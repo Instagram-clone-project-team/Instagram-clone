@@ -22,7 +22,7 @@ public class ChatRoomRepositoryJdbcImpl implements ChatRoomRepositoryJdbc{
     public void saveAllBatch(List<ChatRoom> chatRooms, Message message) {
         final String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         final String sql =
-                "INSERT INTO join_rooms (`join_room_created_date`, `member_id`, `message_id`, `room_id`) " +
+                "INSERT INTO chat_rooms (`chat_room_created_date`, `member_id`, `message_id`, `room_id`) " +
                         "VALUES(?, ?, ?, ?)";
 
         jdbcTemplate.batchUpdate(
@@ -45,7 +45,7 @@ public class ChatRoomRepositoryJdbcImpl implements ChatRoomRepositoryJdbc{
 
     @Override
     public void updateAllBatch(List<ChatRoom> updateChatRooms, Message message) {
-        final String sql = "UPDATE join_rooms SET message_id = ? where join_room_id = ?";
+        final String sql = "UPDATE chat_rooms SET message_id = ? where chat_room_id = ?";
 
         jdbcTemplate.batchUpdate(
                 sql,

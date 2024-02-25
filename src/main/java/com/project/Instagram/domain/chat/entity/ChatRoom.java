@@ -38,8 +38,8 @@ public class ChatRoom {
     @JoinColumn(name = "message_id")
     private Message message;
 
-    @Column(name = "chat_room_isRead")
-    private boolean isRead;
+//    @Column(name = "chat_room_isRead")
+//    private boolean isRead;
 
     @Builder
     public ChatRoom(Room room, Member member, Message message) {

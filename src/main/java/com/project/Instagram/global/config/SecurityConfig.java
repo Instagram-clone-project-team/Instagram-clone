@@ -58,7 +58,12 @@ public class SecurityConfig {
                 .exceptionHandling()
                 .and()
                 .authorizeRequests(authorize -> authorize
+                        .antMatchers("/**/ws-connection").permitAll()
+                        .antMatchers("/ws-connection/**").permitAll()
+                        .antMatchers("/websocket.js").permitAll()
+                        .antMatchers("/websocket.html").permitAll()
                         .antMatchers("/**/sign-up").permitAll()
+                        .antMatchers("/**/messages").permitAll()
                         .antMatchers("/**/email").permitAll()
                         .antMatchers("/**/reset").permitAll()
                         .antMatchers("/**/member").permitAll()

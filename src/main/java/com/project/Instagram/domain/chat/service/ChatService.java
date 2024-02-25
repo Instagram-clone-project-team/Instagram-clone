@@ -2,6 +2,7 @@ package com.project.Instagram.domain.chat.service;
 
 import com.project.Instagram.domain.chat.dto.ChatRoomCreateResponse;
 import com.project.Instagram.domain.chat.dto.MemberSimpleInfo;
+import com.project.Instagram.domain.chat.dto.MessageDto;
 import com.project.Instagram.domain.chat.dto.MessageRequest;
 import com.project.Instagram.domain.chat.entity.ChatRoom;
 import com.project.Instagram.domain.chat.entity.Message;
@@ -10,19 +11,28 @@ import com.project.Instagram.domain.chat.entity.RoomMember;
 import com.project.Instagram.domain.chat.repository.*;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
+import com.project.Instagram.domain.post.dto.PostResponse;
+import com.project.Instagram.domain.post.entity.Post;
+import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.project.Instagram.domain.member.entity.Profile.convertMemberToProfile;
 import static com.project.Instagram.global.error.ErrorCode.*;
 
 @Service
@@ -130,4 +140,72 @@ public class ChatService {
         return Optional.empty();
     }
 
+    @Transactional
+    public void deleteMessage(Long messageId, Long memberId) {
+        final Member member = memberRepository.findById(memberId).orElseThrow(() -> new BusinessException(MEMBER_NOT_FOUND));
+        final Message message = messageRepository.findById(messageId).orElseThrow(() -> new BusinessException(MESSAGE_NOT_FOUNT));
+
+        if (!message.getMember().getId().equals(member.getId())) {
+            throw new BusinessException(MISS_MATCH);
+        }
+
+//        final List<RoomUnreadMember> roomUnreadMembers = roomUnreadMemberRepository.findAllByMessage(message);
+//        roomUnreadMemberRepository.deleteAllInBatch(roomUnreadMembers);
+
+        final Room room = message.getRoom();
+        final List<ChatRoom> joinRooms = chatRoomRepository.findByRoomId(room.getId());
+        joinRooms.forEach(joinRoom -> {
+            final LocalDateTime createdDateOfMessageToDelete = message.getCreatedDate();
+            final LocalDateTime createdDateOfJoinRoom = joinRoom.getCreatedDate();
+
+            if (!createdDateOfMessageToDelete.isBefore(createdDateOfJoinRoom)) {
+                if (message.equals(joinRoom.getMessage())) {
+                    final LocalDateTime start = createdDateOfJoinRoom.minusSeconds(1L);
+                    final LocalDateTime end = createdDateOfMessageToDelete.plusSeconds(1L);
+                    final Long total = messageRepository.countByCreatedDateBetweenAndRoom(start, end, room);
+
+                    if (total == 1) {
+                        chatRoomRepository.delete(joinRoom);
+                    } else {
+                        final List<Message> messages = messageRepository.findTop2ByCreatedDateBetweenAndRoomOrderByIdDesc(
+                                start, end, room);
+                        joinRoom.updateMessage(messages.get(1));
+                    }
+                }
+            }
+        });
+
+        messageRepository.delete(message);
+
+        final List<RoomMember> roomMembers = roomMemberRepository.findAllByRoom(room);
+        roomMembers.forEach(r -> messagingTemplate.convertAndSend("/sub/" + r.getMember().getUsername()));
+    }
+
+    public PageListResponse<MessageDto> getChatMessages(Long roomId, int page, int size) {
+        final Long memberId = securityUtil.getLoginMember().getId();
+        final Pageable pageable = PageRequest.of(page, size);
+
+        final ChatRoom chatRoom = chatRoomRepository.findByMemberIdAndRoomId(memberId, roomId)
+                .orElseThrow(() -> new BusinessException(MESSAGE_NOT_FOUND));
+
+        final Page<Message> messagePage = messageRepository.findAllByChatRoom(chatRoom, pageable);
+
+        final PageListResponse<MessageDto> messageDtos = getMessageResponsePage(messagePage);
+
+        return messageDtos;
+    }
+
+    private PageListResponse<MessageDto> getMessageResponsePage(Page<Message> messagePage) {
+        List<Message> messages = messagePage.getContent();
+        List<MessageDto> messageResponses =  new ArrayList<>();
+        for(Message message : messages){
+            messageResponses.add(new MessageDto(message.getRoom().getId()
+                    , message.getMember().getId()
+                    , convertMemberToProfile(message.getMember().getUsername(), message.getMember().getImage())
+                    , message.getContent()
+                    , message.getCreatedDate()));
+        }
+        PageListResponse<MessageDto> messageResponsePage = new PageListResponse<>(messageResponses, messagePage);
+        return messageResponsePage;
+    }
 }
