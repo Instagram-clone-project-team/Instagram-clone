@@ -28,8 +28,7 @@ public class ChatController {
     private final ChatService chatService;
 
     @PostMapping("/chat/rooms")
-    public ResponseEntity<ResultResponse> createChatRoom(
-            @RequestParam List<@NotEmpty @Size(max = 12) String> usernames) {
+    public ResponseEntity<ResultResponse> createChatRoom(@RequestParam List<@NotEmpty @Size(max = 12) String> usernames) {
         final ChatRoomCreateResponse response = chatService.createRoom(usernames);
 
         return ResponseEntity.ok(ResultResponse.of(CREATE_CHAT_ROOM_SUCCESS, response));

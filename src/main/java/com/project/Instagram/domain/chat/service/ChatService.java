@@ -13,6 +13,7 @@ import com.project.Instagram.domain.member.repository.MemberRepository;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class ChatService {
     private final RoomMemberRepository roomMemberRepository;
     private final MessageRepository messageRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public ChatRoomCreateResponse createRoom(List<String> usernames) {
@@ -73,8 +75,7 @@ public class ChatService {
         final Message message = messageRepository.save(new Message(request.getContent(), sender, room));
         updateRoom(request.getSenderId(), room, roomMembers, message);
 
-//        final MessageResponse response = new MessageResponse(MessageAction.MESSAGE_GET, new MessageDto(message));
-//        roomMembers.forEach(r -> messagingTemplate.convertAndSend("/sub/" + r.getMember().getUsername(), response));
+        roomMembers.forEach(r -> messagingTemplate.convertAndSend("/sub/" + r.getMember().getUsername()));
     }
 
     private void updateRoom(Long senderId, Room room, List<RoomMember> roomMembers, Message message) {
@@ -87,21 +88,21 @@ public class ChatService {
         final List<ChatRoom> newJoinRooms = new ArrayList<>();
         final List<ChatRoom> updateJoinRooms = new ArrayList<>();
 
-//        for (final RoomMember roomMember : roomMembers) {
-//            final Member member = roomMember.getMember();
+        for (final RoomMember roomMember : roomMembers) {
+            final Member member = roomMember.getMember();
 //            if (!member.getId().equals(senderId)) {
 //                newRoomUnreadMembers.add(new RoomUnreadMember(room, message, member));
 //            }
-//            if (joinRoomMap.containsKey(member.getId())) {
-//                updateJoinRooms.add(joinRoomMap.get(member.getId()));
-//            } else {
-//                newJoinRooms.add(new JoinRoom(room, member, message));
-//            }
-//        }
-//
+            if (joinRoomMap.containsKey(member.getId())) {
+                updateJoinRooms.add(joinRoomMap.get(member.getId()));
+            } else {
+                newJoinRooms.add(new ChatRoom(room, member, message));
+            }
+        }
+
 //        roomUnreadMemberRepository.saveAllBatch(newRoomUnreadMembers, message);
-//        joinRoomRepository.saveAllBatch(newJoinRooms, message);
-//        joinRoomRepository.updateAllBatch(updateJoinRooms, message);
+        chatRoomRepository.saveAllBatch(newJoinRooms, message);
+        chatRoomRepository.updateAllBatch(updateJoinRooms, message);
     }
 
 
