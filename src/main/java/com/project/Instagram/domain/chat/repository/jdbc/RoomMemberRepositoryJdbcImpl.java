@@ -1,4 +1,4 @@
-package com.project.Instagram.domain.chat.repository;
+package com.project.Instagram.domain.chat.repository.jdbc;
 
 import com.project.Instagram.domain.chat.entity.Room;
 import com.project.Instagram.domain.member.entity.Member;

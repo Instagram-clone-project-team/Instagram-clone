@@ -21,7 +21,7 @@ public enum ResultCode {
     GET_PROFILE_SUCCESS(200, "프로필 조회에 성공하였습니다."),
 
 
-  
+
 
     // 게시글
     GET_POST_PAGE_SUCCESS(200,"게시물 목록 조회가 완료되었습니다."),
@@ -40,8 +40,8 @@ public enum ResultCode {
     COMMENT_DELETE_SUCCESS(200, "댓글 삭제에 성공하였습니다."),
     COMMENT_GET_SUCCESS(200, "댓글 조회에 성공하였습니다."),
 
-    
-  
+
+
     // 팔로우
     FOLLOW_FAIL(400, "팔로우에 실패했습니다."),
     FOLLOW_SUCCESS(200, "팔로우에 성공했습니다."),
@@ -50,8 +50,8 @@ public enum ResultCode {
     FOLLOWERS_LIST_SUCCESS(200, "팔로워 목록 조회가 성공했습니다."),
     FOLLOWING_COUNT_SUCCESS(200, "팔로잉 수 조회가 성공했습니다."),
     FOLLOWER_COUNT_SUCCESS(200, "팔로워 수 조회가 성공했습니다."),
-   
-  
+
+
     // 좋아요
     POST_LIKE_SUCCESS(200,"좋아요 성공하였습니다."),
     POST_UNLIKE_SUCCESS(200,"좋아요 취소하였습니다."),
@@ -74,7 +74,8 @@ public enum ResultCode {
     GET_RECENTSEARCH_LIST_SUCCESS(200, "최근검색 목록 조회가 완료되었습니다."),
     GET_RECOMMEND_MEMBER_LIST_SUCCESS(200, "팔로잉 추천 회원 조회가 완료되었습니다."),
     GET_CHAT_MESSAGES_SUCCESS(200,  "채팅 메시지 목록 조회에 성공하였습니다."),
-
+    GET_CHAT_ROOMS_SUCCESS(200, "채팅방 조회에 성공하였습니다."),
+    DELETE_JOIN_ROOM_SUCCESS(200, "채팅방을 나갔습니다."),
     CREATE_CHAT_ROOM_SUCCESS(200,  "채팅방 생성에 성공하였습니다.");
 
 

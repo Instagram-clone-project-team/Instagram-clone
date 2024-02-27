@@ -1,7 +1,8 @@
-package com.project.Instagram.domain.chat.repository;
+package com.project.Instagram.domain.chat.repository.jdbc;
 
 import com.project.Instagram.domain.chat.entity.ChatRoom;
 import com.project.Instagram.domain.chat.entity.Message;
+import com.project.Instagram.domain.chat.repository.jdbc.ChatRoomRepositoryJdbc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class ChatRoomRepositoryJdbcImpl implements ChatRoomRepositoryJdbc{
+public class ChatRoomRepositoryJdbcImpl implements ChatRoomRepositoryJdbc {
 
     private final JdbcTemplate jdbcTemplate;
 

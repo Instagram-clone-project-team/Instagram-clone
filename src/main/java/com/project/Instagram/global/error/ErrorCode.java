@@ -58,7 +58,6 @@ public enum ErrorCode {
     // 채팅
 
     CHAT_ROOM_NOT_FOUND(400, "존재하지 않는 채팅방입니다."),
-    JOIN_ROOM_NOT_FOUND(400,  "해당 채팅방에 참여하지 않은 회원입니다."),
     MESSAGE_NOT_FOUNT(400, "존재하지 않는 메시지입니다."),
     MISS_MATCH(400, "회원Id와 메시지가 일치하지 않습니다."),
     MESSAGE_NOT_FOUND(400,  "존재하지 않는 메시지입니다."),

@@ -1,14 +1,10 @@
 package com.project.Instagram.domain.chat.controller;
 
-import com.project.Instagram.domain.chat.dto.ChatRoomCreateResponse;
-import com.project.Instagram.domain.chat.dto.MessageDto;
-import com.project.Instagram.domain.chat.dto.MessageRequest;
-import com.project.Instagram.domain.chat.dto.MessageSimpleRequest;
+import com.project.Instagram.domain.chat.dto.*;
 import com.project.Instagram.domain.chat.service.ChatService;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.response.ResultResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.validation.annotation.Validated;
@@ -41,8 +37,21 @@ public class ChatController {
                                                           @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
 
         final PageListResponse<MessageDto> response = chatService.getChatMessages(roomId, page -1, size);
-
         return ResponseEntity.ok(ResultResponse.of(GET_CHAT_MESSAGES_SUCCESS, response));
+    }
+
+    @GetMapping("/chat/rooms")
+    public ResponseEntity<ResultResponse> getChatRooms(@Positive @RequestParam(value = "page", defaultValue = "1") int page,
+                                                       @Positive @RequestParam(value = "size", defaultValue = "5") int size) {
+
+        final PageListResponse<ChatRoomDto> response = chatService.getChatRooms(page -1, size);
+        return ResponseEntity.ok(ResultResponse.of(GET_CHAT_ROOMS_SUCCESS, response));
+    }
+
+    @DeleteMapping("/chat/rooms/hide")
+    public ResponseEntity<ResultResponse> leaveTheChatRoom(@RequestParam Long roomId) {
+        final boolean status = chatService.deleteChatRoom(roomId);
+        return ResponseEntity.ok(ResultResponse.of(DELETE_JOIN_ROOM_SUCCESS, status));
     }
 
     @MessageMapping("/messages")

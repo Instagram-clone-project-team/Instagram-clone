@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.follow.repository;
 
 import com.project.Instagram.domain.follow.entity.Follow;
+import com.project.Instagram.domain.follow.repository.qeurydsl.FollowRepositoryQuerydsl;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface FollowRepository extends JpaRepository<Follow, Long> ,FollowRepositoryQuerydsl {
+public interface FollowRepository extends JpaRepository<Follow, Long> , FollowRepositoryQuerydsl {
     Optional<Follow> findByMemberIdAndFollowMemberId(Long memberId, Long followMemberId);
     boolean existsByMemberIdAndFollowMemberId(Long memberId, Long followMemberId);
     List<Follow> findByMemberId(Long memberId);

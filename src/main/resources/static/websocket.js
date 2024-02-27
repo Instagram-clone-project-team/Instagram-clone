@@ -24,7 +24,7 @@ function sendMessage() {
 
         // 서버로 메시지를 전송
         stompClient.send('/pub/messages', {}, JSON.stringify({
-            roomId: 1,
+            roomId: 6,
             senderId: 4,
             content: document.getElementById('messageInput').value
         }));

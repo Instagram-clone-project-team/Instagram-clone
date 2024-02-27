@@ -1,9 +1,6 @@
 package com.project.Instagram.domain.chat.service;
 
-import com.project.Instagram.domain.chat.dto.ChatRoomCreateResponse;
-import com.project.Instagram.domain.chat.dto.MemberSimpleInfo;
-import com.project.Instagram.domain.chat.dto.MessageDto;
-import com.project.Instagram.domain.chat.dto.MessageRequest;
+import com.project.Instagram.domain.chat.dto.*;
 import com.project.Instagram.domain.chat.entity.ChatRoom;
 import com.project.Instagram.domain.chat.entity.Message;
 import com.project.Instagram.domain.chat.entity.Room;
@@ -11,14 +8,11 @@ import com.project.Instagram.domain.chat.entity.RoomMember;
 import com.project.Instagram.domain.chat.repository.*;
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.member.repository.MemberRepository;
-import com.project.Instagram.domain.post.dto.PostResponse;
-import com.project.Instagram.domain.post.entity.Post;
 import com.project.Instagram.global.entity.PageListResponse;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -80,7 +74,7 @@ public class ChatService {
         final Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new BusinessException(CHAT_ROOM_NOT_FOUND));
         final List<RoomMember> roomMembers = roomMemberRepository.findAllWithMemberByRoomId(room.getId());
         if (roomMembers.stream().noneMatch(r -> r.getMember().getId().equals(sender.getId())))
-            throw new BusinessException(JOIN_ROOM_NOT_FOUND);
+            throw new BusinessException(CHAT_ROOM_NOT_FOUND);
 
         final Message message = messageRepository.save(new Message(request.getContent(), sender, room));
         updateRoom(request.getSenderId(), room, roomMembers, message);
@@ -88,32 +82,6 @@ public class ChatService {
         roomMembers.forEach(r -> messagingTemplate.convertAndSend("/sub/" + r.getMember().getUsername()));
     }
 
-    private void updateRoom(Long senderId, Room room, List<RoomMember> roomMembers, Message message) {
-        final List<Member> members = roomMembers.stream()
-                .map(RoomMember::getMember)
-                .collect(Collectors.toList());
-        final Map<Long, ChatRoom> joinRoomMap = chatRoomRepository.findByRoomAndMemberIn(room, members).stream()
-                .collect(Collectors.toMap(j -> j.getMember().getId(), j -> j));
-
-        final List<ChatRoom> newJoinRooms = new ArrayList<>();
-        final List<ChatRoom> updateJoinRooms = new ArrayList<>();
-
-        for (final RoomMember roomMember : roomMembers) {
-            final Member member = roomMember.getMember();
-//            if (!member.getId().equals(senderId)) {
-//                newRoomUnreadMembers.add(new RoomUnreadMember(room, message, member));
-//            }
-            if (joinRoomMap.containsKey(member.getId())) {
-                updateJoinRooms.add(joinRoomMap.get(member.getId()));
-            } else {
-                newJoinRooms.add(new ChatRoom(room, member, message));
-            }
-        }
-
-//        roomUnreadMemberRepository.saveAllBatch(newRoomUnreadMembers, message);
-        chatRoomRepository.saveAllBatch(newJoinRooms, message);
-        chatRoomRepository.updateAllBatch(updateJoinRooms, message);
-    }
 
 
     private Optional<Room> getRoomByMembers(List<Member> members) {
@@ -140,6 +108,18 @@ public class ChatService {
         return Optional.empty();
     }
 
+    public PageListResponse<MessageDto> getChatMessages(Long roomId, int page, int size) {
+        final Long memberId = securityUtil.getLoginMember().getId();
+        final Pageable pageable = PageRequest.of(page, size);
+
+        final ChatRoom chatRoom = chatRoomRepository.findByMemberIdAndRoomId(memberId, roomId)
+                .orElseThrow(() -> new BusinessException(MESSAGE_NOT_FOUND));
+
+        final Page<Message> messagePage = messageRepository.findByRoomId(chatRoom.getRoom().getId(), pageable);
+
+        return getMessageResponsePage(messagePage);
+    }
+
     @Transactional
     public void deleteMessage(Long messageId, Long memberId) {
         final Member member = memberRepository.findById(memberId).orElseThrow(() -> new BusinessException(MEMBER_NOT_FOUND));
@@ -148,9 +128,6 @@ public class ChatService {
         if (!message.getMember().getId().equals(member.getId())) {
             throw new BusinessException(MISS_MATCH);
         }
-
-//        final List<RoomUnreadMember> roomUnreadMembers = roomUnreadMemberRepository.findAllByMessage(message);
-//        roomUnreadMemberRepository.deleteAllInBatch(roomUnreadMembers);
 
         final Room room = message.getRoom();
         final List<ChatRoom> joinRooms = chatRoomRepository.findByRoomId(room.getId());
@@ -181,31 +158,75 @@ public class ChatService {
         roomMembers.forEach(r -> messagingTemplate.convertAndSend("/sub/" + r.getMember().getUsername()));
     }
 
-    public PageListResponse<MessageDto> getChatMessages(Long roomId, int page, int size) {
-        final Long memberId = securityUtil.getLoginMember().getId();
+    @Transactional
+    public boolean deleteChatRoom(Long roomId) {
+        final Room room = roomRepository.findById(roomId).orElseThrow(() -> new BusinessException(CHAT_ROOM_NOT_FOUND));
+        final Member loginMember = securityUtil.getLoginMember();
+
+        if (chatRoomRepository.findByMemberAndRoom(loginMember, room).isEmpty()) {
+            throw new BusinessException(CHAT_ROOM_NOT_FOUND);
+        }
+
+        chatRoomRepository.deleteByMemberAndRoom(loginMember, room);
+
+        return true;
+    }
+
+    public PageListResponse<ChatRoomDto> getChatRooms(int page, int size) {
+        final Member loginMember = securityUtil.getLoginMember();
         final Pageable pageable = PageRequest.of(page, size);
 
-        final ChatRoom chatRoom = chatRoomRepository.findByMemberIdAndRoomId(memberId, roomId)
-                .orElseThrow(() -> new BusinessException(MESSAGE_NOT_FOUND));
+        final Page<ChatRoom> chatRoomPage = chatRoomRepository.findByMemberId(loginMember.getId(), pageable);
 
-        final Page<Message> messagePage = messageRepository.findAllByChatRoom(chatRoom, pageable);
+        List<ChatRoomDto> chatRoomResponses = new ArrayList<>();
+        List<ChatRoom> chatRooms = chatRoomPage.getContent();
+        for (ChatRoom chatRoom : chatRooms) {
+            List<Message> messages = messageRepository.findByRoomId(chatRoom.getRoom().getId());
+            String lastMessage = messages.get(0).getContent();
 
-        final PageListResponse<MessageDto> messageDtos = getMessageResponsePage(messagePage);
+            chatRoomResponses.add(new ChatRoomDto(chatRoom.getRoom().getId()
+                    , lastMessage
+                    , loginMember, chatRoom.getRoom().getRoomMembers()));
 
-        return messageDtos;
+        }
+        return new PageListResponse<>(chatRoomResponses, chatRoomPage);
     }
+
+    private void updateRoom(Long senderId, Room room, List<RoomMember> roomMembers, Message message) {
+        final List<Member> members = roomMembers.stream()
+                .map(RoomMember::getMember)
+                .collect(Collectors.toList());
+        final Map<Long, ChatRoom> joinRoomMap = chatRoomRepository.findByRoomAndMemberIn(room, members).stream()
+                .collect(Collectors.toMap(j -> j.getMember().getId(), j -> j));
+
+        final List<ChatRoom> newJoinRooms = new ArrayList<>();
+        final List<ChatRoom> updateJoinRooms = new ArrayList<>();
+
+        for (final RoomMember roomMember : roomMembers) {
+            final Member member = roomMember.getMember();
+
+            if (joinRoomMap.containsKey(member.getId())) {
+                updateJoinRooms.add(joinRoomMap.get(member.getId()));
+            } else {
+                newJoinRooms.add(new ChatRoom(room, member, message));
+            }
+        }
+
+        chatRoomRepository.saveAllBatch(newJoinRooms, message);
+        chatRoomRepository.updateAllBatch(updateJoinRooms, message);
+    }
+
 
     private PageListResponse<MessageDto> getMessageResponsePage(Page<Message> messagePage) {
         List<Message> messages = messagePage.getContent();
-        List<MessageDto> messageResponses =  new ArrayList<>();
-        for(Message message : messages){
-            messageResponses.add(new MessageDto(message.getRoom().getId()
-                    , message.getMember().getId()
-                    , convertMemberToProfile(message.getMember().getUsername(), message.getMember().getImage())
-                    , message.getContent()
-                    , message.getCreatedDate()));
+        List<MessageDto> messageResponses = new ArrayList<>();
+        for (Message message : messages) {
+            messageResponses.add(new MessageDto(message, convertMemberToProfile(message.getMember().getUsername(), message.getMember().getImage())));
         }
-        PageListResponse<MessageDto> messageResponsePage = new PageListResponse<>(messageResponses, messagePage);
-        return messageResponsePage;
+        PageListResponse<MessageDto> postResponsePage = new PageListResponse<>(messageResponses, messagePage);
+        return postResponsePage;
     }
+
+
+
 }
