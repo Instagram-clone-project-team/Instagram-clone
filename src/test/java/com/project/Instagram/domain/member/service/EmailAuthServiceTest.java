@@ -1,6 +1,6 @@
 package com.project.Instagram.domain.member.service;
 
-import com.project.Instagram.domain.member.repository.SignUpCodeRedisRepository;
+import com.project.Instagram.domain.member.repository.redis.SignUpCodeRedisRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

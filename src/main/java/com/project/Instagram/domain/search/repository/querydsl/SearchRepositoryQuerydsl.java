@@ -1,4 +1,4 @@
-package com.project.Instagram.domain.search.repository;
+package com.project.Instagram.domain.search.repository.querydsl;
 
 import com.project.Instagram.domain.member.entity.Member;
 import com.project.Instagram.domain.post.entity.Hashtag;

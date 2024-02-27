@@ -1,4 +1,4 @@
-package com.project.Instagram.domain.follow.repository;
+package com.project.Instagram.domain.follow.repository.qeurydsl;
 
 import com.project.Instagram.domain.follow.dto.FollowDto;
 import com.project.Instagram.domain.follow.dto.FollowerDto;

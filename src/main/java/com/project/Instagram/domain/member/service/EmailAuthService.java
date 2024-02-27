@@ -2,8 +2,8 @@ package com.project.Instagram.domain.member.service;
 
 import com.project.Instagram.domain.member.entity.ResetPasswordCode;
 import com.project.Instagram.domain.member.entity.SignUpCode;
-import com.project.Instagram.domain.member.repository.ResetPasswordCodeRedisRepository;
-import com.project.Instagram.domain.member.repository.SignUpCodeRedisRepository;
+import com.project.Instagram.domain.member.repository.redis.ResetPasswordCodeRedisRepository;
+import com.project.Instagram.domain.member.repository.redis.SignUpCodeRedisRepository;
 import com.project.Instagram.global.error.BusinessException;
 import com.project.Instagram.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -82,7 +82,6 @@ public class EmailAuthService {
     private String createEmailVerificationCode(int length) {
         return RandomStringUtils.random(length, true, true);
     }
-
 
     @SneakyThrows
     @PostConstruct

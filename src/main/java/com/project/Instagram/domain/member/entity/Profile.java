@@ -13,6 +13,11 @@ public class Profile {
     public static Profile convertMemberToProfile(Member member){
         return new Profile(member.getUsername(),member.getImage(), member.getIntroduce());
     }
+
+    public static Profile convertMemberToProfile(String username, String image) {
+        return new Profile(username, image, null);
+    }
+
     @QueryProjection
     public Profile(Member member) {
         this.username = member.getUsername();

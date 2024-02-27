@@ -1,6 +1,7 @@
 package com.project.Instagram.domain.search.repository;
 
 import com.project.Instagram.domain.search.entity.Search;
+import com.project.Instagram.domain.search.repository.querydsl.SearchRepositoryQuerydsl;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

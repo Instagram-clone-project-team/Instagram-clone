@@ -7,6 +7,7 @@ import com.project.Instagram.domain.search.dto.QSearchMemberDto;
 import com.project.Instagram.domain.search.dto.SearchHashtagDto;
 import com.project.Instagram.domain.search.dto.SearchMemberDto;
 import com.project.Instagram.domain.search.entity.Search;
+import com.project.Instagram.domain.search.repository.querydsl.SearchRepositoryQuerydsl;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;

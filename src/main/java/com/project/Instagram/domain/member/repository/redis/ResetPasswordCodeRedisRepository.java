@@ -1,4 +1,4 @@
-package com.project.Instagram.domain.member.repository;
+package com.project.Instagram.domain.member.repository.redis;
 
 import com.project.Instagram.domain.member.entity.ResetPasswordCode;
 import org.springframework.data.repository.CrudRepository;
