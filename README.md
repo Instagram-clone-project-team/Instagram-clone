@@ -8,10 +8,6 @@
 
 -------------------------
 
-### [ERD](https://dbdiagram.io/d/64f9628602bd1c4a5e1f6fe4)
-
--------------------------
-
 ### Contributors
 
 <table>
@@ -36,3 +32,31 @@
     </td>
   </tr>
 </table>  
+
+-------------------------
+### 테이블 구조
+
+**[ERD](https://dbdiagram.io/d/64f9628602bd1c4a5e1f6fe4)**
+
+### Built With
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- Spring WebSocket
+- SPring Data Redis
+- Querydsl
+- MySQL
+- AWS S3
+- SSE
+
+### 프로젝트 기능
+
+- Security(JWT)와 Redis, Spring Mail을 활용한 회원 기능
+- Follow & UbFollow와 관련 조회 기능(Querydsl)
+- HasgTag & 언급 & 좋아요 & 검색 기능
+- 게시물 CRUD 기능
+- 댓글 및 대댓글 기능
+- SSE를 활용한 알림 구독 및 알림 에시지 전송, 조회 기능
+- STOMP으로 pub/sub 형식의 채팅 기능
+
+
