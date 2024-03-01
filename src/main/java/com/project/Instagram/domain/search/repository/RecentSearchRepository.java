@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface RecentSearchRepository extends JpaRepository<RecentSearch, Long> {
+public interface RecentSearchRepository extends JpaRepository<RecentSearch, Long>, RecentSearchRepositoryQuerydsl {
     @Query("SELECT rs.search FROM RecentSearch rs WHERE rs.member.id = :loginId")
     List<Search> findAllByMemberId(@Param("loginId") Long loginId, Pageable pageable);
 
