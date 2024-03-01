@@ -82,8 +82,6 @@ public class ChatService {
         roomMembers.forEach(r -> messagingTemplate.convertAndSend("/sub/" + r.getMember().getUsername()));
     }
 
-
-
     private Optional<Room> getRoomByMembers(List<Member> members) {
         final Map<Long, List<RoomMember>> roomMembersMap = roomMemberRepository.findAllByMemberIn(members)
                 .stream()
@@ -196,26 +194,25 @@ public class ChatService {
         final List<Member> members = roomMembers.stream()
                 .map(RoomMember::getMember)
                 .collect(Collectors.toList());
-        final Map<Long, ChatRoom> joinRoomMap = chatRoomRepository.findByRoomAndMemberIn(room, members).stream()
+        final Map<Long, ChatRoom> chatRoomMap = chatRoomRepository.findByRoomAndMemberIn(room, members).stream()
                 .collect(Collectors.toMap(j -> j.getMember().getId(), j -> j));
 
-        final List<ChatRoom> newJoinRooms = new ArrayList<>();
-        final List<ChatRoom> updateJoinRooms = new ArrayList<>();
+        final List<ChatRoom> newChatRooms = new ArrayList<>();
+        final List<ChatRoom> updateChatRooms = new ArrayList<>();
 
         for (final RoomMember roomMember : roomMembers) {
             final Member member = roomMember.getMember();
 
-            if (joinRoomMap.containsKey(member.getId())) {
-                updateJoinRooms.add(joinRoomMap.get(member.getId()));
+            if (chatRoomMap.containsKey(member.getId())) {
+                updateChatRooms.add(chatRoomMap.get(member.getId()));
             } else {
-                newJoinRooms.add(new ChatRoom(room, member, message));
+                newChatRooms.add(new ChatRoom(room, member, message));
             }
         }
 
-        chatRoomRepository.saveAllBatch(newJoinRooms, message);
-        chatRoomRepository.updateAllBatch(updateJoinRooms, message);
+        chatRoomRepository.saveAllBatch(newChatRooms, message);
+        chatRoomRepository.updateAllBatch(updateChatRooms, message);
     }
-
 
     private PageListResponse<MessageDto> getMessageResponsePage(Page<Message> messagePage) {
         List<Message> messages = messagePage.getContent();
@@ -226,7 +223,4 @@ public class ChatService {
         PageListResponse<MessageDto> postResponsePage = new PageListResponse<>(messageResponses, messagePage);
         return postResponsePage;
     }
-
-
-
 }

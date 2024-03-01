@@ -24,14 +24,10 @@ public class Room {
     @JoinColumn(name = "member_id")
     private Member member;
 
-//    @OneToMany(mappedBy = "room")
-//    private List<RoomUnreadMember> roomUnreadMembers = new ArrayList<>();
-
     @OneToMany(mappedBy = "room")
     private List<RoomMember> roomMembers = new ArrayList<>();
 
     public Room(Member member) {
         this.member = member;
     }
-
 }

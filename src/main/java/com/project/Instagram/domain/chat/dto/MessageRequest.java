@@ -16,5 +16,4 @@ public class MessageRequest {
     private Long senderId;
     @NotEmpty(message = "채팅 메시지는 필수입니다.")
     private String content;
-
 }
